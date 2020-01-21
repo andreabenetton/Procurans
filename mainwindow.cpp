@@ -22,58 +22,20 @@
 #include <QtXmlPatterns>
 #include <QTableView>
 #include <QDir>
+#include <QDebug>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "logger.h"
 #include "comboboxitemdelegate.h"
 #include "gridschemaitem.h"
-
-#include <ods/ods>
-
-class MessageHandler : public QAbstractMessageHandler
-{
-public:
-    MessageHandler()
-        : QAbstractMessageHandler(0)
-    {
-    }
-
-    QString statusMessage() const
-    {
-        return m_description;
-    }
-
-    int line() const
-    {
-        return m_sourceLocation.line();
-    }
-
-    int column() const
-    {
-        return m_sourceLocation.column();
-    }
-
-protected:
-    virtual void handleMessage(QtMsgType type, const QString &description,
-                               const QUrl &identifier, const QSourceLocation &sourceLocation)
-    {
-        Q_UNUSED(type);
-        Q_UNUSED(identifier);
-
-        m_description = description;
-        m_sourceLocation = sourceLocation;
-    }
-
-private:
-    QString m_description;
-    QSourceLocation m_sourceLocation;
-};
-
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
+    billLoaded = false;
+
     m_setting = &Settings::getInstance();
 
     paymentMethodType["MP01"] = "contanti";
@@ -99,8 +61,16 @@ MainWindow::MainWindow(QWidget *parent)
     paymentMethodType["MP21"] = "SEPA Direct Debit B2B";
     paymentMethodType["MP22"] = "Trattenuta su somme già riscosse";
 
+    naturaType["N1"] = "Escluse ex. art. 15";
+    naturaType["N2"] = "Non soggette";
+    naturaType["N3"] = "Non Imponibili";
+    naturaType["N4"] = "Esenti";
+    naturaType["N5"] = "Regime del margine";
+    naturaType["N6"] = "Reverse charge";
+    naturaType["N7"] = "IVA assolta in altro stato UE";
+
     ui->setupUi(this);
-    //this->setWindowState(Qt::WindowMaximized);
+
     createActions();
     createStatusBar();
 
@@ -129,6 +99,7 @@ void MainWindow::open()
           "Fattura in XML (*.xml)");
     if (!fileName.isEmpty())
         parseXMLFile(fileName);
+    qInfo(logInfo())  << "File selected via dialog: " << fileName;
 }
 
 void MainWindow::about()
@@ -210,29 +181,106 @@ void MainWindow::execute()
         executeScadenziario();
 }
 
+//int MainWindow::findFirstStartingBlankRow(ods::Sheet *sheet)
+//{
+//    int countresult = sheet->CountRows();
+//    int lastvalid = 0;
+
+//    if(countresult>0) {
+//        for (lastvalid = 0; lastvalid < countresult; lastvalid++) {
+//            ods::Cell *cell = sheet->GetRow(lastvalid)->GetCell(0);
+
+//            if (cell == nullptr) {
+//                break;
+//            }
+//            else {
+//                if (cell->ValueToString() == "") {
+//                    break;
+//                }
+//            }
+//        }
+//    }
+//    return lastvalid;
+//}
+
 void MainWindow::executeElencoFatture()
 {
     QString filenametemplate = "Fatt. %1 %2%3.ods";
     QString filename;
-    QString backupfilename;
+
+    QTableView *grid = ui->summaryTable;
 
     QDateEdit* qde = this->findChild<QDateEdit*>("dataemissioneEdit");
 
     if (qde != nullptr) {
-        filename = filenametemplate.arg(months[qde->date().month()], QString::number(qde->date().year()), "");
-        backupfilename = filenametemplate.arg(months[qde->date().month()], QString::number(qde->date().year()), "");
+        filename = filenametemplate.arg(months[qde->date().month()-1], QString::number(qde->date().year()), "");
 
         QString pathandfilename = QDir(m_setting->getPath(Settings::Execute::elencofatture)).filePath(filename);
 
-        ods::Book* book = ods::Book::FromFile(filename);
-        QDir dir;
-        QString backuppath = QDir(m_setting->getPath(Settings::Execute::elencofatture)).filePath("old");
-        if (dir.mkpath(backuppath)) {
-            dir.rename(pathandfilename, QDir(backuppath).filePath(QString::number(QDateTime::currentSecsSinceEpoch())));
-            QFile file(pathandfilename);
+//        ods::Book* book;
 
-            book->Save(file);
-        }
+//        if(QFileInfo::exists(pathandfilename) && QFileInfo(pathandfilename).isFile()) {
+//            book = ods::Book::FromFile(pathandfilename);
+//            QString backupfilename = filenametemplate.arg(months[qde->date().month()-1], QString::number(qde->date().year()), QString::number(QDateTime::currentSecsSinceEpoch()));
+//            QString backuppath = QDir(m_setting->getPath(Settings::Execute::elencofatture)).filePath("old");
+//            QDir dir;
+//            if (dir.mkpath(backuppath)) {
+//                dir.rename(pathandfilename, QDir(backuppath).filePath(backupfilename));
+//            }
+//        }
+//        else {
+//            book = ods::Book::New();
+////            auto *spreadsheet = book->spreadsheet();
+////            auto *sheet = spreadsheet->NewSheet("Sheet name");
+////            auto *row = sheet->NewRowAt(0);
+////            auto *cell0 = row->NewCellAt(0);
+////            cell0->SetDouble(5.0);
+//        }
+
+//        auto *spreadsheet = book->spreadsheet();
+//        auto *sheet = spreadsheet->GetSheet(0);
+
+
+//        int lastvalid = findFirstStartingBlankRow(sheet);
+
+
+//        for (int crow = 0; crow < grid->size().height(); crow++) {
+//            auto *row = sheet->NewRowAt(lastvalid + crow - 1);
+
+//            if(row != nullptr){
+//                auto *cell0 = row->NewCellAt(0);
+
+//                QLineEdit* qle = this->findChild<QLineEdit*>("entitaEdit");
+//                if (qle != nullptr) {
+//                    cell0->SetFirstString(qle->text());
+//                }
+
+//                //riferimento
+//                auto *cell1 = row->NewCellAt(1);
+//                cell1->SetFirstString(grid->model()->data(grid->model()->index(crow,3)).toString());
+
+//                auto *cell2 = row->NewCellAt(2);
+
+//                qle = this->findChild<QLineEdit*>("numeroEdit");
+//                if (qle != nullptr) {
+//                    cell2->SetFirstString(qle->text());
+//                }
+
+//                //imponibile
+//                auto *cell3 = row->NewCellAt(3);
+//                cell3->SetFirstString(grid->model()->data(grid->model()->index(crow,0)).toString());
+
+//                //iva
+//                auto *cell4 = row->NewCellAt(4);
+//                cell4->SetFirstString(grid->model()->data(grid->model()->index(crow,2)).toString());
+
+//                //totale
+
+//            }
+//        }
+
+//        QFile file(pathandfilename);
+//        book->Save(file);
     }
 }
 
@@ -334,9 +382,10 @@ void MainWindow::parseXMLFile(const QString &fileName)
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
         QMessageBox::critical(this, tr("Procurans"),
-                             tr("Cannot read file %1:\n%2.")
-                             .arg(QDir::toNativeSeparators(fileName), file.errorString()),
+                             tr("Cannot read file %1")
+                             .arg(QDir::toNativeSeparators(fileName)),
                              QMessageBox::Ok);
+        qWarning(logWarning())  << QString("Cannot read file %1:\n%2.").arg(QDir::toNativeSeparators(fileName), file.errorString());
         return;
     }
 
@@ -345,6 +394,7 @@ void MainWindow::parseXMLFile(const QString &fileName)
     QXmlStreamReader xml(&file);
     QList< QMap<QString,QString> > detailsData;
     QList< QMap<QString,QString> > paymentsData;
+    QList< QMap<QString,QString> > summaryData;
     QMap<QString,QString> headerData;
 
 #ifndef QT_NO_CURSOR
@@ -375,23 +425,34 @@ void MainWindow::parseXMLFile(const QString &fileName)
         if(isStartElementNamed(xml, "DettaglioPagamento")) {
             paymentsData.append(this->parsePayment(xml));
         }
+        if(isStartElementNamed(xml, "DatiRiepilogo")) {
+            summaryData.append(this->parseSummary(xml));
+        }
     }
     /* Error handling. */
     if(xml.hasError()) {
         QMessageBox::critical(this,
                               tr("Procurans"),
-                              tr("Error in XML file %1:\n%2.")
-                              .arg(QDir::toNativeSeparators(fileName), xml.errorString()),
+                              tr("Error parsing XML file %1")
+                              .arg(QDir::toNativeSeparators(fileName)),
                               QMessageBox::Ok);
+        qWarning(logWarning())  << QString("Cannot parse file %1:\n%2.").arg(QDir::toNativeSeparators(fileName), xml.errorString());
+
+    }
+    else {
+        billLoaded = true;
+        qInfo(logInfo())  << "XML File parsed: " << fileName;
+        //QMenu e = menuBar()->findChild<QMenu>("test");
     }
     /* Removes any device() or data from the reader
      * and resets its internal state to the initial state. */
     xml.clear();
     file.close();
-    setCurrentFile(fileName);
+
     this->addHeaderToUI(headerData);
     this->addPaymentsToUI(paymentsData, createPaymentsGridSchema());
     this->addDetailsToUI(detailsData, createDetailsGridSchema());
+    this->addSummaryToUI(summaryData, createSummaryGridSchema());
 
 #ifndef QT_NO_CURSOR
     QGuiApplication::restoreOverrideCursor();
@@ -405,8 +466,6 @@ void MainWindow::parseXMLFile(const QString &fileName)
     }
     statusBar()->showMessage(tr("Fattura validata"), 2000);
 */
-
-    setCurrentFile(fileName);
 
     statusBar()->showMessage(tr("Fattura caricata"), 2000);
 }
@@ -445,21 +504,35 @@ inline void MainWindow::addSubelementsDataToMap(QXmlStreamReader& xml,
 QMap<QString, QString> MainWindow::parseDocument(QXmlStreamReader& xml)
 {
     QMap<QString, QString> document;
-    /* Let's check that we're really getting a person. */
+
     if(xml.tokenType() != QXmlStreamReader::StartElement &&
             xml.name() == "DatiGeneraliDocumento") {
         return document;
     }
 
-    addSubelementsDataToMap(xml, "DatiGeneraliDocumento", { "Data", "Numero" }, document);
+    addSubelementsDataToMap(xml, "DatiGeneraliDocumento", { "Data", "Numero", "ImportoTotaleDocumento" }, document);
 
     return document;
+}
+
+QMap<QString, QString> MainWindow::parseSummary(QXmlStreamReader& xml)
+{
+    QMap<QString, QString> summary;
+
+    if(xml.tokenType() != QXmlStreamReader::StartElement &&
+            xml.name() == "DatiRiepilogo") {
+        return summary;
+    }
+
+    addSubelementsDataToMap(xml, "DatiRiepilogo", { "ImponibileImporto", "Imposta", "AliquotaIVA", "Natura" }, summary);
+
+    return summary;
 }
 
 QMap<QString, QString> MainWindow::parseHeader(QXmlStreamReader& xml)
 {
     QMap<QString, QString> header;
-    /* Let's check that we're really getting a person. */
+
     if(xml.tokenType() != QXmlStreamReader::StartElement &&
             xml.name() == "CedentePrestatore") {
         return header;
@@ -489,7 +562,7 @@ QMap<QString, QString> MainWindow::parseHeader(QXmlStreamReader& xml)
 QMap<QString, QString> MainWindow::parseDetail(QXmlStreamReader& xml)
 {
     QMap<QString, QString> detail;
-    /* Let's check that we're really getting a person. */
+
     if(xml.tokenType() != QXmlStreamReader::StartElement &&
             xml.name() == "DettaglioLinee") {
         return detail;
@@ -500,14 +573,15 @@ QMap<QString, QString> MainWindow::parseDetail(QXmlStreamReader& xml)
                                                      "UnitaMisura",
                                                      "PrezzoUnitario",
                                                      "PrezzoTotale",
-                                                     "AliquotaIVA" }, detail);
+                                                     "AliquotaIVA",
+                                                     "Natura" }, detail);
     return detail;
 }
 
 QMap<QString, QString> MainWindow::parsePayment(QXmlStreamReader& xml)
 {
     QMap<QString, QString> payment;
-    /* Let's check that we're really getting a person. */
+
     if(xml.tokenType() != QXmlStreamReader::StartElement &&
             xml.name() == "DettaglioPagamento") {
         return payment;
@@ -614,6 +688,18 @@ void MainWindow::addHeaderToUI(QMap<QString,QString>& headerData)
     qle = this->findChild<QLineEdit*>("numeroEdit");
     if (qle != nullptr)
         qle->setText(headerData.value("Numero"));
+
+    qle = this->findChild<QLineEdit*>("imponibileEdit");
+    if (qle != nullptr)
+        qle->setText(headerData.value("ImponibileImporto"));
+
+    qle = this->findChild<QLineEdit*>("impostaEdit");
+    if (qle != nullptr)
+        qle->setText(headerData.value("Imposta"));
+
+    qle = this->findChild<QLineEdit*>("totaleEdit");
+    if (qle != nullptr)
+        qle->setText(headerData.value("ImportoTotaleDocumento"));
 }
 
 QList<GridSchemaItem*> MainWindow::createDetailsGridSchema()
@@ -640,6 +726,53 @@ QList<GridSchemaItem*> MainWindow::createPaymentsGridSchema()
     return schema;
 }
 
+QList<GridSchemaItem*> MainWindow::createSummaryGridSchema()
+{
+    QList<GridSchemaItem*> schema;
+    schema.append(new GridSchemaItem(QObject::tr("Imponibile"), "ImponibileImporto", FloatColumn, 2));
+    schema.append(new GridSchemaItem(QObject::tr("Aliquota"), "AliquotaIVA", FloatColumn, 2));
+    schema.append(new GridSchemaItem(QObject::tr("Imposta"), "Imposta", FloatColumn, 2));
+    schema.append(new GridSchemaItem(QObject::tr("Natura"), "Natura", &naturaType));
+
+    return schema;
+}
+
+double MainWindow::computeTotal(QList< QMap<QString,QString> >& data, QString xmlfield)
+{
+    double result = 0.0;
+    int rowN = data.size();
+    for (int row = 0; row < rowN; row++) {
+        auto item = data.at(row);
+        result += item[xmlfield].toDouble();
+    }
+    return result;
+}
+
+void MainWindow::addSummaryToUI(QList< QMap<QString,QString> >& summaryData, QList<GridSchemaItem*> summarySchema)
+{
+    QTableView *grid = ui->summaryTable;
+
+    grid->setModel(createGridModel(summaryData, summarySchema));
+
+    QStringList z(naturaType.values());
+    z.sort(Qt::CaseInsensitive);
+    ComboBoxItemDelegate* cbid = new ComboBoxItemDelegate(z, grid);
+
+    grid->setItemDelegateForColumn(3, cbid);
+
+    QLineEdit* qle = this->findChild<QLineEdit*>("imponibileEdit");
+    if (qle != nullptr) {
+        QString imponibile = QString::number(computeTotal(summaryData, "ImponibileImporto"));
+        qle->setText(imponibile);
+    }
+
+    qle = this->findChild<QLineEdit*>("impostaEdit");
+    if (qle != nullptr) {
+        QString imposta = QString::number(computeTotal(summaryData, "Imposta"));
+        qle->setText(imposta);
+    }
+}
+
 void MainWindow::addDetailsToUI(QList< QMap<QString,QString> >& detailsData, QList<GridSchemaItem*> detailsSchema)
 {
     QTableView *grid = ui->detailsTable;
@@ -662,60 +795,15 @@ void MainWindow::addPaymentsToUI(QList< QMap<QString,QString> >& paymentData, QL
 
     grid->setItemDelegateForColumn(0, cbid);
 
-}
+    QStringList q = { "", "Banca BPM", "Banca Intesa", "CRAC" };
+    q.sort(Qt::CaseInsensitive);
+    ComboBoxItemDelegate* cbid1 = new ComboBoxItemDelegate(q, grid);
 
-void MainWindow::setCurrentFile(const QString &fileName)
-{
-    curFile = fileName;
-    //textEdit->document()->setModified(false);
-    //setWindowModified(false);
+    grid->setItemDelegateForColumn(3, cbid1);
 
-    QString shownName = curFile;
-    if (curFile.isEmpty())
-        shownName = "untitled.txt";
-    setWindowFilePath(shownName);
 }
 
 QString MainWindow::strippedName(const QString &fullFileName)
 {
     return QFileInfo(fullFileName).fileName();
 }
-
-bool MainWindow::validateBill(const QByteArray &instanceData)
-{
-    const QString fileName = QStringLiteral(":/schemas/VFPR12.xsd");
-    QFile schemaFile(fileName);
-    if (!schemaFile.open(QIODevice::ReadOnly)) {
-        qWarning() << "Cannot open" << QDir::toNativeSeparators(fileName)
-            << ':' << schemaFile.errorString();
-        return false;
-    }
-
-    const QByteArray schemaData = schemaFile.readAll();
-
-    MessageHandler messageHandler;
-
-    QXmlSchema schema;
-    schema.setMessageHandler(&messageHandler);
-
-    schema.load(schemaData);
-
-    bool errorOccurred = false;
-    if (!schema.isValid()) {
-        errorOccurred = true;
-    } else {
-        QXmlSchemaValidator validator(schema);
-        if (!validator.validate(instanceData))
-            errorOccurred = true;
-    }
-
-    if (errorOccurred) {
-        statusBar()->showMessage(messageHandler.statusMessage());
-        return false;
-    } else {
-        statusBar()->showMessage(tr("validation successful"));
-        return true;
-    }
-
-}
-

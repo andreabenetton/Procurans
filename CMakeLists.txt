@@ -31,7 +31,6 @@ find_package(Qt5XmlPatterns REQUIRED)
 find_package(Qt5Sql REQUIRED)
 find_package(Qt5Xml REQUIRED)
 
-
 set(TS_FILES Procurans_it_IT.ts)
 
 set(SOURCES
@@ -45,7 +44,14 @@ set(SOURCES
     gridschemaitem.cpp
     settings.cpp
     settings.h
-    ods/ods)
+    odsadder.cpp
+    odsadder.h
+    logger.cpp
+    logger.h)
+
+
+file(GLOB QUAZIP RELATIVE "Quazip" "*.h")
+
 
 qt5_add_resources(SOURCES application.qrc)
 
@@ -53,19 +59,19 @@ if(ANDROID)
   add_library(Procurans SHARED
       ${SOURCES}
       ${TS_FILES}
+      ${QUAZIP}
   )
 else()
   add_executable(Procurans
       ${SOURCES}
       ${TS_FILES}
+      ${QUAZIP}
   )
 endif()
-
 
 target_link_libraries(Procurans PRIVATE
     Qt5::Widgets
     Qt5::XmlPatterns
-    ${CMAKE_SOURCE_DIR}/lib/libods.a
     ${CMAKE_SOURCE_DIR}/lib/libquazip.a
     ${CMAKE_SOURCE_DIR}/lib/libzlib.a)
 

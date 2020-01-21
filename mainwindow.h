@@ -67,10 +67,11 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
+    bool billLoaded;
+
     void createActions();
     void createStatusBar();
 
-    void setCurrentFile(const QString &fileName);
     QString strippedName(const QString &fullFileName);
     bool validateBill(const QByteArray &document);
 
@@ -85,16 +86,23 @@ private:
     QMap<QString, QString> parseDocument(QXmlStreamReader& xml);
     QMap<QString, QString> parseDetail(QXmlStreamReader& xml);
     QMap<QString, QString> parsePayment(QXmlStreamReader& xml);
+    QMap<QString, QString> parseSummary(QXmlStreamReader& xml);
 
     void addElementDataToMap(QXmlStreamReader& xml,
                              QMap<QString, QString>& map) const;
 
     QList<GridSchemaItem*> createDetailsGridSchema();
     QList<GridSchemaItem*> createPaymentsGridSchema();
+    QList<GridSchemaItem*> createSummaryGridSchema();
 
     void addHeaderToUI(QMap<QString,QString>& headerData);
     void addDetailsToUI(QList< QMap<QString,QString> >& detailsData, QList<GridSchemaItem*> detailsSchema);
     void addPaymentsToUI(QList< QMap<QString,QString> >& paymentData, QList<GridSchemaItem*> paymentSchema);
+    void addSummaryToUI(QList< QMap<QString,QString> >& summaryData, QList<GridSchemaItem*> summarySchema);
+
+    double computeTotal(QList< QMap<QString,QString> >& data, QString xmlfield);
+
+    //int findFirstStartingBlankRow(ods::Sheet *sheet);
 
     void executeElencoFatture();
     void executeMastriniFornitori();
@@ -103,6 +111,7 @@ private:
 
     QString curFile;
     QHash<QString, QString> paymentMethodType;
+    QHash<QString, QString> naturaType;
     Settings* m_setting;
 
     QString months[12] = { "Gennaio",

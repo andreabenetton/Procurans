@@ -1,10 +1,17 @@
 #include "settings.h"
+#include "logger.h"
 
 #include <QtWidgets>
 
 Settings::Settings()
 {
-    settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, QCoreApplication::organizationName(), QCoreApplication::applicationName());
+
+    QString appdir = QCoreApplication::applicationDirPath();
+    QString inifilenameandpath = QDir(appdir).filePath("Procurans.ini");
+
+    //settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, QCoreApplication::organizationName(), QCoreApplication::applicationName());
+
+    settings = new QSettings(inifilenameandpath, QSettings::IniFormat);
 
     executeElencoFatture = true;
     executeMastriniFornitori = true;
@@ -86,6 +93,7 @@ void Settings::setPath(QMainWindow* window, Execute p)
             if(pathElencoFatture != path)
             {
                 pathElencoFatture = path;
+                qInfo(logInfo())  << "ElencoFatture path updated: " << pathElencoFatture;
                 updated = true;
             }
             break;
@@ -93,6 +101,7 @@ void Settings::setPath(QMainWindow* window, Execute p)
             if(pathScadenziario != path)
             {
                 pathScadenziario = path;
+                qInfo(logInfo())  << "Scadenziario path updated: " << pathScadenziario;
                 updated = true;
             }
             break;
@@ -100,6 +109,7 @@ void Settings::setPath(QMainWindow* window, Execute p)
             if(pathPrimaNota != path)
             {
                 pathPrimaNota = path;
+                qInfo(logInfo())  << "PrimaNota path updated: " << pathPrimaNota;
                 updated = true;
             }
             break;
@@ -107,11 +117,12 @@ void Settings::setPath(QMainWindow* window, Execute p)
             if(pathMastriniFornitori != path)
             {
                 pathMastriniFornitori = path;
+                qInfo(logInfo())  << "MastriniFornitori path updated: " << pathMastriniFornitori;
                 updated = true;
             }
             break;
         default:
-          ;
+          qWarning(logWarning())  << "Failure to decode setPath";
         }
     }
 }
@@ -120,20 +131,22 @@ QString Settings::getPath(Execute p)
 {
     switch (p)
     {
-    case Execute::elencofatture:
-        return pathElencoFatture;
-        break;
-    case Execute::scadenziario:
-        return pathScadenziario;
-        break;
-    case Execute::primanota:
-        return pathPrimaNota;
-        break;
-    case Execute::mastrinifornitori:
-        return pathMastriniFornitori;
-        break;
-    default:
-      ;
+        case Execute::elencofatture:
+            return pathElencoFatture;
+            break;
+        case Execute::scadenziario:
+            return pathScadenziario;
+            break;
+        case Execute::primanota:
+            return pathPrimaNota;
+            break;
+        case Execute::mastrinifornitori:
+            return pathMastriniFornitori;
+            break;
+        default:{
+            qWarning(logWarning())  << "Failure to decode getPath";
+            return ".";
+        }
     }
 }
 
@@ -141,20 +154,29 @@ void Settings::toggleExecute(Execute p)
 {
     switch (p)
     {
-    case Execute::elencofatture:
-        executeElencoFatture = !executeElencoFatture;
-        break;
-    case Execute::scadenziario:
-        executeScadenziario = !executeScadenziario;
-        break;
-    case Execute::primanota:
-        executePrimaNota = !executePrimaNota;
-        break;
-    case Execute::mastrinifornitori:
-        executeMastriniFornitori = !executeMastriniFornitori;
-        break;
-    default:
-      ;
+        case Execute::elencofatture:{
+            executeElencoFatture = !executeElencoFatture;
+            qInfo(logInfo())  << "Toggled ElencoFatture: " << executeElencoFatture;
+            break;
+        }
+        case Execute::scadenziario:{
+            executeScadenziario = !executeScadenziario;
+            qInfo(logInfo())  << "Toggled Scadenziario;: " << executeScadenziario;
+            break;
+        }
+        case Execute::primanota:{
+            executePrimaNota = !executePrimaNota;
+            qInfo(logInfo())  << "Toggled PrimaNota: " << executePrimaNota;
+            break;
+        }
+        case Execute::mastrinifornitori:{
+            executeMastriniFornitori = !executeMastriniFornitori;
+            qInfo(logInfo())  << "Toggled MastriniFornitori: " << executeMastriniFornitori;
+            break;
+        }
+        default:{
+            qWarning(logWarning())  << "Failure to decode toggleExecute";
+        }
     }
 }
 
@@ -162,20 +184,22 @@ bool Settings::isExecute(Execute p)
 {
     switch (p)
     {
-    case Execute::elencofatture:
-        return executeElencoFatture;
-        break;
-    case Execute::scadenziario:
-        return executeScadenziario;
-        break;
-    case Execute::primanota:
-        return executePrimaNota;
-        break;
-    case Execute::mastrinifornitori:
-        return executeMastriniFornitori;
-        break;
-    default:
-      ;
+        case Execute::elencofatture:
+            return executeElencoFatture;
+            break;
+        case Execute::scadenziario:
+            return executeScadenziario;
+            break;
+        case Execute::primanota:
+            return executePrimaNota;
+            break;
+        case Execute::mastrinifornitori:
+            return executeMastriniFornitori;
+            break;
+        default:{
+            qWarning(logWarning())  << "Failure to decode isExecute";
+            return false;
+        }
     }
 }
 

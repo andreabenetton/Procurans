@@ -19,21 +19,40 @@
 ****************************************************************************/
 
 #include "mainwindow.h"
+#include "logger.h"
 
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
+#include <QFile>
+#include <QDir>
+#include <QScopedPointer>
+#include <QTextStream>
+#include <QDateTime>
+#include <QLoggingCategory>
+#include <QDebug>
 
 #define APP_VERSION "0.0.1.0"
 
+void messageHandler(QtMsgType type, const QMessageLogContext& ctx, const QString& msg)
+{
+        Logger *globalLogger = Logger::getInstance();
+        globalLogger->messageHandler(type, ctx, msg);
+}
+
 int main(int argc, char *argv[])
 {
-    Q_INIT_RESOURCE(application);
+    Q_INIT_RESOURCE(application); 
 
     QApplication app(argc, argv);
     QCoreApplication::setOrganizationName("BlueTeam");
     QCoreApplication::setApplicationName("Procurans");
     QCoreApplication::setApplicationVersion(APP_VERSION);
+
+    Logger *globalLogger = Logger::getInstance();
+    qInstallMessageHandler(messageHandler);
+    qInfo(logInfo()) << "Program activated, version: " << APP_VERSION;
+
     QCommandLineParser parser;
     parser.setApplicationDescription(QCoreApplication::applicationName());
     parser.addHelpOption();
@@ -42,10 +61,15 @@ int main(int argc, char *argv[])
     parser.process(app);
 
     MainWindow mainWin;
-    if (!parser.positionalArguments().isEmpty())
-        mainWin.parseXMLFile(parser.positionalArguments().first());
+    if (!parser.positionalArguments().isEmpty()){
+        QString arg = parser.positionalArguments().first();
+        qInfo(logInfo())  << "Called with argument: " << arg;
+        mainWin.parseXMLFile(arg);
+    }
     mainWin.setWindowIcon(QIcon(":/images/split.png"));
     mainWin.show();
     return app.exec();
 }
+
+
 

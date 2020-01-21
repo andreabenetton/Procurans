@@ -25,10 +25,10 @@
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
-class QAction;
-class QMenu;
-class QTableView;
-class QXmlStreamReader;
+//class QAction;
+//class QMenu;
+//class QTableView;
+//class QXmlStreamReader;
 class QSettings;
 QT_END_NAMESPACE
 
