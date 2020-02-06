@@ -7,7 +7,7 @@ QT_BEGIN_NAMESPACE
 class QStandardItem;
 QT_END_NAMESPACE
 
-enum ColumnType {
+enum GridSchemaFieldType {
   RelatedColumn,
   LStringColumn,
   CStringColumn,
@@ -16,14 +16,14 @@ enum ColumnType {
   DateColumn
 };
 
-class GridSchemaItem
+class GridSchemaField
 {
 public:
-    GridSchemaItem(const QString columnName, const QString elementName = "", const ColumnType type = ColumnType::LStringColumn, int truncAt = 0, bool ignoreIfEmpty = false);
-    GridSchemaItem(const QString columnName, const QString elementName, QHash<QString, QString> *translationtable);
+    GridSchemaField(const QString columnName, const QString elementName = "", const GridSchemaFieldType type = GridSchemaFieldType::LStringColumn, int truncAt = 0, bool ignoreIfEmpty = false);
+    GridSchemaField(const QString columnName, const QString elementName, QHash<QString, QString> *translationtable);
     QString getElementName();
     QString getColumnName();
-    ColumnType getType();
+    GridSchemaFieldType getType();
     int getTruncAt();
     bool getToBeIgnored() const;
     void resetToBeIgnored();
@@ -32,7 +32,7 @@ public:
 private:
     QString elementName;
     QString columnName;
-    ColumnType columnType;
+    GridSchemaFieldType columnType;
     int truncAt;
     bool ignoreIfEmpty;
     bool toBeIgnored;

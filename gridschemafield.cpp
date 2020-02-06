@@ -1,8 +1,8 @@
-#include "gridschemaitem.h"
+#include "gridschemafield.h"
 
 #include <QtWidgets>
 
-GridSchemaItem::GridSchemaItem(const QString columnName, const QString elementName, const ColumnType type, int truncAt, bool ignoreIfEmpty)
+GridSchemaField::GridSchemaField(const QString columnName, const QString elementName, const GridSchemaFieldType type, int truncAt, bool ignoreIfEmpty)
 {
     this->translationTable = nullptr;
     this->elementName = elementName;
@@ -13,7 +13,7 @@ GridSchemaItem::GridSchemaItem(const QString columnName, const QString elementNa
     this->toBeIgnored = false;
 }
 
-GridSchemaItem::GridSchemaItem(const QString columnName, const QString elementName, QHash<QString, QString> *translationtable)
+GridSchemaField::GridSchemaField(const QString columnName, const QString elementName, QHash<QString, QString> *translationtable)
 {
     this->translationTable = translationtable;
     this->elementName = elementName;
@@ -24,38 +24,38 @@ GridSchemaItem::GridSchemaItem(const QString columnName, const QString elementNa
     this->toBeIgnored = false;
 }
 
-QString GridSchemaItem::getElementName()
+QString GridSchemaField::getElementName()
 {
     return elementName;
 }
 
-QString GridSchemaItem::getColumnName()
+QString GridSchemaField::getColumnName()
 {
     return columnName;
 }
 
-ColumnType GridSchemaItem::getType()
+GridSchemaFieldType GridSchemaField::getType()
 {
     return columnType;
 }
 
-int GridSchemaItem::getTruncAt()
+int GridSchemaField::getTruncAt()
 {
     return truncAt;
 }
 
-bool GridSchemaItem::getToBeIgnored() const
+bool GridSchemaField::getToBeIgnored() const
 {
     return toBeIgnored;
 }
-void GridSchemaItem::resetToBeIgnored()
+void GridSchemaField::resetToBeIgnored()
 {
     toBeIgnored = false;
 }
 
-QStandardItem* GridSchemaItem::createGridItem(const QString &value)
+QStandardItem* GridSchemaField::createGridItem(const QString &value)
 {
-    ColumnType ct = this->getType();
+    GridSchemaFieldType ct = this->getType();
     int trunc = this->getTruncAt();
     QStandardItem* item = nullptr;
 

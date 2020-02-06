@@ -31,7 +31,8 @@ class QTableView;
 class QXmlStreamReader;
 QT_END_NAMESPACE
 
-#include "gridschemaitem.h"
+#include "gridschemafield.h"
+#include "odsdocument.h"
 #include "settings.h"
 
 class MainWindow : public QMainWindow
@@ -56,6 +57,7 @@ private slots:
     void toggleMastriniFornitori();
     void togglePrimaNota();
     void toggleScadenziario();
+    void toggleBackupFile();
 
     void setPathElencoFatture();
     void setPathMastriniFornitori();
@@ -91,14 +93,14 @@ private:
     void addElementDataToMap(QXmlStreamReader& xml,
                              QMap<QString, QString>& map) const;
 
-    QList<GridSchemaItem*> createDetailsGridSchema();
-    QList<GridSchemaItem*> createPaymentsGridSchema();
-    QList<GridSchemaItem*> createSummaryGridSchema();
+    QList<GridSchemaField*> createDetailsGridSchema();
+    QList<GridSchemaField*> createPaymentsGridSchema();
+    QList<GridSchemaField*> createSummaryGridSchema();
 
     void addHeaderToUI(QMap<QString,QString>& headerData);
-    void addDetailsToUI(QList< QMap<QString,QString> >& detailsData, QList<GridSchemaItem*> detailsSchema);
-    void addPaymentsToUI(QList< QMap<QString,QString> >& paymentData, QList<GridSchemaItem*> paymentSchema);
-    void addSummaryToUI(QList< QMap<QString,QString> >& summaryData, QList<GridSchemaItem*> summarySchema);
+    void addDetailsToUI(QList< QMap<QString,QString> >& detailsData, QList<GridSchemaField*> detailsSchema);
+    void addPaymentsToUI(QList< QMap<QString,QString> >& paymentData, QList<GridSchemaField*> paymentSchema);
+    void addSummaryToUI(QList< QMap<QString,QString> >& summaryData, QList<GridSchemaField*> summarySchema);
 
     double computeTotal(QList< QMap<QString,QString> >& data, QString xmlfield);
 

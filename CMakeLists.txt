@@ -31,7 +31,7 @@ find_package(Qt5XmlPatterns REQUIRED)
 find_package(Qt5Sql REQUIRED)
 find_package(Qt5Xml REQUIRED)
 
-set(TS_FILES Procurans_it_IT.ts)
+#set(TS_FILES Procurans_it_IT.ts)
 
 set(SOURCES
     main.cpp
@@ -40,12 +40,16 @@ set(SOURCES
     mainwindow.ui
     comboboxitemdelegate.cpp
     comboboxitemdelegate.h
-    gridschemaitem.h
-    gridschemaitem.cpp
+    gridschemafield.h
+    gridschemafield.cpp
+    odsdocument.h
+    odsdocument.cpp
+    odsfile.h
+    odsfile.cpp
+    odscell.h
+    odscell.cpp
     settings.cpp
     settings.h
-    odsadder.cpp
-    odsadder.h
     logger.cpp
     logger.h)
 
@@ -58,13 +62,13 @@ qt5_add_resources(SOURCES application.qrc)
 if(ANDROID)
   add_library(Procurans SHARED
       ${SOURCES}
-      ${TS_FILES}
+      #${TS_FILES}
       ${QUAZIP}
   )
 else()
   add_executable(Procurans
       ${SOURCES}
-      ${TS_FILES}
+     # ${TS_FILES}
       ${QUAZIP}
   )
 endif()
@@ -75,4 +79,4 @@ target_link_libraries(Procurans PRIVATE
     ${CMAKE_SOURCE_DIR}/lib/libquazip.a
     ${CMAKE_SOURCE_DIR}/lib/libzlib.a)
 
-qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
+#qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})

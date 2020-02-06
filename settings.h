@@ -42,7 +42,7 @@ class Settings
             return instance;
         }
 
-        enum class Execute{elencofatture, mastrinifornitori, primanota, scadenziario};
+        enum class Execute{elencofatture, mastrinifornitori, primanota, scadenziario, backupfiles};
 
         void load();
         void save();
@@ -74,6 +74,7 @@ class Settings
         bool executeMastriniFornitori;
         bool executePrimaNota;
         bool executeScadenziario;
+        bool executeBackupFiles;
 
         bool updated;
 };

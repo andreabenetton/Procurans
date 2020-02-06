@@ -17,6 +17,7 @@ Settings::Settings()
     executeMastriniFornitori = true;
     executePrimaNota = true;
     executeScadenziario = true;
+    executeBackupFiles = true;
 
     updated = false;
 }
@@ -34,6 +35,9 @@ void Settings::load()
     pathPrimaNota = (settings->value("primanota", ".")).toString();
     pathScadenziario = (settings->value("scadenziario", ".")).toString();
     settings->endGroup();
+    settings->beginGroup("othersettings");
+    executeBackupFiles = (settings->value("backupfiles", ".")).toBool();
+    settings->endGroup();
 }
 
 void Settings::save()
@@ -49,6 +53,9 @@ void Settings::save()
         settings->setValue("mastrinifornitori", pathMastriniFornitori);
         settings->setValue("primanota", pathPrimaNota);
         settings->setValue("scadenziario", pathScadenziario);
+        settings->endGroup();
+        settings->beginGroup("othersettings");
+        settings->setValue("backupfiles", executeBackupFiles);
         settings->endGroup();
     }
 }
@@ -161,7 +168,7 @@ void Settings::toggleExecute(Execute p)
         }
         case Execute::scadenziario:{
             executeScadenziario = !executeScadenziario;
-            qInfo(logInfo())  << "Toggled Scadenziario;: " << executeScadenziario;
+            qInfo(logInfo())  << "Toggled Scadenziario: " << executeScadenziario;
             break;
         }
         case Execute::primanota:{
@@ -172,6 +179,11 @@ void Settings::toggleExecute(Execute p)
         case Execute::mastrinifornitori:{
             executeMastriniFornitori = !executeMastriniFornitori;
             qInfo(logInfo())  << "Toggled MastriniFornitori: " << executeMastriniFornitori;
+            break;
+        }
+        case Execute::backupfiles:{
+            executeBackupFiles = !executeBackupFiles;
+            qInfo(logInfo())  << "Toggled BackupFiles: " << executeBackupFiles;
             break;
         }
         default:{
@@ -195,6 +207,9 @@ bool Settings::isExecute(Execute p)
             break;
         case Execute::mastrinifornitori:
             return executeMastriniFornitori;
+            break;
+        case Execute::backupfiles:
+            return executeBackupFiles;
             break;
         default:{
             qWarning(logWarning())  << "Failure to decode isExecute";
