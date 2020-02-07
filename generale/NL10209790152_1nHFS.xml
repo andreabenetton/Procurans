@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="fatturapa_v1.2.1.xsl"?>
+<FatturaElettronica xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" versione="FPR12" xmlns="http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2">
+  <FatturaElettronicaHeader xmlns="">
+    <DatiTrasmissione>
+      <IdTrasmittente>
+        <IdPaese>IT</IdPaese>
+        <IdCodice>10209790152</IdCodice>
+      </IdTrasmittente>
+      <ProgressivoInvio>100</ProgressivoInvio>
+      <FormatoTrasmissione>FPR12</FormatoTrasmissione>
+      <CodiceDestinatario>USAL8PV</CodiceDestinatario>
+    </DatiTrasmissione>
+    <CedentePrestatore>
+      <DatiAnagrafici>
+        <IdFiscaleIVA>
+          <IdPaese>IT</IdPaese>
+          <IdCodice>02808720136</IdCodice>
+        </IdFiscaleIVA>
+        <CodiceFiscale>RCCMSM75M03I690B</CodiceFiscale>
+        <Anagrafica>
+          <Nome>MASSIMILIANO</Nome>
+          <Cognome>RUCCO</Cognome>
+        </Anagrafica>
+        <RegimeFiscale>RF01</RegimeFiscale>
+      </DatiAnagrafici>
+      <Sede>
+        <Indirizzo>VIA FRIULI</Indirizzo>
+        <NumeroCivico>39</NumeroCivico>
+        <CAP>22074</CAP>
+        <Comune>Lomazzo</Comune>
+        <Provincia>CO</Provincia>
+        <Nazione>IT</Nazione>
+      </Sede>
+      <IscrizioneREA>
+        <Ufficio>CO</Ufficio>
+        <NumeroREA>0280134</NumeroREA>
+        <CapitaleSociale>0.00</CapitaleSociale>
+        <SocioUnico>SM</SocioUnico>
+        <StatoLiquidazione>LN</StatoLiquidazione>
+      </IscrizioneREA>
+      <Contatti>
+        <Email>R_M_IMPIANTI@VIRGILIO.IT</Email>
+      </Contatti>
+    </CedentePrestatore>
+    <CessionarioCommittente>
+      <DatiAnagrafici>
+        <IdFiscaleIVA>
+          <IdPaese>IT</IdPaese>
+          <IdCodice>01315910131</IdCodice>
+        </IdFiscaleIVA>
+        <CodiceFiscale>01315910131</CodiceFiscale>
+        <Anagrafica>
+          <Denominazione>EDIL PAVIMENTI SAS</Denominazione>
+        </Anagrafica>
+      </DatiAnagrafici>
+      <Sede>
+        <Indirizzo>VIA DIAZ</Indirizzo>
+        <NumeroCivico>4</NumeroCivico>
+        <CAP>22071</CAP>
+        <Comune>Cadorago</Comune>
+        <Provincia>CO</Provincia>
+        <Nazione>IT</Nazione>
+      </Sede>
+    </CessionarioCommittente>
+  </FatturaElettronicaHeader>
+  <FatturaElettronicaBody xmlns="">
+    <DatiGenerali>
+      <DatiGeneraliDocumento>
+        <TipoDocumento>TD01</TipoDocumento>
+        <Divisa>EUR</Divisa>
+        <Data>2019-12-05</Data>
+        <Numero>52</Numero>
+        <ImportoTotaleDocumento>2000.00</ImportoTotaleDocumento>
+        <Arrotondamento>0.00</Arrotondamento>
+      </DatiGeneraliDocumento>
+    </DatiGenerali>
+    <DatiBeniServizi>
+      <DettaglioLinee>
+        <NumeroLinea>1</NumeroLinea>
+        <Descrizione>fattura d'acconto per lavori eseguiti per vostro conto nel cantiere di via Vallardi in Appiano gentile (CO)</Descrizione>
+        <PrezzoUnitario>2000.00</PrezzoUnitario>
+        <PrezzoTotale>2000.00</PrezzoTotale>
+        <AliquotaIVA>0.00</AliquotaIVA>
+        <Natura>N6</Natura>
+      </DettaglioLinee>
+      <DatiRiepilogo>
+        <AliquotaIVA>0.00</AliquotaIVA>
+        <Natura>N6</Natura>
+        <ImponibileImporto>2000.00</ImponibileImporto>
+        <Imposta>0.00</Imposta>
+        <RiferimentoNormativo>Art. 17 c.6 lett.a DPR 633/72</RiferimentoNormativo>
+      </DatiRiepilogo>
+    </DatiBeniServizi>
+    <DatiPagamento>
+      <CondizioniPagamento>TP02</CondizioniPagamento>
+      <DettaglioPagamento>
+        <ModalitaPagamento>MP12</ModalitaPagamento>
+        <DataScadenzaPagamento>2020-03-31</DataScadenzaPagamento>
+        <ImportoPagamento>2000.00</ImportoPagamento>
+        <IstitutoFinanziario>CASSA DI RISPARMIO DI PARMA E PIACENZA</IstitutoFinanziario>
+        <IBAN>IT34X0623051460000046478789</IBAN>
+        <ABI>06230</ABI>
+        <CAB>51460</CAB>
+      </DettaglioPagamento>
+    </DatiPagamento>
+  </FatturaElettronicaBody>
+</FatturaElettronica>
