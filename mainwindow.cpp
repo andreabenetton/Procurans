@@ -241,7 +241,7 @@ void MainWindow::executeElencoFatture()
     QString pathandfilename = QDir(m_setting->getPath(Settings::Execute::elencofatture)).filePath(filename);
 
     if(!QFileInfo::exists(pathandfilename)) {
-        qInfo(logInfo())  << "Mastrino Fornitore not exists: " << pathandfilename;
+        qInfo(logInfo())  << "Elenco Fatture not exists: " << pathandfilename;
         QString templatepathandfilename = QDir(m_setting->getPath(Settings::Execute::elencofatture)).filePath("Fatt. MODELLO.ods");
         QFile::copy(templatepathandfilename, pathandfilename);
     }
@@ -374,7 +374,7 @@ void MainWindow::executeMastriniFornitori()
 
     if(!QFileInfo::exists(pathandfilename)) {
         qInfo(logInfo())  << "Mastrino Fornitore not exists: " << pathandfilename;
-        QString templatepathandfilename = QDir(m_setting->getPath(Settings::Execute::mastrinifornitori)).filePath("Fatt. MODELLO.ods");
+        QString templatepathandfilename = QDir(m_setting->getPath(Settings::Execute::mastrinifornitori)).filePath("Mastrino MODELLO.ods");
         QFile::copy(templatepathandfilename, pathandfilename);
     }
 
@@ -382,6 +382,8 @@ void MainWindow::executeMastriniFornitori()
         qWarning(logWarning())  << "A folder exists with same name: " << pathandfilename;
         return;
     }
+
+    qInfo(logInfo())  << "Adding to mastrino fornitore: " << pathandfilename;
 
     ODSDocument book;
     book.Load(pathandfilename);
@@ -402,7 +404,7 @@ void MainWindow::executeMastriniFornitori()
 void MainWindow::executePrimaNota()
 {
     QString filenametemplate = "%1 %2 %3.ods";
-    QString rowcommenttemplate = "A Favore %1 Saldo Rata/Fatt. %2 del %3 di %4, rata %5/%6";
+    QString rowcommenttemplate = "A Favore di %1 Saldo Rata/Fatt. %2 del %3 di %4, rata %5/%6";
 
     QDateEdit* qde = this->findChild<QDateEdit*>("dataemissioneEdit");
     if (qde == nullptr) return;
@@ -421,17 +423,25 @@ void MainWindow::executePrimaNota()
     for (int crow = 0; crow < numberofrows; crow++) {
 
         QDate datascadenza = QDate::fromString(grid->model()->data(grid->model()->index(crow,1)).toString(),"dd/MM/yyyy");
+        if (!datascadenza.isValid())
+            datascadenza = dataemissione;
+
         QString cassa = grid->model()->data(grid->model()->index(crow,3)).toString();
         double importo = grid->model()->data(grid->model()->index(crow,2)).toFloat();
 
 
-        QString filename = filenametemplate.arg(cassa, months[datascadenza.month()-1], QString::number(datascadenza.year()));
+        QString filename = filenametemplate.arg(cassa, months[datascadenza.month()-1], QString::number(datascadenza.year()), "");
+
+        QList<QList<QSharedPointer<ODSCell>>>* rows;
         if (!filelist.contains(filename)) {
-            filelist.insert(filename, new QList<QList<QSharedPointer<ODSCell>>>() );
+            rows = new QList<QList<QSharedPointer<ODSCell>>>();
+            filelist.insert(filename,  rows);
+        }
+        else {
+            rows = filelist.value(filename);
         }
 
-        QList<QList<QSharedPointer<ODSCell>>> rows = *filelist.value(filename);
-        QString rowcomment = rowcommenttemplate.arg(entity, numero , dataemissione.toString("dd/MM/yyyy"),totale, QString::number(crow), QString::number(numberofrows));
+        QString rowcomment = rowcommenttemplate.arg(entity, numero , dataemissione.toString("dd/MM/yyyy"),totale, QString::number(crow+1), QString::number(numberofrows));
 
         QList<QSharedPointer<ODSCell>> columns;
 
@@ -460,20 +470,17 @@ void MainWindow::executePrimaNota()
             columns.append(pt);
         }
 
-        rows.append(columns);
+        rows->append(columns);
     }
 
-    QMap<QString, QList<QList<QSharedPointer<ODSCell>>>*>::const_iterator i = filelist.constBegin();
-    while (i != filelist.constEnd()) {
-
-        QString filename = i.key();
-
-        QString year = filename.right(4);
+    for(QString filename : filelist.keys())
+    {
+        QString year = filename.split(".").value(0).right(4);
         QString pathandfilename = QDir(QDir(m_setting->getPath(Settings::Execute::primanota)).filePath(year)).filePath(filename);
 
         if(!QFileInfo::exists(pathandfilename)) {
             qInfo(logInfo())  << "Prima Nota not exists: " << pathandfilename;
-            QString templatepathandfilename = QDir(m_setting->getPath(Settings::Execute::mastrinifornitori)).filePath("PrimaNota MODELLO.ods");
+            QString templatepathandfilename = QDir(m_setting->getPath(Settings::Execute::primanota)).filePath("PrimaNota MODELLO.ods");
             QFile::copy(templatepathandfilename, pathandfilename);
         }
 
@@ -482,29 +489,159 @@ void MainWindow::executePrimaNota()
             return;
         }
 
+        qInfo(logInfo())  << "Adding to prima nota: " << pathandfilename;
+
         ODSDocument book;
         book.Load(pathandfilename);
 
         //backupit
         if(m_setting->isExecute(Settings::Execute::backupfiles)){
-            QString backupfilename = filenametemplate.arg(entity.replace(".", ""), QString::number(QDateTime::currentSecsSinceEpoch()));
-            QString backuppath = QDir(m_setting->getPath(Settings::Execute::mastrinifornitori)).filePath("old");
+
+            QString backupfilename = filenametemplate.arg(QString::number(QDateTime::currentSecsSinceEpoch()),"","");
+            QString backuppath = QDir(m_setting->getPath(Settings::Execute::primanota)).filePath("old");
             QDir dir;
             if (dir.mkpath(backuppath))
                 dir.rename(pathandfilename, QDir(backuppath).filePath(backupfilename));
         }
 
-        book.AddRowToContent(i.value());
+        book.AddRowToContent(filelist.value(filename));
         book.Save(pathandfilename);
-
-        ++i;
     }
 
 }
 
 void MainWindow::executeScadenziario()
 {
+    QString filenametemplate = "%1 %2.ods";
 
+    QDateEdit* qde = this->findChild<QDateEdit*>("dataemissioneEdit");
+    if (qde == nullptr) return;
+    QDate dataemissione = QDate::fromString(qde->text(),"dd/MM/yyyy");
+    if (!dataemissione.isValid()) return;
+
+    QString entity = this->findChild<QLineEdit*>("entitaEdit")->text();
+    QString numero = this->findChild<QLineEdit*>("numeroEdit")->text();
+
+    QTableView *grid = ui->paymentsTable;
+
+    QMap<QString, QList<QList<QSharedPointer<ODSCell>>>*> filelist;
+
+    int numberofrows = grid->model()->rowCount();
+    for (int crow = 0; crow < numberofrows; crow++) {
+
+        QDate datascadenza = QDate::fromString(grid->model()->data(grid->model()->index(crow,1)).toString(),"dd/MM/yyyy");
+        QString cassa = grid->model()->data(grid->model()->index(crow,3)).toString();
+        double importo = grid->model()->data(grid->model()->index(crow,2)).toFloat();
+
+        QString filename = filenametemplate.arg(months[datascadenza.month()-1], QString::number(datascadenza.year()));
+        QList<QList<QSharedPointer<ODSCell>>>* rows;
+        if (!filelist.contains(filename)) {
+            rows = new QList<QList<QSharedPointer<ODSCell>>>();
+            filelist.insert(filename,  rows);
+        }
+        else {
+            rows = filelist.value(filename);
+        }
+
+
+        QList<QSharedPointer<ODSCell>> columns;
+
+        {
+            QSharedPointer<ODSCell> pt(new ODSCellString(numero));
+            columns.append(pt);
+        }
+
+        {
+            QSharedPointer<ODSCell> pt(new ODSCellString(entity));
+            columns.append(pt);
+        }
+
+        {
+            QSharedPointer<ODSCell> pt(new ODSCellEmpty(2));
+            columns.append(pt);
+        }
+
+        {
+            QSharedPointer<ODSCell> pt(new ODSCellDate(datascadenza));
+            columns.append(pt);
+        }
+
+        {
+        ODSCell* p;
+            if(cassa=="CRAC")
+                p = new ODSCellFloat(importo);
+            else
+                p = new ODSCellEmpty();
+            QSharedPointer<ODSCell> pt(p);
+            columns.append(pt);
+        }
+
+        {
+            QSharedPointer<ODSCell> pt(new ODSCellEmpty());
+            columns.append(pt);
+        }
+
+        {
+        ODSCell* p;
+            if(cassa=="Banca Intesa")
+                p = new ODSCellFloat(importo);
+            else
+                p = new ODSCellEmpty();
+            QSharedPointer<ODSCell> pt(p);
+            columns.append(pt);
+        }
+
+        {
+            QSharedPointer<ODSCell> pt(new ODSCellEmpty());
+            columns.append(pt);
+        }
+
+        {
+        ODSCell* p;
+            if(cassa=="Banca BPM")
+                p = new ODSCellFloat(importo);
+            else
+                p = new ODSCellEmpty();
+            QSharedPointer<ODSCell> pt(p);
+            columns.append(pt);
+        }
+
+        rows->append(columns);
+    }
+
+    for(QString filename : filelist.keys())
+    {
+        QString year = filename.split(".").value(0).right(4);
+        QString pathandfilename = QDir(QDir(m_setting->getPath(Settings::Execute::scadenziario)).filePath(year)).filePath(filename);
+
+        if(!QFileInfo::exists(pathandfilename)) {
+            qInfo(logInfo())  << "Scadenziario not exists: " << pathandfilename;
+            QString templatepathandfilename = QDir(m_setting->getPath(Settings::Execute::scadenziario)).filePath("Scadenziario MODELLO.ods");
+            QFile::copy(templatepathandfilename, pathandfilename);
+        }
+
+        if(!QFileInfo(pathandfilename).isFile()){
+            qWarning(logWarning())  << "A folder exists with same name: " << pathandfilename;
+            return;
+        }
+
+        qInfo(logInfo())  << "Adding to scadenziario " << pathandfilename;
+
+        ODSDocument book;
+        book.Load(pathandfilename);
+
+        //backupit
+        if(m_setting->isExecute(Settings::Execute::backupfiles)){
+            QString backupfilename = filenametemplate.arg(QString::number(QDateTime::currentSecsSinceEpoch()),"");
+            QString backuppath = QDir(m_setting->getPath(Settings::Execute::scadenziario)).filePath("old");
+            QDir dir;
+            if (dir.mkpath(backuppath))
+                dir.rename(pathandfilename, QDir(backuppath).filePath(backupfilename));
+        }
+
+        book.AddRowToContent(filelist.value(filename));
+        book.Save(pathandfilename);
+    }
 }
 
 void MainWindow::createActions()

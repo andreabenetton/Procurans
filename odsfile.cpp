@@ -73,6 +73,11 @@ void ODSContentFile::Parse()
 
         if(reader->isStartElement()){
             if(reader->qualifiedName() == "table:table-row"){
+                QXmlStreamAttributes ca = reader->attributes();
+                if(ca.hasAttribute("table:number-rows-repeated")){
+                    if(ca.value("table:number-rows-repeated").toInt()>20)
+                        continue;
+                }
                 at = reader->attributes();
             }
         }

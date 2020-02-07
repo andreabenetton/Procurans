@@ -127,7 +127,7 @@ private:
                            "Settembre",
                            "Ottobre",
                            "Novembre",
-                           "Dicenbre"
+                           "Dicembre"
                          };
 
 };
