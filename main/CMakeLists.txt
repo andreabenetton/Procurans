@@ -12,8 +12,9 @@ if (NOT MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif (NOT MSVC)
 
-find_package(Qt5 COMPONENTS Widgets LinguistTools REQUIRED)
+#find_package(Qt5LinguistTools REQUIRED)
 find_package(Qt5Core REQUIRED)
+find_package(Qt5Widgets  REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5XmlPatterns REQUIRED)
 find_package(Qt5Sql REQUIRED)
@@ -51,10 +52,17 @@ include_directories(${Procurans_SOURCE_DIR}/quazip)
 
 set (exe_name "Procurans")
 
-add_executable(${exe_name}
-${src_files}
-#${TS_FILES}
+if (WIN32)
+    add_executable(${exe_name} WIN32
+        ${src_files}
+        #${TS_FILES}
 )
+else ()
+    add_executable(${exe_name}
+        ${src_files}
+        #${TS_FILES}
+)
+endif ()
 
 get_property(zlib_libs GLOBAL PROPERTY zlib_libs_property)
 

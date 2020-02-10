@@ -975,8 +975,9 @@ QStandardItemModel* createGridModel(const QList< QMap<QString,QString> >  &data,
     }
 
     int outRow = 0;
-    for (int row = 0; row < rowN; row++) {    
-        QStandardItem* rowtemp[columnN];
+    for (int row = 0; row < rowN; row++) {   
+        QList<QStandardItem*> rowtemp;
+        //QStandardItem* rowtemp[columnN];
         bool ignoreRow = false;
 
         for (int column = 0; column < columnN; column++) {
@@ -985,13 +986,13 @@ QStandardItemModel* createGridModel(const QList< QMap<QString,QString> >  &data,
             if (elementName!="") {
                 value = data.at(row).value(elementName, "");
             }
-            rowtemp[column] = schema.at(column)->createGridItem(value);
+            rowtemp.append(schema.at(column)->createGridItem(value));
             ignoreRow = (ignoreRow && schema.at(column)->getToBeIgnored());
         }
 
         if (!ignoreRow) {
             for (int column = 0; column < columnN; column++)
-                model->setItem(outRow, column, rowtemp[column]);
+                model->setItem(outRow, column, rowtemp.at(column));
             outRow++;
         }
         else {

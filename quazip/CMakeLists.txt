@@ -24,12 +24,13 @@ file(GLOB_RECURSE src_files
 	"*.h" "*.hh" "*.hpp" "*.hxx"
 	"*.c" "*.cc" "*.cpp")
 
-if (DEFINED QUAZIP_STATIC)
+if (DEFINED QUAZIP_S)
 	set(lib_type STATIC)
-else (DEFINED QUAZIP_STATIC)
+	add_compile_definitions(QUAZIP_STATIC)
+else ()
 	set(lib_type SHARED)
 	add_definitions(-DQUAZIP_SHARED -DQUAZIP_BUILD)
-endif (DEFINED QUAZIP_STATIC)
+endif ()
 
 add_library(quazip ${lib_type} ${src_files})
 get_property(zlib_libs GLOBAL PROPERTY zlib_libs_property)

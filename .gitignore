@@ -17,6 +17,7 @@
 *.qm
 .#*
 *.*#
+*.txt.user
 core
 !core/
 tags
@@ -59,6 +60,9 @@ build
 *.opensdf
 *.vcxproj
 *vcxproj.*
+.vs
+Debug
+Release
 
 # MinGW generated files
 *.Debug

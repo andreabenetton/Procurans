@@ -35,6 +35,8 @@ see quazip/(un)zip.h files for details. Basically it's the zlib license.
 #include <QtCore/QFile>
 #include <QtCore/QTextCodec>
 
+#define QUAZIP_EXPORT
+
 /// Utility class for typical operations.
 /**
   This class contains a number of useful static functions to perform

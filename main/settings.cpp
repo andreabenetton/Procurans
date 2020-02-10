@@ -44,9 +44,9 @@ void Settings::save()
 {
     if(updated){
         settings->beginGroup("mainwindow");
+        settings->setValue("state", mainwindowstate);
         settings->setValue("size", mainwindowsize);
         settings->setValue("position", mainwindowposition);
-        settings->setValue("state", mainwindowstate);
         settings->endGroup();
         settings->beginGroup("odspaths");
         settings->setValue("elencofatture", pathElencoFatture);

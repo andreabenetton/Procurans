@@ -1,6 +1,3 @@
-#cmake -G "MinGW Makefiles"
-#cmake_minimum_required(VERSION 2.8.12)
-
 cmake_minimum_required(VERSION 3.5)
 Project(Procurans)
 
@@ -27,7 +24,7 @@ set(LIBRARY_OUTPUT_PATH "${Procurans_BINARY_DIR}/lib")
 
 set (BUILD_STATIC_LIBRARIES "1")
 if (BUILD_STATIC_LIBRARIES)
-	set(QUAZIP_STATIC "1")
+	set(QUAZIP_S "1")
 	set(ZLIB_STATIC "1")
 endif (BUILD_STATIC_LIBRARIES)
 
