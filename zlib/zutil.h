@@ -13,15 +13,6 @@
 #ifndef ZUTIL_H
 #define ZUTIL_H
 
-#ifndef QT_BOOTSTRAPPED
-#  include <qconfig.h>
-#endif
-
-#ifdef QT_VISIBILITY_AVAILABLE
-#define HAVE_HIDDEN
-#endif
-
-
 #ifdef HAVE_HIDDEN
 #  define ZLIB_INTERNAL __attribute__((visibility ("hidden")))
 #else
@@ -145,11 +136,6 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #    if defined(__MWERKS__) && __dest_os != __be_os && __dest_os != __win32_os
 #      include <unix.h> /* for fdopen */
 #    else
-//     We need to include stdio.h here because zlib.h will include TargetConditionals.h
-//     This will define TARGET_OS_MAC that leads to this check.
-//     Since zutil.h will include gzguts.h and gzguts.h includes stdio.h
-//     AFTER check for fdopen we need to include stdio.h directly
-#      include <stdio.h>
 #      ifndef fdopen
 #        define fdopen(fd,mode) NULL /* No fdopen() */
 #      endif
@@ -173,7 +159,7 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #  define OS_CODE 18
 #endif
 
-#if defined(__APPLE__) && !defined(OS_CODE)
+#ifdef __APPLE__
 #  define OS_CODE 19
 #endif
 

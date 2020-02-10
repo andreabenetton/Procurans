@@ -1,10 +1,6 @@
 
                 ChangeLog file for zlib
 
-Changes in 1.2.11 (Qt) (28 Jul 2017)
-- This is a stripped down copy of zlib that contains patches to
-  make it compile as part of Qt. See also "qtpatches.diff".
-
 Changes in 1.2.11 (15 Jan 2017)
 - Fix deflate stored bug when pulling last block from window
 - Permit immediate deflateParams changes before any deflate input

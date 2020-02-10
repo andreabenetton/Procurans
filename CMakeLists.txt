@@ -1,84 +1,39 @@
+#cmake -G "MinGW Makefiles"
+#cmake_minimum_required(VERSION 2.8.12)
+
 cmake_minimum_required(VERSION 3.5)
+Project(Procurans)
 
-project(Procurans LANGUAGES CXX)
+message("Source dir: " ${Procurans_SOURCE_DIR})
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+#only build zlib on windows because unix has it by default
+IF(WIN32)
+	include_directories(${Procurans_SOURCE_DIR}/zlib)
+	link_directories(${Procurans_BINARY_DIR}/lib)
+	set_property(GLOBAL PROPERTY zlib_libs_property "zlib")
+ELSE (WIN32)
+	find_package(ZLIB REQUIRED)
+	if (ZLIB_FOUND)
+    	include_directories(${ZLIB_INCLUDE_DIRS})
+		set_property(GLOBAL PROPERTY zlib_libs_property "${ZLIB_LIBRARIES}")
+	endif(ZLIB_FOUND)
+ENDIF (WIN32)
 
 if(WIN32)
     set (CMAKE_PREFIX_PATH "C:\\Qt\\5.14.1\\msvc2017_64\\")
 endif()
 
-# QtCreator supports the following variables for Android, which are identical to qmake Android variables.
-# Check http://doc.qt.io/qt-5/deployment-android.html for more information.
-# They need to be set before the find_package(Qt5 ...) call.
+set(LIBRARY_OUTPUT_PATH "${Procurans_BINARY_DIR}/lib")
 
-#if(ANDROID)
-#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
-#    if (ANDROID_ABI STREQUAL "armeabi-v7a")
-#        set(ANDROID_EXTRA_LIBS
-#            ${CMAKE_CURRENT_SOURCE_DIR}/path/to/libcrypto.so
-#            ${CMAKE_CURRENT_SOURCE_DIR}/path/to/libssl.so)
-#    endif()
-#endif()
+set (BUILD_STATIC_LIBRARIES "1")
+if (BUILD_STATIC_LIBRARIES)
+	set(QUAZIP_STATIC "1")
+	set(ZLIB_STATIC "1")
+endif (BUILD_STATIC_LIBRARIES)
 
-find_package(Qt5 COMPONENTS Widgets LinguistTools REQUIRED)
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5XmlPatterns REQUIRED)
-find_package(Qt5Sql REQUIRED)
-find_package(Qt5Xml REQUIRED)
+if (WIN32)
+	add_subdirectory(zlib)
+endif(WIN32)
 
-#set(TS_FILES Procurans_it_IT.ts)
-
-set(SOURCES
-    main.cpp
-    mainwindow.cpp
-    mainwindow.h
-    mainwindow.ui
-    comboboxitemdelegate.cpp
-    comboboxitemdelegate.h
-    gridschemafield.h
-    gridschemafield.cpp
-    odsdocument.h
-    odsdocument.cpp
-    odsfile.h
-    odsfile.cpp
-    odscell.h
-    odscell.cpp
-    settings.cpp
-    settings.h
-    logger.cpp
-    logger.h)
-
-
-file(GLOB QUAZIP RELATIVE "Quazip" "*.h" "*.cpp")
-file(GLOB ZLIB RELATIVE "zlib" "*.h" "*.c")
-
-qt5_add_resources(SOURCES application.qrc)
-
-if(ANDROID)
-  add_library(Procurans SHARED
-      ${SOURCES}
-      #${TS_FILES}
-      ${QUAZIP}
-  )
-else()
-  add_executable(Procurans
-      ${SOURCES}
-     # ${TS_FILES}
-      ${QUAZIP}
-  )
-endif()
-
-target_link_libraries(Procurans PRIVATE
-    Qt5::Widgets
-    Qt5::XmlPatterns)
-
-#qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
+add_subdirectory(quazip)
+add_subdirectory(main)

@@ -33,16 +33,12 @@
 
 #include "zconf.h"
 
-#include <qglobal.h>
-#undef ZEXTERN
-#define ZEXTERN Q_CORE_EXPORT
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define ZLIB_VERSION "1.2.11 (Qt)"
-#define ZLIB_VERNUM 0x12b0f
+#define ZLIB_VERSION "1.2.11"
+#define ZLIB_VERNUM 0x12b0
 #define ZLIB_VER_MAJOR 1
 #define ZLIB_VER_MINOR 2
 #define ZLIB_VER_REVISION 11

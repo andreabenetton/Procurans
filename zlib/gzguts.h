@@ -3,15 +3,6 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifdef _MSC_VER
-#  ifndef _CRT_SECURE_NO_DEPRECATE
-#    define _CRT_SECURE_NO_DEPRECATE
-#  endif
-#  ifndef _CRT_NONSTDC_NO_DEPRECATE
-#    define _CRT_NONSTDC_NO_DEPRECATE
-#  endif
-#endif
-
 #ifdef _LARGEFILE64_SOURCE
 #  ifndef _LARGEFILE_SOURCE
 #    define _LARGEFILE_SOURCE 1
@@ -20,15 +11,6 @@
 #    undef _FILE_OFFSET_BITS
 #  endif
 #endif
-
-#ifndef QT_BOOTSTRAPPED
-#  include <qconfig.h>
-#endif
-
-#ifdef QT_VISIBILITY_AVAILABLE
-#define HAVE_HIDDEN
-#endif
-
 
 #ifdef HAVE_HIDDEN
 #  define ZLIB_INTERNAL __attribute__((visibility ("hidden")))
