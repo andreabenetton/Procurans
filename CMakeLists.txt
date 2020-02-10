@@ -8,8 +8,12 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+if(WIN32)
+    set (CMAKE_PREFIX_PATH "C:\\Qt\\5.14.1\\msvc2017_64\\")
+endif()
 
 # QtCreator supports the following variables for Android, which are identical to qmake Android variables.
 # Check http://doc.qt.io/qt-5/deployment-android.html for more information.
@@ -54,8 +58,8 @@ set(SOURCES
     logger.h)
 
 
-file(GLOB QUAZIP RELATIVE "Quazip" "*.h")
-
+file(GLOB QUAZIP RELATIVE "Quazip" "*.h" "*.cpp")
+file(GLOB ZLIB RELATIVE "zlib" "*.h" "*.c")
 
 qt5_add_resources(SOURCES application.qrc)
 
@@ -75,8 +79,6 @@ endif()
 
 target_link_libraries(Procurans PRIVATE
     Qt5::Widgets
-    Qt5::XmlPatterns
-    ${CMAKE_SOURCE_DIR}/lib/libquazip.a
-    ${CMAKE_SOURCE_DIR}/lib/libzlib.a)
+    Qt5::XmlPatterns)
 
 #qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
