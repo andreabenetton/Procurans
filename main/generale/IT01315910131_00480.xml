@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="xsl/fatturaPA_v1.2.1.xsl"?>
+<p:FatturaElettronica versione="FPR12" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2">
+   <FatturaElettronicaHeader>
+      <DatiTrasmissione>
+         <IdTrasmittente>
+            <IdPaese>IT</IdPaese>
+            <IdCodice>08245660017</IdCodice>
+         </IdTrasmittente>
+         <ProgressivoInvio>0000480</ProgressivoInvio>
+         <FormatoTrasmissione>FPR12</FormatoTrasmissione>
+         <CodiceDestinatario>USAL8PV</CodiceDestinatario>
+      </DatiTrasmissione>
+      <CedentePrestatore>
+         <DatiAnagrafici>
+            <IdFiscaleIVA>
+               <IdPaese>IT</IdPaese>
+               <IdCodice>01315910131</IdCodice>
+            </IdFiscaleIVA>
+            <CodiceFiscale>01315910131</CodiceFiscale>
+            <Anagrafica>
+               <Denominazione>EDIL-PAVIMENTI DI DE MARCHI F. &amp; C. SAS</Denominazione>
+            </Anagrafica>
+            <RegimeFiscale>RF01</RegimeFiscale>
+         </DatiAnagrafici>
+         <Sede>
+            <Indirizzo>VIA DIAZ N. 4</Indirizzo>
+            <CAP>22071</CAP>
+            <Comune>CADORAGO</Comune>
+            <Provincia>CO</Provincia>
+            <Nazione>IT</Nazione>
+         </Sede>
+         <IscrizioneREA>
+            <Ufficio>CO</Ufficio>
+            <NumeroREA>181347</NumeroREA>
+            <StatoLiquidazione>LN</StatoLiquidazione>
+         </IscrizioneREA>
+         <Contatti>
+            <Telefono>031-903420</Telefono>
+            <Email>info@edilpavimentisas.com</Email>
+         </Contatti>
+      </CedentePrestatore>
+      <CessionarioCommittente>
+         <DatiAnagrafici>
+            <IdFiscaleIVA>
+               <IdPaese>IT</IdPaese>
+               <IdCodice>02189220136</IdCodice>
+            </IdFiscaleIVA>
+            <CodiceFiscale>02189220136</CodiceFiscale>
+            <Anagrafica>
+               <Denominazione>IMMOBILIARE LA PINETA   SRL</Denominazione>
+            </Anagrafica>
+         </DatiAnagrafici>
+         <Sede>
+            <Indirizzo>Via Marconi 2</Indirizzo>
+            <CAP>22078</CAP>
+            <Comune>Turate</Comune>
+            <Provincia>CO</Provincia>
+            <Nazione>IT</Nazione>
+         </Sede>
+      </CessionarioCommittente>
+      <TerzoIntermediarioOSoggettoEmittente>
+         <DatiAnagrafici>
+            <IdFiscaleIVA>
+               <IdPaese>IT</IdPaese>
+               <IdCodice>08245660017</IdCodice>
+            </IdFiscaleIVA>
+            <Anagrafica>
+               <Denominazione>Sistemi S.P.A.</Denominazione>
+            </Anagrafica>
+         </DatiAnagrafici>
+      </TerzoIntermediarioOSoggettoEmittente>
+      <SoggettoEmittente>TZ</SoggettoEmittente>
+   </FatturaElettronicaHeader>
+   <FatturaElettronicaBody>
+      <DatiGenerali>
+         <DatiGeneraliDocumento>
+            <TipoDocumento>TD01</TipoDocumento>
+            <Divisa>EUR</Divisa>
+            <Data>2020-02-07</Data>
+            <Numero>29/001</Numero>
+            <ImportoTotaleDocumento>13873.90</ImportoTotaleDocumento>
+         </DatiGeneraliDocumento>
+      </DatiGenerali>
+      <DatiBeniServizi>
+         <DettaglioLinee>
+            <NumeroLinea>1</NumeroLinea>
+            <Descrizione>Formazione di nuovi pavimenti e rivestimenti interni nell appartamento sito in Via Alfieri a Cadorago.  Permesso di costruire nr.10/2017 del 28/04/2017,Mappale nr.3765-3835-4835
+D.d.t. 72 del 22/05/19 - 93 del 28//06/19. Contributo CONAI assolto 
+  </Descrizione>
+            <Quantita>1.00000000</Quantita>
+            <UnitaMisura>a corpo</UnitaMisura>
+            <PrezzoUnitario>11276.56000000</PrezzoUnitario>
+            <PrezzoTotale>11276.56000000</PrezzoTotale>
+            <AliquotaIVA>0.00</AliquotaIVA>
+            <Natura>N6</Natura>
+         </DettaglioLinee>
+         <DettaglioLinee>
+            <NumeroLinea>2</NumeroLinea>
+            <Descrizione>Fornitura e posa di porte interne 
+Presenza beni significativi
+</Descrizione>
+            <Quantita>6.00000000</Quantita>
+            <UnitaMisura>nr. </UnitaMisura>
+            <PrezzoUnitario>416.24000000</PrezzoUnitario>
+            <PrezzoTotale>2497.44000000</PrezzoTotale>
+            <AliquotaIVA>4.00</AliquotaIVA>
+         </DettaglioLinee>
+         <DatiRiepilogo>
+            <AliquotaIVA>0.00</AliquotaIVA>
+            <Natura>N6</Natura>
+            <ImponibileImporto>11276.56</ImponibileImporto>
+            <Imposta>0.00</Imposta>
+            <RiferimentoNormativo>NIAT - PRESTAZIONI NON IMPONIBILI ART.17 C.6 LETT.a-ter</RiferimentoNormativo>
+         </DatiRiepilogo>
+         <DatiRiepilogo>
+            <AliquotaIVA>4.00</AliquotaIVA>
+            <ImponibileImporto>2497.44</ImponibileImporto>
+            <Imposta>99.90</Imposta>
+            <EsigibilitaIVA>I</EsigibilitaIVA>
+         </DatiRiepilogo>
+      </DatiBeniServizi>
+      <DatiPagamento>
+         <CondizioniPagamento>TP01</CondizioniPagamento>
+         <DettaglioPagamento>
+            <ModalitaPagamento>MP02</ModalitaPagamento>
+            <DataScadenzaPagamento>2020-03-31</DataScadenzaPagamento>
+            <ImportoPagamento>6936.95</ImportoPagamento>
+            <IBAN>IT65Z0306951030615272528476</IBAN>
+         </DettaglioPagamento>
+         <DettaglioPagamento>
+            <ModalitaPagamento>MP02</ModalitaPagamento>
+            <DataScadenzaPagamento>2020-04-30</DataScadenzaPagamento>
+            <ImportoPagamento>6936.95</ImportoPagamento>
+            <IBAN>IT65Z0306951030615272528476</IBAN>
+         </DettaglioPagamento>
+      </DatiPagamento>
+   </FatturaElettronicaBody>
+</p:FatturaElettronica>

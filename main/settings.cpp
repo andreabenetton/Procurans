@@ -6,7 +6,7 @@
 Settings::Settings()
 {
 
-    QString appdir = QCoreApplication::applicationDirPath();
+    QString appdir = QApplication::applicationDirPath();
     QString inifilenameandpath = QDir(appdir).filePath("Procurans.ini");
 
     //settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, QCoreApplication::organizationName(), QCoreApplication::applicationName());
@@ -25,18 +25,18 @@ Settings::Settings()
 void Settings::load()
 {
     settings->beginGroup("mainwindow");
-    mainwindowsize = settings->value("size", QSize(640, 480)).toSize();
-    mainwindowposition = settings->value("position", QPoint(100, 100)).toPoint();
+    mainwindowgeometry = settings->value("geometry").toByteArray();
     mainwindowstate = settings->value("state", Qt::WindowMaximized).toByteArray();
     settings->endGroup();
     settings->beginGroup("odspaths");
-    pathElencoFatture = (settings->value("elencofatture", ".")).toString();
-    pathMastriniFornitori = (settings->value("mastrinifornitori", ".")).toString();
-    pathPrimaNota = (settings->value("primanota", ".")).toString();
-    pathScadenziario = (settings->value("scadenziario", ".")).toString();
+    pathElencoFatture = (settings->value("elencofatture", QDir::currentPath())).toString();
+    pathMastriniFornitori = (settings->value("mastrinifornitori", QDir::currentPath())).toString();
+    pathPrimaNota = (settings->value("primanota", QDir::currentPath())).toString();
+    pathScadenziario = (settings->value("scadenziario", QDir::currentPath())).toString();
+    pathFattureElettroniche = (settings->value("fatturelettroniche", QDir::currentPath())).toString();
     settings->endGroup();
     settings->beginGroup("othersettings");
-    executeBackupFiles = (settings->value("backupfiles", ".")).toBool();
+    executeBackupFiles = (settings->value("backupfiles", true)).toBool();
     settings->endGroup();
 }
 
@@ -45,14 +45,14 @@ void Settings::save()
     if(updated){
         settings->beginGroup("mainwindow");
         settings->setValue("state", mainwindowstate);
-        settings->setValue("size", mainwindowsize);
-        settings->setValue("position", mainwindowposition);
+        settings->setValue("geometry", mainwindowgeometry);
         settings->endGroup();
         settings->beginGroup("odspaths");
         settings->setValue("elencofatture", pathElencoFatture);
         settings->setValue("mastrinifornitori", pathMastriniFornitori);
         settings->setValue("primanota", pathPrimaNota);
         settings->setValue("scadenziario", pathScadenziario);
+        settings->setValue("fatturelettroniche", pathFattureElettroniche);
         settings->endGroup();
         settings->beginGroup("othersettings");
         settings->setValue("backupfiles", executeBackupFiles);
@@ -62,21 +62,15 @@ void Settings::save()
 
 void Settings::restore(QMainWindow* window)
 {
-    window->resize(mainwindowsize);
-    window->move(mainwindowposition);
-    window->restoreState(mainwindowstate);
+    window->restoreGeometry(mainwindowgeometry);
+    window->restoreState(mainwindowstate, YOUR_UI_VERSION);
 }
 
 void Settings::backup(QMainWindow* window)
 {
-    if(mainwindowsize != window->size())
+    if(mainwindowgeometry != window->saveGeometry())
     {
-        mainwindowsize = window->size();
-        updated = true;
-    }
-    if(mainwindowposition != window->pos())
-    {
-        mainwindowposition = window->pos();
+        mainwindowgeometry = window->saveGeometry();
         updated = true;
     }
     if(mainwindowstate != window->saveState())
@@ -128,6 +122,14 @@ void Settings::setPath(QMainWindow* window, Execute p)
                 updated = true;
             }
             break;
+        case Execute::fattureelettroniche:
+            if (pathFattureElettroniche != path)
+            {
+                pathFattureElettroniche = path;
+                qInfo(logInfo()) << "FattureElettroniche path updated: " << pathFattureElettroniche;
+                updated = true;
+            }
+            break;
         default:
           qWarning(logWarning())  << "Failure to decode setPath";
         }
@@ -150,9 +152,12 @@ QString Settings::getPath(Execute p)
         case Execute::mastrinifornitori:
             return pathMastriniFornitori;
             break;
+        case Execute::fattureelettroniche:
+            return pathFattureElettroniche;
+            break;
         default:{
-            qWarning(logWarning())  << "Failure to decode getPath";
-            return ".";
+            qWarning(logWarning())  << "Failure to decode getPath, reverting to QDir::currentPath";
+            return QDir::currentPath();
         }
     }
 }
@@ -217,7 +222,3 @@ bool Settings::isExecute(Execute p)
         }
     }
 }
-
-
-
-

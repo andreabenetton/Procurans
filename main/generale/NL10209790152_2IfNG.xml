@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="fatturapa_v1.2.1.xsl"?>
+<FatturaElettronica xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" versione="FPR12" xmlns="http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2">
+  <FatturaElettronicaHeader xmlns="">
+    <DatiTrasmissione>
+      <IdTrasmittente>
+        <IdPaese>IT</IdPaese>
+        <IdCodice>10209790152</IdCodice>
+      </IdTrasmittente>
+      <ProgressivoInvio>1763</ProgressivoInvio>
+      <FormatoTrasmissione>FPR12</FormatoTrasmissione>
+      <CodiceDestinatario>USAL8PV</CodiceDestinatario>
+    </DatiTrasmissione>
+    <CedentePrestatore>
+      <DatiAnagrafici>
+        <IdFiscaleIVA>
+          <IdPaese>IT</IdPaese>
+          <IdCodice>02160120131</IdCodice>
+        </IdFiscaleIVA>
+        <CodiceFiscale>BRLSFN70C02I441J</CodiceFiscale>
+        <Anagrafica>
+          <Nome>STEFANO</Nome>
+          <Cognome>BARELLA</Cognome>
+        </Anagrafica>
+        <RegimeFiscale>RF01</RegimeFiscale>
+      </DatiAnagrafici>
+      <Sede>
+        <Indirizzo>VIA Beato Michele Carcano</Indirizzo>
+        <NumeroCivico>2/a</NumeroCivico>
+        <CAP>22070</CAP>
+        <Comune>Bregnano</Comune>
+        <Provincia>CO</Provincia>
+        <Nazione>IT</Nazione>
+      </Sede>
+      <IscrizioneREA>
+        <Ufficio>CO</Ufficio>
+        <NumeroREA>243918</NumeroREA>
+        <CapitaleSociale>0.00</CapitaleSociale>
+        <SocioUnico>SM</SocioUnico>
+        <StatoLiquidazione>LN</StatoLiquidazione>
+      </IscrizioneREA>
+      <Contatti>
+        <Email>stefanobarella2004@alice.it</Email>
+      </Contatti>
+    </CedentePrestatore>
+    <CessionarioCommittente>
+      <DatiAnagrafici>
+        <IdFiscaleIVA>
+          <IdPaese>IT</IdPaese>
+          <IdCodice>01315910131</IdCodice>
+        </IdFiscaleIVA>
+        <CodiceFiscale>01315910131</CodiceFiscale>
+        <Anagrafica>
+          <Denominazione>Edil Pavimenti  s.a.s.</Denominazione>
+        </Anagrafica>
+      </DatiAnagrafici>
+      <Sede>
+        <Indirizzo>Via Diaz</Indirizzo>
+        <NumeroCivico>4</NumeroCivico>
+        <CAP>22071</CAP>
+        <Comune>Cadorago</Comune>
+        <Provincia>CO</Provincia>
+        <Nazione>IT</Nazione>
+      </Sede>
+    </CessionarioCommittente>
+  </FatturaElettronicaHeader>
+  <FatturaElettronicaBody xmlns="">
+    <DatiGenerali>
+      <DatiGeneraliDocumento>
+        <TipoDocumento>TD01</TipoDocumento>
+        <Divisa>EUR</Divisa>
+        <Data>2020-02-05</Data>
+        <Numero>230</Numero>
+        <ImportoTotaleDocumento>13.79</ImportoTotaleDocumento>
+        <Arrotondamento>0.00</Arrotondamento>
+      </DatiGeneraliDocumento>
+    </DatiGenerali>
+    <DatiBeniServizi>
+      <DettaglioLinee>
+        <NumeroLinea>1</NumeroLinea>
+        <Descrizione>Metano   Fiat Fiorino Targa  EA 623SN</Descrizione>
+        <PrezzoUnitario>11.3032</PrezzoUnitario>
+        <PrezzoTotale>11.30</PrezzoTotale>
+        <AliquotaIVA>22.00</AliquotaIVA>
+      </DettaglioLinee>
+      <DatiRiepilogo>
+        <AliquotaIVA>22.00</AliquotaIVA>
+        <ImponibileImporto>11.30</ImponibileImporto>
+        <Imposta>2.49</Imposta>
+        <EsigibilitaIVA>I</EsigibilitaIVA>
+      </DatiRiepilogo>
+    </DatiBeniServizi>
+    <DatiPagamento>
+      <CondizioniPagamento>TP02</CondizioniPagamento>
+      <DettaglioPagamento>
+        <ModalitaPagamento>MP08</ModalitaPagamento>
+        <DataScadenzaPagamento>2020-02-05</DataScadenzaPagamento>
+        <ImportoPagamento>13.79</ImportoPagamento>
+        <IstitutoFinanziario>CASSA RURALE ED ARTIGIANA DI CANTU' BANCA DI CREDI</IstitutoFinanziario>
+        <IBAN>IT47T0843051460000000211609</IBAN>
+        <ABI>08430</ABI>
+        <CAB>51460</CAB>
+      </DettaglioPagamento>
+    </DatiPagamento>
+  </FatturaElettronicaBody>
+</FatturaElettronica>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="xsl/fatturaPA_v1.2.1.xsl"?>
+<p:FatturaElettronica versione="FPR12" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2">
+   <FatturaElettronicaHeader>
+      <DatiTrasmissione>
+         <IdTrasmittente>
+            <IdPaese>IT</IdPaese>
+            <IdCodice>08245660017</IdCodice>
+         </IdTrasmittente>
+         <ProgressivoInvio>0000087</ProgressivoInvio>
+         <FormatoTrasmissione>FPR12</FormatoTrasmissione>
+         <CodiceDestinatario>USAL8PV</CodiceDestinatario>
+      </DatiTrasmissione>
+      <CedentePrestatore>
+         <DatiAnagrafici>
+            <IdFiscaleIVA>
+               <IdPaese>IT</IdPaese>
+               <IdCodice>03696510134</IdCodice>
+            </IdFiscaleIVA>
+            <CodiceFiscale>03696510134</CodiceFiscale>
+            <Anagrafica>
+               <Denominazione>CENTRO ASSISTENZA EDILSOLUTIONS SRL</Denominazione>
+            </Anagrafica>
+            <RegimeFiscale>RF01</RegimeFiscale>
+         </DatiAnagrafici>
+         <Sede>
+            <Indirizzo>VIA DIAZ N. 4</Indirizzo>
+            <CAP>22071</CAP>
+            <Comune>CADORAGO</Comune>
+            <Provincia>CO</Provincia>
+            <Nazione>IT</Nazione>
+         </Sede>
+         <IscrizioneREA>
+            <Ufficio>CO</Ufficio>
+            <NumeroREA>328313</NumeroREA>
+            <StatoLiquidazione>LN</StatoLiquidazione>
+         </IscrizioneREA>
+         <Contatti>
+            <Telefono>031-903420</Telefono>
+            <Email>info@edilsolutions.com</Email>
+         </Contatti>
+      </CedentePrestatore>
+      <CessionarioCommittente>
+         <DatiAnagrafici>
+            <IdFiscaleIVA>
+               <IdPaese>IT</IdPaese>
+               <IdCodice>02189220136</IdCodice>
+            </IdFiscaleIVA>
+            <CodiceFiscale>02189220136</CodiceFiscale>
+            <Anagrafica>
+               <Denominazione>IMMOBILIARE  LA PINETA SRL</Denominazione>
+            </Anagrafica>
+         </DatiAnagrafici>
+         <Sede>
+            <Indirizzo>VIA MARCONI, 2</Indirizzo>
+            <CAP>22078</CAP>
+            <Comune>TURATE</Comune>
+            <Provincia>CO</Provincia>
+            <Nazione>IT</Nazione>
+         </Sede>
+      </CessionarioCommittente>
+      <TerzoIntermediarioOSoggettoEmittente>
+         <DatiAnagrafici>
+            <IdFiscaleIVA>
+               <IdPaese>IT</IdPaese>
+               <IdCodice>08245660017</IdCodice>
+            </IdFiscaleIVA>
+            <Anagrafica>
+               <Denominazione>Sistemi S.P.A.</Denominazione>
+            </Anagrafica>
+         </DatiAnagrafici>
+      </TerzoIntermediarioOSoggettoEmittente>
+      <SoggettoEmittente>TZ</SoggettoEmittente>
+   </FatturaElettronicaHeader>
+   <FatturaElettronicaBody>
+      <DatiGenerali>
+         <DatiGeneraliDocumento>
+            <TipoDocumento>TD01</TipoDocumento>
+            <Divisa>EUR</Divisa>
+            <Data>2020-02-07</Data>
+            <Numero>2/001</Numero>
+            <ImportoTotaleDocumento>1275.04</ImportoTotaleDocumento>
+            <Causale>Lavori eseguiti per Vs. conto in Via Alfieri a Cadorago (Co)</Causale>
+         </DatiGeneraliDocumento>
+      </DatiGenerali>
+      <DatiBeniServizi>
+         <DettaglioLinee>
+            <NumeroLinea>1</NumeroLinea>
+            <Descrizione>Lavori eseguiti presso le nuove costruzioni di Via Alfieri a Cadorago (Co), Permesso di Costruire nr.10/2017 del 28/04/2017 , Mappale nr. 3765-3835-4835
+Ddt nr. 19 del 05/11/2019
+Fornitura e posa in opera di serramento Pro bianco da mm. 1680 x h. 2390 completo di vetro e maniglia. Presenza di beni significativi. 
+ </Descrizione>
+            <Quantita>1.00000000</Quantita>
+            <UnitaMisura>nr.</UnitaMisura>
+            <PrezzoUnitario>1226.00000000</PrezzoUnitario>
+            <PrezzoTotale>1226.00000000</PrezzoTotale>
+            <AliquotaIVA>4.00</AliquotaIVA>
+         </DettaglioLinee>
+         <DatiRiepilogo>
+            <AliquotaIVA>4.00</AliquotaIVA>
+            <ImponibileImporto>1226.00</ImponibileImporto>
+            <Imposta>49.04</Imposta>
+            <EsigibilitaIVA>I</EsigibilitaIVA>
+         </DatiRiepilogo>
+      </DatiBeniServizi>
+      <DatiPagamento>
+         <CondizioniPagamento>TP02</CondizioniPagamento>
+         <DettaglioPagamento>
+            <ModalitaPagamento>MP12</ModalitaPagamento>
+            <DataScadenzaPagamento>2020-03-31</DataScadenzaPagamento>
+            <ImportoPagamento>1275.04</ImportoPagamento>
+         </DettaglioPagamento>
+      </DatiPagamento>
+   </FatturaElettronicaBody>
+</p:FatturaElettronica>

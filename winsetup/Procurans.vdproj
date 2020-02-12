@@ -15,31 +15,31 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_0DA37C23040C4A259035FEB9BC40D9EB"
+        "MsmKey" = "8:_27C4C9D401B6462CA7090973D61CAA98"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_63C9BF05D0F0429FBAFA16593E168865"
+        "MsmKey" = "8:_346DE706C9AF479B9C18229D69A61F48"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_6485B7491CB04098BF3F73761B2CF9E7"
+        "MsmKey" = "8:_789B66E675604E31AABF749B7B76BD95"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_6C8111A980DB437F94FBF6B6A8E71639"
+        "MsmKey" = "8:_91F06A9C4A8448E08C1206A6CBB3F428"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_F8BE42FD15CD494BA504470031DDDA54"
+        "MsmKey" = "8:_C39C0653DB1140729550878680920CA2"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -68,6 +68,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.6.1"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.6.1 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.6.1"
+                    }
+                }
             }
         }
         "Release"
@@ -92,6 +100,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.6.1"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.6.1 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.6.1"
+                    }
+                }
             }
         }
     }
@@ -114,10 +130,30 @@
         }
         "File"
         {
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_0DA37C23040C4A259035FEB9BC40D9EB"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_27C4C9D401B6462CA7090973D61CAA98"
             {
-            "SourcePath" = "8:..\\..\\build\\main\\Qt5Guid.dll"
-            "TargetName" = "8:Qt5Guid.dll"
+            "SourcePath" = "8:..\\build\\x64-Release\\main\\platforms\\qwindows.dll"
+            "TargetName" = "8:qwindows.dll"
+            "Tag" = "8:"
+            "Folder" = "8:_4AC2AA92D7394D918880AB1562F2F518"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_346DE706C9AF479B9C18229D69A61F48"
+            {
+            "SourcePath" = "8:..\\build\\x64-Release\\main\\Qt5Gui.dll"
+            "TargetName" = "8:Qt5Gui.dll"
             "Tag" = "8:"
             "Folder" = "8:_65BF0EB9171A4C04AA910AA9A05C3689"
             "Condition" = "8:"
@@ -134,9 +170,9 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_63C9BF05D0F0429FBAFA16593E168865"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_789B66E675604E31AABF749B7B76BD95"
             {
-            "SourcePath" = "8:..\\..\\build\\main\\Procurans.exe"
+            "SourcePath" = "8:..\\build\\x64-Release\\main\\Procurans.exe"
             "TargetName" = "8:Procurans.exe"
             "Tag" = "8:"
             "Folder" = "8:_65BF0EB9171A4C04AA910AA9A05C3689"
@@ -154,10 +190,10 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6485B7491CB04098BF3F73761B2CF9E7"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_91F06A9C4A8448E08C1206A6CBB3F428"
             {
-            "SourcePath" = "8:..\\..\\build\\main\\Qt5Widgetsd.dll"
-            "TargetName" = "8:Qt5Widgetsd.dll"
+            "SourcePath" = "8:..\\build\\x64-Release\\main\\Qt5Core.dll"
+            "TargetName" = "8:Qt5Core.dll"
             "Tag" = "8:"
             "Folder" = "8:_65BF0EB9171A4C04AA910AA9A05C3689"
             "Condition" = "8:"
@@ -174,32 +210,12 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6C8111A980DB437F94FBF6B6A8E71639"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C39C0653DB1140729550878680920CA2"
             {
-            "SourcePath" = "8:..\\..\\build\\main\\Qt5Cored.dll"
-            "TargetName" = "8:Qt5Cored.dll"
+            "SourcePath" = "8:..\\build\\x64-Release\\main\\Qt5Widgets.dll"
+            "TargetName" = "8:Qt5Widgets.dll"
             "Tag" = "8:"
             "Folder" = "8:_65BF0EB9171A4C04AA910AA9A05C3689"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_F8BE42FD15CD494BA504470031DDDA54"
-            {
-            "SourcePath" = "8:..\\..\\build\\main\\platforms\\qwindowsd.dll"
-            "TargetName" = "8:qwindowsd.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_4AC2AA92D7394D918880AB1562F2F518"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"

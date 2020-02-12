@@ -1,3 +1,17 @@
+set(COMPANY_NAME "BlueTeam")
+set(PRODUCT_NAME "Procurans")
+set(COMMENTS "An utility to import Italian electronic bill into odf files")
+set(LEGAL_COPYRIGHT "Copyright (c) 2019 BlueTeam")
+set(LEGAL_TRADEMARK1 "GNU Affero General Public License ver. 3")
+set(LEGAL_TRADEMARK2 "https://www.gnu.org/licenses/agpl-3.0.en.html")
+set(MODULE_DESCRIPTION "Procurans")
+set(VERSION_MAJOR "0")
+set(VERSION_MINOR "1")
+set(VERSION_PATCH "0")
+set(VERSION_REVISION "0")
+	
+set(APP_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}.${VERSION_REVISION}")
+set(APP_VERSION_RC "${VERSION_MAJOR},${VERSION_MINOR},${VERSION_PATCH},${VERSION_REVISION}")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -5,8 +19,8 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-include_directories(${Ods2_SOURCE_DIR})
-link_directories(${Ods2_BINARY_DIR}/lib)
+include_directories(${Procurans_SOURCE_DIR})
+link_directories(${Procurans_BINARY_DIR}/lib)
 
 if (NOT MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -52,9 +66,16 @@ include_directories(${Procurans_SOURCE_DIR}/quazip)
 
 set (exe_name "Procurans")
 
+add_compile_definitions(APP_VERSION="${APP_VERSION}")
+add_compile_definitions(COMPANY_NAME="${COMPANY_NAME}")
+add_compile_definitions(PRODUCT_NAME="${PRODUCT_NAME}")
+
 if (WIN32)
+	configure_file(fileinfo.rc.in fileinfo.rc)
+
     add_executable(${exe_name} WIN32
         ${src_files}
+		${CMAKE_CURRENT_BINARY_DIR}/fileinfo.rc
         #${TS_FILES}
 )
 else ()

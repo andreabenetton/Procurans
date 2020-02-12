@@ -25,12 +25,15 @@
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
+class QString;
 //class QAction;
 //class QMenu;
 //class QTableView;
 //class QXmlStreamReader;
 class QSettings;
 QT_END_NAMESPACE
+
+#define YOUR_UI_VERSION 1
 
 class Settings
 {
@@ -42,7 +45,8 @@ class Settings
             return instance;
         }
 
-        enum class Execute{elencofatture, mastrinifornitori, primanota, scadenziario, backupfiles};
+        enum class Execute{elencofatture, mastrinifornitori, primanota, scadenziario, backupfiles, fattureelettroniche
+        };
 
         void load();
         void save();
@@ -62,9 +66,9 @@ class Settings
         Settings();
 
         QSettings* settings;
-        QSize mainwindowsize;
         QByteArray mainwindowstate;
-        QPoint mainwindowposition;
+        QByteArray mainwindowgeometry;
+        QString pathFattureElettroniche;
         QString pathElencoFatture;
         QString pathMastriniFornitori;
         QString pathPrimaNota;

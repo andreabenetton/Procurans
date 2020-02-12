@@ -63,6 +63,7 @@ private slots:
     void setPathMastriniFornitori();
     void setPathPrimaNota();
     void setPathScadenziario();
+    void setPathFattureElettroniche();
 
     void saveWindowSettings();
 
@@ -75,7 +76,7 @@ private:
     void createStatusBar();
 
     QString strippedName(const QString &fullFileName);
-    bool validateBill(const QByteArray &document);
+    //bool validateBill(const QByteArray &document);
 
     bool isStartElementNamed(QXmlStreamReader& xml, const QString &tokenName);
     bool isNotEndElementNamed(QXmlStreamReader& xml, const QString &tokenName);
@@ -103,8 +104,6 @@ private:
     void addSummaryToUI(QList< QMap<QString,QString> >& summaryData, QList<GridSchemaField*> summarySchema);
 
     double computeTotal(QList< QMap<QString,QString> >& data, QString xmlfield);
-
-    //int findFirstStartingBlankRow(ods::Sheet *sheet);
 
     void executeElencoFatture();
     void executeMastriniFornitori();

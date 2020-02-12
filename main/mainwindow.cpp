@@ -27,6 +27,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "logger.h"
+#include "settings.h"
 #include "comboboxitemdelegate.h"
 #include "gridschemafield.h"
 
@@ -91,12 +92,13 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::open()
 {  
-    QString fileName = QFileDialog::getOpenFileName
-    (
+    QString fileName = QFileDialog::getOpenFileName(
           this,
           "Apri fattura",
-          QDir::currentPath(),
-          "Fattura in XML (*.xml)");
+          m_setting->getPath(Settings::Execute::fattureelettroniche),
+          "Fattura in XML (*.xml)"
+    );
+
     if (!fileName.isEmpty())
         parseXMLFile(fileName);
     qInfo(logInfo())  << "File selected via dialog: " << fileName;
@@ -177,6 +179,12 @@ void MainWindow::setPathScadenziario()
     statusBar()->showMessage(tr("Posizione della Cartella Scadenziario salvata"), 2000);
 }
 
+void MainWindow::setPathFattureElettroniche()
+{
+    m_setting->setPath(this, Settings::Execute::fattureelettroniche);
+    statusBar()->showMessage(tr("Posizione della Cartella Fatture Elettroniche salvata"), 2000);
+}
+
 void MainWindow::execute()
 {
     if(m_setting->isExecute(Settings::Execute::elencofatture))
@@ -187,6 +195,8 @@ void MainWindow::execute()
         executePrimaNota();
     if(m_setting->isExecute(Settings::Execute::scadenziario))
         executeScadenziario();
+
+    QFile::rename(curFile, curFile + "_importato");
 }
 
 void MainWindow::executeElencoFatture()
@@ -529,84 +539,88 @@ void MainWindow::executeScadenziario()
     int numberofrows = grid->model()->rowCount();
     for (int crow = 0; crow < numberofrows; crow++) {
 
+        QString modalita = grid->model()->data(grid->model()->index(crow, 0)).toString();
         QDate datascadenza = QDate::fromString(grid->model()->data(grid->model()->index(crow,1)).toString(),"dd/MM/yyyy");
         QString cassa = grid->model()->data(grid->model()->index(crow,3)).toString();
         double importo = grid->model()->data(grid->model()->index(crow,2)).toFloat();
 
-        QString filename = filenametemplate.arg(months[datascadenza.month()-1], QString::number(datascadenza.year()));
-        QList<QList<QSharedPointer<ODSCell>>>* rows;
-        if (!filelist.contains(filename)) {
-            rows = new QList<QList<QSharedPointer<ODSCell>>>();
-            filelist.insert(filename,  rows);
+        if((modalita == paymentMethodType["MP09"])||(modalita == paymentMethodType["MP05"])) {
+
+            QString filename = filenametemplate.arg(months[datascadenza.month()-1], QString::number(datascadenza.year()));
+            QList<QList<QSharedPointer<ODSCell>>>* rows;
+            if (!filelist.contains(filename)) {
+                rows = new QList<QList<QSharedPointer<ODSCell>>>();
+                filelist.insert(filename,  rows);
+            }
+            else {
+                rows = filelist.value(filename);
+            }
+
+
+            QList<QSharedPointer<ODSCell>> columns;
+
+            {
+                QSharedPointer<ODSCell> pt(new ODSCellString(numero));
+                columns.append(pt);
+            }
+
+            {
+                QSharedPointer<ODSCell> pt(new ODSCellString(entity));
+                columns.append(pt);
+            }
+
+            {
+                QSharedPointer<ODSCell> pt(new ODSCellEmpty(2));
+                columns.append(pt);
+            }
+
+            {
+                QSharedPointer<ODSCell> pt(new ODSCellDate(datascadenza));
+                columns.append(pt);
+            }
+
+            {
+            ODSCell* p;
+                if(cassa=="CRAC")
+                    p = new ODSCellFloat(importo);
+                else
+                    p = new ODSCellEmpty();
+                QSharedPointer<ODSCell> pt(p);
+                columns.append(pt);
+            }
+
+            {
+                QSharedPointer<ODSCell> pt(new ODSCellEmpty());
+                columns.append(pt);
+            }
+
+            {
+            ODSCell* p;
+                if(cassa=="Banca Intesa")
+                    p = new ODSCellFloat(importo);
+                else
+                    p = new ODSCellEmpty();
+                QSharedPointer<ODSCell> pt(p);
+                columns.append(pt);
+            }
+
+            {
+                QSharedPointer<ODSCell> pt(new ODSCellEmpty());
+                columns.append(pt);
+            }
+
+            {
+            ODSCell* p;
+                if(cassa=="Banca BPM")
+                    p = new ODSCellFloat(importo);
+                else
+                    p = new ODSCellEmpty();
+                QSharedPointer<ODSCell> pt(p);
+                columns.append(pt);
+            }
+
+            rows->append(columns);
         }
-        else {
-            rows = filelist.value(filename);
-        }
-
-
-        QList<QSharedPointer<ODSCell>> columns;
-
-        {
-            QSharedPointer<ODSCell> pt(new ODSCellString(numero));
-            columns.append(pt);
-        }
-
-        {
-            QSharedPointer<ODSCell> pt(new ODSCellString(entity));
-            columns.append(pt);
-        }
-
-        {
-            QSharedPointer<ODSCell> pt(new ODSCellEmpty(2));
-            columns.append(pt);
-        }
-
-        {
-            QSharedPointer<ODSCell> pt(new ODSCellDate(datascadenza));
-            columns.append(pt);
-        }
-
-        {
-        ODSCell* p;
-            if(cassa=="CRAC")
-                p = new ODSCellFloat(importo);
-            else
-                p = new ODSCellEmpty();
-            QSharedPointer<ODSCell> pt(p);
-            columns.append(pt);
-        }
-
-        {
-            QSharedPointer<ODSCell> pt(new ODSCellEmpty());
-            columns.append(pt);
-        }
-
-        {
-        ODSCell* p;
-            if(cassa=="Banca Intesa")
-                p = new ODSCellFloat(importo);
-            else
-                p = new ODSCellEmpty();
-            QSharedPointer<ODSCell> pt(p);
-            columns.append(pt);
-        }
-
-        {
-            QSharedPointer<ODSCell> pt(new ODSCellEmpty());
-            columns.append(pt);
-        }
-
-        {
-        ODSCell* p;
-            if(cassa=="Banca BPM")
-                p = new ODSCellFloat(importo);
-            else
-                p = new ODSCellEmpty();
-            QSharedPointer<ODSCell> pt(p);
-            columns.append(pt);
-        }
-
-        rows->append(columns);
     }
 
     for(QString filename : filelist.keys())
@@ -697,17 +711,24 @@ void MainWindow::createActions()
 
     QMenu *toolsMenu = menuBar()->addMenu(tr("&Impostazioni"));
 
+    QAction* pathFattureElettronicheAct = toolsMenu->addAction(tr("Cartella Fatture Elettroniche"), this, &MainWindow::setPathFattureElettroniche);
+    pathFattureElettronicheAct->setStatusTip(tr("Imposta la cartella in cui si trovano le Fatture Elettroniche"));
+
+    toolsMenu->addSeparator();
+
     QAction *pathElencoFattureAct = toolsMenu->addAction(tr("Cartella Elenco Fatture"), this, &MainWindow::setPathElencoFatture);
-    pathElencoFattureAct->setStatusTip(tr("Imposta la cartella in cui sono presenti le sottocartelle contenenti le fatture fornitori"));
+    pathElencoFattureAct->setStatusTip(tr("Imposta la cartella del Elenco Fatture"));
 
     QAction *pathMastrinoFornitoriAct = toolsMenu->addAction(tr("Cartella Mastrini Fornitori"), this, &MainWindow::setPathMastriniFornitori);
-    pathMastrinoFornitoriAct->setStatusTip(tr("Cambia le impostazioni dell'applicazione"));
+    pathMastrinoFornitoriAct->setStatusTip(tr("Imposta la cartella dei Mastrini Fornitori"));
 
     QAction *pathPrimaNotaAct = toolsMenu->addAction(tr("Cartella Prima Nota"), this, &MainWindow::setPathPrimaNota);
-    pathPrimaNotaAct->setStatusTip(tr("Cambia le impostazioni dell'applicazione"));
+    pathPrimaNotaAct->setStatusTip(tr("Imposta la cartella della Prima Nota"));
 
     QAction *pathScadenziarioAct= toolsMenu->addAction(tr("Cartella Scadenziario"), this, &MainWindow::setPathScadenziario);
-    pathScadenziarioAct->setStatusTip(tr("Cambia le impostazioni dell'applicazione"));
+    pathScadenziarioAct->setStatusTip(tr("Imposta la cartella dello Scadenziario"));
+
+    toolsMenu->addSeparator();
 
     QAction *pathSaveSettingsAct = toolsMenu->addAction(tr("Salva Impostazioni Finestra"), this, &MainWindow::saveWindowSettings);
     pathSaveSettingsAct->setStatusTip(tr("Cambia lo stato della finestra dell'applicazione"));
@@ -747,7 +768,7 @@ void MainWindow::parseXMLFile(const QString &fileName)
     QMap<QString,QString> headerData;
 
 #ifndef QT_NO_CURSOR
-    QGuiApplication::setOverrideCursor(Qt::WaitCursor);
+    QApplication::setOverrideCursor(Qt::WaitCursor);
 #endif
 
     /* We'll parse the XML until we reach end of it.*/
@@ -804,8 +825,10 @@ void MainWindow::parseXMLFile(const QString &fileName)
     this->addSummaryToUI(summaryData, createSummaryGridSchema());
 
 #ifndef QT_NO_CURSOR
-    QGuiApplication::restoreOverrideCursor();
+    QApplication::restoreOverrideCursor();
 #endif
+
+    curFile = fileName;
 
    /* if (!validateBill(fileContent.toUtf8())) {
         QMessageBox::warning(this, tr("Procurans"),
@@ -1113,7 +1136,7 @@ void MainWindow::addSummaryToUI(QList< QMap<QString,QString> >& summaryData, QLi
 
     QLineEdit* qle = this->findChild<QLineEdit*>("imponibileEdit");
     if (qle != nullptr) {
-        QString imponibile = QString::number(computeTotal(summaryData, "ImponibileImporto"));
+        QString imponibile = QString::number(computeTotal(summaryData, "ImponibileImporto"), 'f', 2);
         qle->setText(imponibile);
     }
 

@@ -32,8 +32,6 @@
 #include <QLoggingCategory>
 #include <QDebug>
 
-#define APP_VERSION "0.0.1.0"
-
 void messageHandler(QtMsgType type, const QMessageLogContext& ctx, const QString& msg)
 {
         Logger *globalLogger = Logger::getInstance();
@@ -45,13 +43,13 @@ int main(int argc, char *argv[])
     Q_INIT_RESOURCE(application); 
 
     QApplication app(argc, argv);
-    QCoreApplication::setOrganizationName("BlueTeam");
-    QCoreApplication::setApplicationName("Procurans");
-    QCoreApplication::setApplicationVersion(APP_VERSION);
+    QApplication::setOrganizationName(COMPANY_NAME); //defined in CMakeList.txt
+    QApplication::setApplicationName(PRODUCT_NAME); //defined in CMakeList.txt
+    QApplication::setApplicationVersion(APP_VERSION); //defined in CMakeList.txt
 
     Logger *globalLogger = Logger::getInstance();
     qInstallMessageHandler(messageHandler);
-    qInfo(logInfo()) << "Program activated, version: " << APP_VERSION;
+    qInfo(logInfo()) << PRODUCT_NAME << " activated. Version:" << APP_VERSION << " Folder:" << QApplication::applicationDirPath();
 
     QCommandLineParser parser;
     parser.setApplicationDescription(QCoreApplication::applicationName());

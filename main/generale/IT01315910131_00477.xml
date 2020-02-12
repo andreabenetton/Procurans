@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="xsl/fatturaPA_v1.2.1.xsl"?>
+<p:FatturaElettronica versione="FPR12" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2">
+   <FatturaElettronicaHeader>
+      <DatiTrasmissione>
+         <IdTrasmittente>
+            <IdPaese>IT</IdPaese>
+            <IdCodice>08245660017</IdCodice>
+         </IdTrasmittente>
+         <ProgressivoInvio>0000477</ProgressivoInvio>
+         <FormatoTrasmissione>FPR12</FormatoTrasmissione>
+         <CodiceDestinatario>0000000</CodiceDestinatario>
+      </DatiTrasmissione>
+      <CedentePrestatore>
+         <DatiAnagrafici>
+            <IdFiscaleIVA>
+               <IdPaese>IT</IdPaese>
+               <IdCodice>01315910131</IdCodice>
+            </IdFiscaleIVA>
+            <CodiceFiscale>01315910131</CodiceFiscale>
+            <Anagrafica>
+               <Denominazione>EDIL-PAVIMENTI DI DE MARCHI F. &amp; C. SAS</Denominazione>
+            </Anagrafica>
+            <RegimeFiscale>RF01</RegimeFiscale>
+         </DatiAnagrafici>
+         <Sede>
+            <Indirizzo>VIA DIAZ N. 4</Indirizzo>
+            <CAP>22071</CAP>
+            <Comune>CADORAGO</Comune>
+            <Provincia>CO</Provincia>
+            <Nazione>IT</Nazione>
+         </Sede>
+         <IscrizioneREA>
+            <Ufficio>CO</Ufficio>
+            <NumeroREA>181347</NumeroREA>
+            <StatoLiquidazione>LN</StatoLiquidazione>
+         </IscrizioneREA>
+         <Contatti>
+            <Telefono>031-903420</Telefono>
+            <Email>info@edilpavimentisas.com</Email>
+         </Contatti>
+      </CedentePrestatore>
+      <CessionarioCommittente>
+         <DatiAnagrafici>
+            <CodiceFiscale>90019160135</CodiceFiscale>
+            <Anagrafica>
+               <Denominazione>CONDOMINIO SAN ROCCO</Denominazione>
+            </Anagrafica>
+         </DatiAnagrafici>
+         <Sede>
+            <Indirizzo>VIA SAN ROCCO NR. 78</Indirizzo>
+            <CAP>22070</CAP>
+            <Comune>BREGNANO</Comune>
+            <Provincia>CO</Provincia>
+            <Nazione>IT</Nazione>
+         </Sede>
+      </CessionarioCommittente>
+      <TerzoIntermediarioOSoggettoEmittente>
+         <DatiAnagrafici>
+            <IdFiscaleIVA>
+               <IdPaese>IT</IdPaese>
+               <IdCodice>08245660017</IdCodice>
+            </IdFiscaleIVA>
+            <Anagrafica>
+               <Denominazione>Sistemi S.P.A.</Denominazione>
+            </Anagrafica>
+         </DatiAnagrafici>
+      </TerzoIntermediarioOSoggettoEmittente>
+      <SoggettoEmittente>TZ</SoggettoEmittente>
+   </FatturaElettronicaHeader>
+   <FatturaElettronicaBody>
+      <DatiGenerali>
+         <DatiGeneraliDocumento>
+            <TipoDocumento>TD01</TipoDocumento>
+            <Divisa>EUR</Divisa>
+            <Data>2020-02-07</Data>
+            <Numero>28/001</Numero>
+            <DatiRitenuta>
+               <TipoRitenuta>RT01</TipoRitenuta>
+               <ImportoRitenuta>12.00</ImportoRitenuta>
+               <AliquotaRitenuta>4.00</AliquotaRitenuta>
+               <CausalePagamento>A</CausalePagamento>
+            </DatiRitenuta>
+            <ImportoTotaleDocumento>366.00</ImportoTotaleDocumento>
+         </DatiGeneraliDocumento>
+      </DatiGenerali>
+      <DatiBeniServizi>
+         <DettaglioLinee>
+            <NumeroLinea>1</NumeroLinea>
+            <Descrizione>Lavori eseguiti per Vs. conto in Via San Rocco nr. 78 a Bregnano Co
+Verifica canale di gronda con sistemazione delle giunte.
+La Edil Pavimenti declina ogni responsabilità in merito alla corretta richiesta di detrazioni fiscali,  
+Assenza beni significativi. Contributo CONAI assolto  </Descrizione>
+            <Quantita>1.00000000</Quantita>
+            <UnitaMisura>a corpo</UnitaMisura>
+            <PrezzoUnitario>300.00000000</PrezzoUnitario>
+            <PrezzoTotale>300.00000000</PrezzoTotale>
+            <AliquotaIVA>22.00</AliquotaIVA>
+            <Ritenuta>SI</Ritenuta>
+         </DettaglioLinee>
+         <DatiRiepilogo>
+            <AliquotaIVA>22.00</AliquotaIVA>
+            <ImponibileImporto>300.00</ImponibileImporto>
+            <Imposta>66.00</Imposta>
+            <EsigibilitaIVA>I</EsigibilitaIVA>
+         </DatiRiepilogo>
+      </DatiBeniServizi>
+      <DatiPagamento>
+         <CondizioniPagamento>TP02</CondizioniPagamento>
+         <DettaglioPagamento>
+            <ModalitaPagamento>MP05</ModalitaPagamento>
+            <DataScadenzaPagamento>2020-02-07</DataScadenzaPagamento>
+            <ImportoPagamento>354.00</ImportoPagamento>
+            <IBAN>IT33U0843051030000000180277</IBAN>
+         </DettaglioPagamento>
+      </DatiPagamento>
+   </FatturaElettronicaBody>
+</p:FatturaElettronica>
