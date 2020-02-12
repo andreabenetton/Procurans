@@ -236,11 +236,11 @@ void MainWindow::executeElencoFatture()
             QSharedPointer<ODSCell> pt(new ODSCellFloat(imponibile));
             columns.append(pt);
 
-            double iva = grid->model()->data(grid->model()->index(crow,2)).toFloat();
-            QSharedPointer<ODSCell> pt1(new ODSCellFloat(iva));
+            double imposta = grid->model()->data(grid->model()->index(crow,3)).toFloat();
+            QSharedPointer<ODSCell> pt1(new ODSCellFloat(imposta));
             columns.append(pt1);
 
-            QSharedPointer<ODSCell> pt2(new ODSCellFloat(iva));
+            QSharedPointer<ODSCell> pt2(new ODSCellFloat(imponibile + imposta));
             columns.append(pt2);
         }
 
@@ -290,7 +290,7 @@ void MainWindow::executeMastriniFornitori()
 
     QString entity = this->findChild<QLineEdit*>("entitaEdit")->text();
     QString numero = this->findChild<QLineEdit*>("numeroEdit")->text();
-    double imponibile = (this->findChild<QLineEdit*>("imponibileEdit")->text()).toDouble();
+    double totale = (this->findChild<QLineEdit*>("totaleEdit")->text()).toDouble();
 
     QTableView *grid = ui->paymentsTable;
 
@@ -333,7 +333,7 @@ void MainWindow::executeMastriniFornitori()
         }
 
         if (crow == 0) {
-            QSharedPointer<ODSCell> pt(new ODSCellFloat(imponibile));
+            QSharedPointer<ODSCell> pt(new ODSCellFloat(totale));
             columns.append(pt);
         }
         else {
