@@ -471,7 +471,7 @@ void MainWindow::executePrimaNota()
         }
 
         {
-            QSharedPointer<ODSCell> pt(new ODSCellEmpty(7));
+            QSharedPointer<ODSCell> pt(new ODSCellEmpty(10));
             columns.append(pt);
         }
 
@@ -486,7 +486,13 @@ void MainWindow::executePrimaNota()
     for(QString filename : filelist.keys())
     {
         QString year = filename.split(".").value(0).right(4);
-        QString pathandfilename = QDir(QDir(m_setting->getPath(Settings::Execute::primanota)).filePath(year)).filePath(filename);
+
+        QString yearpath = QDir(m_setting->getPath(Settings::Execute::primanota)).filePath(year);
+        if (!QDir(yearpath).exists()) {
+            QDir().mkdir(yearpath);
+        }
+
+        QString pathandfilename = QDir(yearpath).filePath(filename);
 
         if(!QFileInfo::exists(pathandfilename)) {
             qInfo(logInfo())  << "Prima Nota not exists: " << pathandfilename;
@@ -544,7 +550,7 @@ void MainWindow::executeScadenziario()
         QString cassa = grid->model()->data(grid->model()->index(crow,3)).toString();
         double importo = grid->model()->data(grid->model()->index(crow,2)).toFloat();
 
-        if((modalita == paymentMethodType["MP09"])||(modalita == paymentMethodType["MP05"])) {
+        if((modalita == paymentMethodType["MP12"])||(modalita == paymentMethodType["MP05"])) {
 
             QString filename = filenametemplate.arg(months[datascadenza.month()-1], QString::number(datascadenza.year()));
             QList<QList<QSharedPointer<ODSCell>>>* rows;
@@ -576,6 +582,11 @@ void MainWindow::executeScadenziario()
 
             {
                 QSharedPointer<ODSCell> pt(new ODSCellDate(datascadenza));
+                columns.append(pt);
+            }
+
+            {
+                QSharedPointer<ODSCell> pt(new ODSCellEmpty());
                 columns.append(pt);
             }
 
@@ -626,7 +637,13 @@ void MainWindow::executeScadenziario()
     for(QString filename : filelist.keys())
     {
         QString year = filename.split(".").value(0).right(4);
-        QString pathandfilename = QDir(QDir(m_setting->getPath(Settings::Execute::scadenziario)).filePath(year)).filePath(filename);
+
+        QString yearpath = QDir(m_setting->getPath(Settings::Execute::scadenziario)).filePath(year);
+        if (!QDir(yearpath).exists()) {
+            QDir().mkdir(yearpath);
+        }
+
+        QString pathandfilename = QDir(yearpath).filePath(filename);
 
         if(!QFileInfo::exists(pathandfilename)) {
             qInfo(logInfo())  << "Scadenziario not exists: " << pathandfilename;
