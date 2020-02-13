@@ -836,6 +836,15 @@ void MainWindow::parseXMLFile(const QString &fileName)
     xml.clear();
     file.close();
 
+    if(paymentsData.isEmpty()) {
+        QMap<QString, QString> payment;
+       // "ModalitaPagamento",
+       //     "DataScadenzaPagamento",
+
+        payment.insert("ImportoPagamento", headerData.value("ImportoTotaleDocumento"));
+        paymentsData.append(payment);
+    }
+
     this->addHeaderToUI(headerData);
     this->addPaymentsToUI(paymentsData, createPaymentsGridSchema());
     this->addDetailsToUI(detailsData, createDetailsGridSchema());

@@ -86,7 +86,8 @@ void Settings::setPath(QMainWindow* window, Execute p)
     (
           window,
           "Seleziona cartella",
-          QDir::currentPath());
+          Settings::getPath(p)
+    );
     if (!path.isEmpty()) {
         switch (p)
         {
