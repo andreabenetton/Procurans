@@ -1,8 +1,9 @@
-#ifndef ODSSCHEMAFIELD_H
-#define ODSSCHEMAFIELD_H
+#ifndef ODSCELL_H
+#define ODSCELL_H
 
 #include <QObject>
 #include <QDate>
+#include <QMap>
 #include <QXmlStreamWriter>
 
 class ODSCell
@@ -10,36 +11,42 @@ class ODSCell
 public:
     ODSCell(int repeat = 1);
 
-    static const QString tag;
-    static const QString attribute;
-
-    virtual void Serialize(QXmlStreamWriter* writer)= 0;
+    virtual void Serialize(QXmlStreamWriter* writer, QString style = "")= 0;
 
 protected:
-    void WriteStart(QXmlStreamWriter* writer);
+    void WriteStart(QXmlStreamWriter* writer, QString style = "");
+    void WriteValue(QXmlStreamWriter* writer, QString value);
     void WriteEnd(QXmlStreamWriter* writer);
 
+    virtual QString TypeAttributeValue()= 0;
+    QString TypeAttributeKey();
+
     int repeated;
+    QString cellstyle;
 };
 
 
 class ODSCellEmpty: public ODSCell
 {
 public:
-    ODSCellEmpty(int repeated = 1);
-    void Serialize(QXmlStreamWriter* writer);
+    ODSCellEmpty(int repeat = 1);
+    void Serialize(QXmlStreamWriter* writer, QString style = "");
+
+protected:
+    QString TypeAttributeValue();
 };
 
 class ODSCellString: public ODSCell
 {
 public:
-    ODSCellString(QString text, int repeated = 1);
-    static const QString attributevalue;
-    static const QString valuesubtag;
+    ODSCellString(QString text, int repeat = 1);
 
-    void Serialize(QXmlStreamWriter* writer);
+    void Serialize(QXmlStreamWriter* writer, QString style = "");
 
     QString getText();
+
+protected:
+    QString TypeAttributeValue();
 
 private:
     QString valueText;
@@ -48,13 +55,14 @@ private:
 class ODSCellFloat: public ODSCell
 {
 public:
-    ODSCellFloat(double number, int repeated = 1);
-    static const QString attributevalue;
-    static const QString valuesubtag;
+    ODSCellFloat(double number, int repeat = 1);
 
-    void Serialize(QXmlStreamWriter* writer);
+    void Serialize(QXmlStreamWriter* writer, QString style = "");
 
     double getDouble();
+
+protected:
+    QString TypeAttributeValue();
 
 private:
     double valueNumber;
@@ -63,17 +71,43 @@ private:
 class ODSCellDate: public ODSCell
 {
 public:
-    ODSCellDate(QDate date, int repeated = 1) ;
-    static const QString attributevalue;
-    static const QString valuesubtag;
+    ODSCellDate(QDate date, int repeat = 1) ;
 
-    void Serialize(QXmlStreamWriter* writer);
+    void Serialize(QXmlStreamWriter* writer, QString style = "");
 
     QDate getDate();
+
+protected:
+    QString TypeAttributeValue();
 
 private:
     QDate valueDate;
 };
 
+class ODSCellCurrency: public ODSCell
+{
+public:
+    enum Currency {
+      EUR
+    };
 
-#endif // ODSSCHEMAFIELD_H
+    ODSCellCurrency(Currency currency, double amoount, int repeat = 1);
+
+    void Serialize(QXmlStreamWriter* writer, QString style = "");
+
+    double getAmount();
+    Currency getCurrency();
+
+protected:
+    QString TypeAttributeValue();
+
+private:
+    double valueAmount;
+    Currency valueCurrency;
+    QMap<Currency,QString> symbols;
+    QMap<Currency,QString> iso;
+
+};
+
+
+#endif // ODSCELL_H

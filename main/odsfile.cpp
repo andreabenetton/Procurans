@@ -1,6 +1,7 @@
 #include "odsfile.h"
 
 #include <QDebug>
+#include <QList>
 #include <QSaveFile>
 #include "logger.h"
 
@@ -53,7 +54,8 @@ void ODSContentFile::Parse()
     writer->setAutoFormatting(true);
     writer->setAutoFormattingIndent(2);
 
-    QXmlStreamAttributes at;
+    QXmlStreamAttributes row_fromprevious;
+    QList<QString>* cellstyles = nullptr;
 
     int cols = 0;
 
@@ -69,11 +71,11 @@ void ODSContentFile::Parse()
                 else
                     cols++;
             }
-        }
 
-        if(reader->isStartElement()){
             if(reader->qualifiedName() == "table:table-row"){
                 QXmlStreamAttributes ca = reader->attributes();
+                if(cellstyles!=nullptr) delete cellstyles;
+                cellstyles = new QList<QString>();
                 if(ca.hasAttribute("table:number-rows-repeated")){
                     if(ca.value("table:number-rows-repeated").toInt()>10){
                         do {
@@ -83,13 +85,19 @@ void ODSContentFile::Parse()
                         continue;
                     }
                 }
-                at = reader->attributes();
+                row_fromprevious = reader->attributes();
+            }
+            if(reader->qualifiedName() == "table:table-cell"){
+                QXmlStreamAttributes ca = reader->attributes();
+                if(ca.hasAttribute("table:style-name")){
+                    cellstyles->append(ca.value("table:style-name").toString());
+                }
             }
         }
 
         if(reader->isEndElement()){
             if(reader->qualifiedName() == "table:table"){
-                AddRows(writer, at, cols);
+                AddRows(writer, row_fromprevious, cols, cellstyles);
                 cols = 0;
             }
         }
@@ -103,7 +111,7 @@ void ODSContentFile::Parse()
     delete writer;
 }
 
-void ODSContentFile::AddRows(QXmlStreamWriter* writer, QXmlStreamAttributes at, int columns)
+void ODSContentFile::AddRows(QXmlStreamWriter* writer, QXmlStreamAttributes at, int columns, QList<QString>* cellstyles)
 {  
     for (int i = 0; i < rows->size(); ++i) {
         int cols = 0;
@@ -111,7 +119,7 @@ void ODSContentFile::AddRows(QXmlStreamWriter* writer, QXmlStreamAttributes at, 
         writer->writeAttributes(at);
         QList<QSharedPointer<ODSCell>> t = rows->at(i);
         for (auto &it : t) {
-               it->Serialize(writer);
+               it->Serialize(writer, cellstyles->at(i));
                cols++;
         }
         if(columns>cols){

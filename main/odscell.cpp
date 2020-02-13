@@ -5,11 +5,23 @@ ODSCell::ODSCell(int repeat)
     repeated = repeat;
 }
 
-void ODSCell::WriteStart(QXmlStreamWriter* writer)
+void ODSCell::WriteStart(QXmlStreamWriter* writer, QString style)
 {
-    writer->writeStartElement(ODSCell::tag);
+    writer->writeStartElement("table:table-cell");
     if(repeated>1)
         writer->writeAttribute("table:number-columns-repeated", QString::number(repeated));
+
+    if (cellstyle!="")
+        writer->writeAttribute("table:style-name", cellstyle);
+    else if (style!="")
+        writer->writeAttribute("table:style-name", style);
+}
+
+void ODSCell::WriteValue(QXmlStreamWriter* writer, QString value)
+{
+    if (!(value.isNull() || value.isEmpty())) {
+        writer->writeTextElement("text:p", value);
+    }
 }
 
 void ODSCell::WriteEnd(QXmlStreamWriter* writer)
@@ -17,16 +29,147 @@ void ODSCell::WriteEnd(QXmlStreamWriter* writer)
     writer->writeEndElement();
 }
 
-const QString ODSCell::tag = "table:table-cell";
-const QString ODSCell::attribute = "office:value-type";
+QString ODSCell::TypeAttributeKey()
+{
+    return "office:value-type";
+}
+
+
+// ODSCellEmpty ***************************
 
 ODSCellEmpty::ODSCellEmpty(int repeat) : ODSCell(repeat) {}
 
-void ODSCellEmpty::Serialize(QXmlStreamWriter* writer)
+QString ODSCellEmpty::TypeAttributeValue()
 {
-    WriteStart(writer);
+    return "";
+}
+
+void ODSCellEmpty::Serialize(QXmlStreamWriter* writer, QString style)
+{
+    WriteStart(writer, style);
     WriteEnd(writer);
 }
+
+// ODSCellString ***************************
+
+ODSCellString::ODSCellString(QString text, int repeat) : ODSCell(repeat)
+{
+    valueText = text;
+}
+
+QString ODSCellString::getText()
+{
+    return valueText;
+}
+
+QString ODSCellString::TypeAttributeValue()
+{
+    return "string";
+}
+
+void ODSCellString::Serialize(QXmlStreamWriter* writer, QString style)
+{
+    WriteStart(writer, style);
+    if (!(valueText.isNull() || valueText.isEmpty())) {
+        writer->writeAttribute(TypeAttributeKey(), TypeAttributeValue());
+        writer->writeAttribute("calcext:value-type", TypeAttributeValue());
+        WriteValue(writer, valueText);
+    }
+    WriteEnd(writer);
+}
+
+// ODSCellFloat ***************************
+
+ODSCellFloat::ODSCellFloat(double number, int repeat) : ODSCell(repeat)
+{
+    valueNumber = number;
+}
+
+double ODSCellFloat::getDouble()
+{
+    return valueNumber;
+}
+
+QString ODSCellFloat::TypeAttributeValue()
+{
+    return "float";
+}
+
+void ODSCellFloat::Serialize(QXmlStreamWriter* writer, QString style)
+{
+    WriteStart(writer, style);
+    writer->writeAttribute(TypeAttributeKey(), TypeAttributeValue());
+    writer->writeAttribute("calcext:value-type", TypeAttributeValue());
+    writer->writeAttribute("office:value", QString::number(valueNumber, 'f', 2));
+    WriteValue(writer, QString::number(valueNumber, 'f', 2).replace(".",","));
+    WriteEnd(writer);
+}
+
+// ODSCellCurrency ***************************
+
+ODSCellCurrency::ODSCellCurrency(Currency currency, double number, int repeat) : ODSCell(repeat)
+{
+    valueAmount = number;
+    valueCurrency = currency;
+    symbols.insert(Currency::EUR, "€");
+    iso.insert(Currency::EUR, "EUR");
+}
+
+double ODSCellCurrency::getAmount()
+{
+    return valueAmount;
+}
+
+ODSCellCurrency::Currency ODSCellCurrency::getCurrency()
+{
+    return valueCurrency;
+}
+
+QString ODSCellCurrency::TypeAttributeValue()
+{
+    return "currency";
+}
+
+void ODSCellCurrency::Serialize(QXmlStreamWriter* writer, QString style)
+{
+    WriteStart(writer, style);
+    writer->writeAttribute(TypeAttributeKey(), TypeAttributeValue());
+    writer->writeAttribute("calcext:value-type", TypeAttributeValue());
+    writer->writeAttribute("office:value", QString::number(valueAmount, 'f', 2));
+    writer->writeAttribute("office:currency", iso.value(valueCurrency));
+    WriteValue(writer, QString::number(valueAmount, 'f', 2).replace(".",","));
+    WriteEnd(writer);
+}
+
+// ODSCellDate ***************************
+
+ODSCellDate::ODSCellDate(QDate date, int repeat) : ODSCell(repeat)
+{
+    valueDate = date;
+}
+
+QDate ODSCellDate::getDate()
+{
+    return valueDate;
+}
+
+QString ODSCellDate::TypeAttributeValue()
+{
+    return "date";
+}
+
+void ODSCellDate::Serialize(QXmlStreamWriter* writer, QString style)
+{
+    WriteStart(writer, style);
+    if (!valueDate.isNull() && valueDate.isValid()) {
+        writer->writeAttribute(TypeAttributeKey(), TypeAttributeValue());
+        writer->writeAttribute("calcext:value-type", TypeAttributeValue());
+        writer->writeAttribute("office:date-value", valueDate.toString("yyyy-MM-dd"));
+        WriteValue(writer, valueDate.toString("dd/MM/yyyy"));
+    }
+    WriteEnd(writer);
+}
+
 
 //ODSCell *ODSCell::Builder(QXmlStreamReader& reader)
 //{
@@ -40,20 +183,6 @@ void ODSCellEmpty::Serialize(QXmlStreamWriter* writer)
 //    }
 //    return nullptr;
 //}
-
-ODSCellString::ODSCellString(QString text, int repeat) : ODSCell(repeat)
-{
-    valueText = text;
-}
-
-const QString ODSCellString::attributevalue = "string";
-const QString ODSCellString::valuesubtag = "text:p";
-
-QString ODSCellString::getText()
-{
-    return valueText;
-}
-
 
 //void ODSCellString::Parse()
 //{
@@ -72,66 +201,3 @@ QString ODSCellString::getText()
 
 //    while(isNotEndElementNamed(ODSCell::tag));
 //}
-
-
-
-void ODSCellString::Serialize(QXmlStreamWriter* writer)
-{
-    WriteStart(writer);
-    if (!(valueText.isNull() || valueText.isEmpty())) {
-        writer->writeAttribute(ODSCell::attribute, ODSCellString::attributevalue);
-        writer->writeAttribute("calcext:value-type", ODSCellString::attributevalue);
-        writer->writeTextElement(ODSCellString::valuesubtag, valueText);
-    }
-    WriteEnd(writer);
-}
-
-ODSCellFloat::ODSCellFloat(double number, int repeat) : ODSCell(repeat)
-{
-    valueNumber = number;
-}
-
-const QString ODSCellFloat::attributevalue = "float";
-const QString ODSCellFloat::valuesubtag = "text:p";
-
-double ODSCellFloat::getDouble()
-{
-    return valueNumber;
-}
-
-void ODSCellFloat::Serialize(QXmlStreamWriter* writer)
-{
-    WriteStart(writer);
-    writer->writeAttribute(ODSCell::attribute, ODSCellFloat::attributevalue);
-    writer->writeAttribute("office:value", QString::number(valueNumber, 'f', 2));
-    writer->writeAttribute("calcext:value-type", ODSCellFloat::attributevalue);
-    writer->writeTextElement(ODSCellFloat::valuesubtag, QString::number(valueNumber, 'f', 2).replace(".",","));
-    WriteEnd(writer);
-}
-
-ODSCellDate::ODSCellDate(QDate date, int repeat) : ODSCell(repeat)
-{
-    valueDate = date;
-}
-
-const QString ODSCellDate::attributevalue = "date";
-const QString ODSCellDate::valuesubtag = "text:p";
-
-QDate ODSCellDate::getDate()
-{
-    return valueDate;
-}
-
-
-void ODSCellDate::Serialize(QXmlStreamWriter* writer)
-{
-    WriteStart(writer);
-    if (!valueDate.isNull() && valueDate.isValid()) {
-        writer->writeAttribute(ODSCell::attribute, ODSCellDate::attributevalue);
-        writer->writeAttribute("office:date-value", valueDate.toString("yyyy-MM-dd"));
-        writer->writeAttribute("calcext:value-type", ODSCellDate::attributevalue);
-        writer->writeTextElement(ODSCellDate::valuesubtag, valueDate.toString("dd/MM/yyyy"));
-    }
-    WriteEnd(writer);
-}
-

@@ -1,5 +1,5 @@
-#ifndef ODSOBJECT_H
-#define ODSOBJECT_H
+#ifndef ODSDOCUMENT_H
+#define ODSDOCUMENT_H
 
 #include <QObject>
 #include <QTemporaryDir>
@@ -32,4 +32,4 @@ private:
     ODSContentFile* contentfile;
 };
 
-#endif // ODSOBJECT_H
+#endif // ODSDOCUMENT_H

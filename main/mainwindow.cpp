@@ -471,7 +471,7 @@ void MainWindow::executePrimaNota()
         }
 
         {
-            QSharedPointer<ODSCell> pt(new ODSCellEmpty(10));
+            QSharedPointer<ODSCell> pt(new ODSCellEmpty(3));
             columns.append(pt);
         }
 
