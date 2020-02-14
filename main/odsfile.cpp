@@ -54,7 +54,7 @@ void ODSContentFile::Parse()
     writer->setAutoFormatting(true);
     writer->setAutoFormattingIndent(2);
 
-    QXmlStreamAttributes row_fromprevious;
+    QString row_fromprevious;
     QList<QString>* cellstyles = nullptr;
 
     int cols = 0;
@@ -64,33 +64,54 @@ void ODSContentFile::Parse()
 
         if(reader->isStartElement()){
             if(reader->qualifiedName() == "table:table-column"){
-                QXmlStreamAttributes ca = reader->attributes();
-                if(ca.hasAttribute("table:number-columns-repeated")){
-                    cols += ca.value("table:number-columns-repeated").toInt();
-                }
-                else
-                    cols++;
-            }
-
-            if(reader->qualifiedName() == "table:table-row"){
-                QXmlStreamAttributes ca = reader->attributes();
-                if(cellstyles!=nullptr) delete cellstyles;
-                cellstyles = new QList<QString>();
-                if(ca.hasAttribute("table:number-rows-repeated")){
-                    if(ca.value("table:number-rows-repeated").toInt()>10){
-                        do {
-                            reader->readNext();
-                        }
-                        while (!(reader->isEndElement() && reader->qualifiedName() == "table:table-row"));
-                        continue;
+                bool adddone = false;
+                for (auto &it : reader->attributes()) {
+                    if(it.name()=="number-columns-repeated"){
+                        cols += it.value().toInt();
+                        adddone = true;
                     }
                 }
-                row_fromprevious = reader->attributes();
+                if(!adddone) cols++;
             }
+
+            bool breakcicle = false;
+
+            if(reader->qualifiedName() == "table:table-row"){
+                if(cellstyles!=nullptr) delete cellstyles;
+                cellstyles = new QList<QString>();
+
+                for (auto &it : reader->attributes()) {
+                    if(it.name()=="number-rows-repeated"){
+                        if(it.value().toInt()>10){
+                           do {
+                               reader->readNext();
+                           }
+                           while (!(reader->isEndElement() && reader->qualifiedName() == "table:table-row"));
+                           breakcicle = true;
+                        }
+                    }
+
+                    if(it.name()=="style-name"){
+                       row_fromprevious = it.value().toString();
+                    }
+                }
+
+                if(breakcicle) continue;
+            }
+
             if(reader->qualifiedName() == "table:table-cell"){
-                QXmlStreamAttributes ca = reader->attributes();
-                if(ca.hasAttribute("table:style-name")){
-                    cellstyles->append(ca.value("table:style-name").toString());
+                int repeated=1;
+                QString style = "";
+                for (auto &it : reader->attributes()) {
+                    if(it.name()=="number-columns-repeated"){
+                        repeated = it.value().toInt();
+                    }
+                    if(it.name()=="style-name"){
+                        style = it.value().toString();
+                    }
+                }
+                for (int o = 0; o < repeated; ++o) {
+                    cellstyles->append(style);
                 }
             }
         }
@@ -103,7 +124,6 @@ void ODSContentFile::Parse()
         }
 
         writeCurrentToken(writer, *reader);
-
     }
     while(!reader->atEnd() && !reader->hasError());
 
@@ -111,22 +131,29 @@ void ODSContentFile::Parse()
     delete writer;
 }
 
-void ODSContentFile::AddRows(QXmlStreamWriter* writer, QXmlStreamAttributes at, int columns, QList<QString>* cellstyles)
+void ODSContentFile::AddRows(QXmlStreamWriter* writer, QString previousrowstyle, int columns, QList<QString>* cellstyles)
 {  
     for (int i = 0; i < rows->size(); ++i) {
         int cols = 0;
         writer->writeStartElement("table:table-row");
+
+        QXmlStreamAttributes at;
+        at.append("table:style-name", previousrowstyle);
         writer->writeAttributes(at);
+
         QList<QSharedPointer<ODSCell>> t = rows->at(i);
-        for (auto &it : t) {
-               it->Serialize(writer, cellstyles->at(i));
-               cols++;
+
+        for (auto &it : t) { 
+            it->Serialize(writer, cellstyles->at(cols));
+            cols++;
         }
+
         if(columns>cols){
             ODSCellEmpty e(columns-cols);
             e.Serialize(writer);
         }
         writer->writeEndElement();
+
     }
 }
 

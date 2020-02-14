@@ -36,7 +36,7 @@ public:
     void Add(QList<QList<QSharedPointer<ODSCell>>>* rowstoadd);
 
 private:
-    void AddRows(QXmlStreamWriter* writer, QXmlStreamAttributes at, int columns, QList<QString>* cellstyles);
+    void AddRows(QXmlStreamWriter* writer, QString at, int columns, QList<QString>* cellstyles);
 
     QList<QList<QSharedPointer<ODSCell>>>* rows;
 

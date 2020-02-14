@@ -226,7 +226,7 @@ void MainWindow::execute()
         QFile::rename(curFile, curFile + "_importato");
     }
 
-    //QMessageBox::about(this, tr("Esito dell'operazione"), result);
+    QMessageBox::information(this, tr("Esito dell'operazione"), result);
 }
 
 QString MainWindow::executeElencoFatture()
@@ -577,9 +577,6 @@ QString MainWindow::executeScadenziario()
 {
     QString filenametemplate = "%1 %2.ods";
 
-    QDateEdit* qde = this->findChild<QDateEdit*>("dataemissioneEdit");
-    QDate dataemissione = qde->date();
-
     QString entity = this->findChild<QLineEdit*>("entitaEdit")->text();
     QString numero = this->findChild<QLineEdit*>("numeroEdit")->text();
 
@@ -725,9 +722,9 @@ QString MainWindow::executeScadenziario()
     }
 
     if (ok)
-        return "N. " + QString::number(crow) + " righe aggiunte a N. " + QString::number(filelist.count()) + " files prima nota";
+        return "N. " + QString::number(crow) + " righe aggiunte a N. " + QString::number(filelist.count()) + " files scadenziario";
     else
-        return "Errore nel salvataggio di almeno un file prima nota";
+        return "Errore nel salvataggio di almeno un file scadenziario";
 }
 
 void MainWindow::createActions()
