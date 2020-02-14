@@ -105,10 +105,10 @@ private:
 
     double computeTotal(QList< QMap<QString,QString> >& data, QString xmlfield);
 
-    void executeElencoFatture();
-    void executeMastriniFornitori();
-    void executePrimaNota();
-    void executeScadenziario();
+    QString executeElencoFatture();
+    QString executeMastriniFornitori();
+    QString executePrimaNota();
+    QString executeScadenziario();
 
     QString curFile;
     QHash<QString, QString> paymentMethodType;

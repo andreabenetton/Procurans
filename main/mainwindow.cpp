@@ -187,25 +187,54 @@ void MainWindow::setPathFattureElettroniche()
 
 void MainWindow::execute()
 {
-    if(m_setting->isExecute(Settings::Execute::elencofatture))
-        executeElencoFatture();
-    if(m_setting->isExecute(Settings::Execute::mastrinifornitori))
-        executeMastriniFornitori();
-    if(m_setting->isExecute(Settings::Execute::primanota))
-        executePrimaNota();
-    if(m_setting->isExecute(Settings::Execute::scadenziario))
-        executeScadenziario();
+    QString result;
 
-    QFile::rename(curFile, curFile + "_importato");
+    QDateEdit* qde = this->findChild<QDateEdit*>("dataemissioneEdit");
+    if (qde->date().isNull() || !(qde->date().isValid())) {
+        result = "<p>Errore data di emissione non valida</p>";
+    }
+    else {
+
+        if (m_setting->isExecute(Settings::Execute::elencofatture))
+        {
+            result.append("<p>");
+            result.append(executeElencoFatture());
+            result.append("</p>");
+        }
+
+        if (m_setting->isExecute(Settings::Execute::mastrinifornitori))
+        {
+            result.append("<p>");
+            result.append(executeMastriniFornitori());
+            result.append("</p>");
+        }
+
+        if (m_setting->isExecute(Settings::Execute::primanota))
+        {
+            result.append("<p>");
+            result.append(executePrimaNota());
+            result.append("</p>");
+        }
+
+        if (m_setting->isExecute(Settings::Execute::scadenziario))
+        {
+            result.append("<p>");
+            result.append(executeScadenziario());
+            result.append("</p>");
+        }
+
+        QFile::rename(curFile, curFile + "_importato");
+    }
+
+    //QMessageBox::about(this, tr("Esito dell'operazione"), result);
 }
 
-void MainWindow::executeElencoFatture()
+QString MainWindow::executeElencoFatture()
 {
     QString filenametemplate = "Fatt. %1 %2%3.ods";
     QString filename;
 
     QDateEdit* qde = this->findChild<QDateEdit*>("dataemissioneEdit");
-    if (qde == nullptr) return;
 
     QString entity = this->findChild<QLineEdit*>("entitaEdit")->text();
     QString numero = this->findChild<QLineEdit*>("numeroEdit")->text();
@@ -214,7 +243,9 @@ void MainWindow::executeElencoFatture()
 
     QList<QList<QSharedPointer<ODSCell>>> rows;
 
-    for (int crow = 0; crow < grid->model()->rowCount(); crow++) {
+    int crow = 0;
+
+    for (crow = 0; crow < grid->model()->rowCount(); crow++) {
 
         QList<QSharedPointer<ODSCell>> columns;
 
@@ -258,7 +289,7 @@ void MainWindow::executeElencoFatture()
 
     if(!QFileInfo(pathandfilename).isFile()){
         qWarning(logWarning())  << "A folder exists with same name: " << pathandfilename;
-        return;
+        return "Errore cartella con lo stesso nome del file ods";
     }
 
     qInfo(logInfo())  << "Adding to elenco fatture: " << pathandfilename;
@@ -275,18 +306,21 @@ void MainWindow::executeElencoFatture()
             dir.rename(pathandfilename, QDir(backuppath).filePath(backupfilename));
     }
     book.AddRowToContent(&rows);
-    book.Save(pathandfilename);
+    if(book.Save(pathandfilename))
+        return "N. " + QString::number(crow) + " righe aggiunte al file fatture";
+    else
+        return "Errore nel salvataggio file fatture";
+
 }
 
-void MainWindow::executeMastriniFornitori()
+QString MainWindow::executeMastriniFornitori()
 {
     QString filenametemplate = "%1%2.ods";
     QString filename;
 
     QDateEdit* qde = this->findChild<QDateEdit*>("dataemissioneEdit");
-    if (qde == nullptr) return;
-    QDate dataemissione = QDate::fromString(qde->text(),"dd/MM/yyyy");
-    if (!dataemissione.isValid()) return;
+
+    QDate dataemissione = qde->date();
 
     QString entity = this->findChild<QLineEdit*>("entitaEdit")->text();
     QString numero = this->findChild<QLineEdit*>("numeroEdit")->text();
@@ -296,7 +330,9 @@ void MainWindow::executeMastriniFornitori()
 
     QList<QList<QSharedPointer<ODSCell>>> rows;
 
-    for (int crow = 0; crow < grid->model()->rowCount(); crow++) {
+    int crow = 0;
+
+    for (crow = 0; crow < grid->model()->rowCount(); crow++) {
 
         QDate datascadenza = QDate::fromString(grid->model()->data(grid->model()->index(crow,1)).toString(),"dd/MM/yyyy");
         double importo = grid->model()->data(grid->model()->index(crow,2)).toFloat();
@@ -390,7 +426,7 @@ void MainWindow::executeMastriniFornitori()
 
     if(!QFileInfo(pathandfilename).isFile()){
         qWarning(logWarning())  << "A folder exists with same name: " << pathandfilename;
-        return;
+        return "Errore cartella con lo stesso nome del file ods";
     }
 
     qInfo(logInfo())  << "Adding to mastrino fornitore: " << pathandfilename;
@@ -407,19 +443,21 @@ void MainWindow::executeMastriniFornitori()
             dir.rename(pathandfilename, QDir(backuppath).filePath(backupfilename));
     }
     book.AddRowToContent(&rows);
-    book.Save(pathandfilename);
+    if (book.Save(pathandfilename))
+        return "N. " + QString::number(crow) + " righe aggiunte al file mastrino fornitore";
+    else
+        return "Errore nel salvataggio file mastrino fornitore";
 
 }
 
-void MainWindow::executePrimaNota()
+QString MainWindow::executePrimaNota()
 {
     QString filenametemplate = "%1 %2 %3.ods";
     QString rowcommenttemplate = "A Favore di %1 Saldo Rata/Fatt. %2 del %3 di %4, rata %5/%6";
 
     QDateEdit* qde = this->findChild<QDateEdit*>("dataemissioneEdit");
-    if (qde == nullptr) return;
-    QDate dataemissione = QDate::fromString(qde->text(),"dd/MM/yyyy");
-    if (!dataemissione.isValid()) return;
+
+    QDate dataemissione = qde->date();
 
     QString entity = this->findChild<QLineEdit*>("entitaEdit")->text();
     QString numero = this->findChild<QLineEdit*>("numeroEdit")->text();
@@ -430,7 +468,9 @@ void MainWindow::executePrimaNota()
     QMap<QString, QList<QList<QSharedPointer<ODSCell>>>*> filelist;
 
     int numberofrows = grid->model()->rowCount();
-    for (int crow = 0; crow < numberofrows; crow++) {
+
+    int crow = 0;
+    for (crow = 0; crow < numberofrows; crow++) {
 
         QDate datascadenza = QDate::fromString(grid->model()->data(grid->model()->index(crow,1)).toString(),"dd/MM/yyyy");
         if (!datascadenza.isValid())
@@ -483,6 +523,8 @@ void MainWindow::executePrimaNota()
         rows->append(columns);
     }
 
+    bool ok = true;
+
     for(QString filename : filelist.keys())
     {
         QString year = filename.split(".").value(0).right(4);
@@ -502,7 +544,7 @@ void MainWindow::executePrimaNota()
 
         if(!QFileInfo(pathandfilename).isFile()){
             qWarning(logWarning())  << "A folder exists with same name: " << pathandfilename;
-            return;
+            return "Errore cartella con lo stesso nome del file ods";
         }
 
         qInfo(logInfo())  << "Adding to prima nota: " << pathandfilename;
@@ -521,19 +563,22 @@ void MainWindow::executePrimaNota()
         }
 
         book.AddRowToContent(filelist.value(filename));
-        book.Save(pathandfilename);
+        ok = (ok && book.Save(pathandfilename));
     }
+
+    if (ok)
+        return "N. " + QString::number(crow) + " righe aggiunte a N. " + QString::number(filelist.count()) + " files prima nota";
+    else
+        return "Errore nel salvataggio di almeno un file prima nota";
 
 }
 
-void MainWindow::executeScadenziario()
+QString MainWindow::executeScadenziario()
 {
     QString filenametemplate = "%1 %2.ods";
 
     QDateEdit* qde = this->findChild<QDateEdit*>("dataemissioneEdit");
-    if (qde == nullptr) return;
-    QDate dataemissione = QDate::fromString(qde->text(),"dd/MM/yyyy");
-    if (!dataemissione.isValid()) return;
+    QDate dataemissione = qde->date();
 
     QString entity = this->findChild<QLineEdit*>("entitaEdit")->text();
     QString numero = this->findChild<QLineEdit*>("numeroEdit")->text();
@@ -543,7 +588,10 @@ void MainWindow::executeScadenziario()
     QMap<QString, QList<QList<QSharedPointer<ODSCell>>>*> filelist;
 
     int numberofrows = grid->model()->rowCount();
-    for (int crow = 0; crow < numberofrows; crow++) {
+
+    int crow = 0;
+
+    for (crow = 0; crow < numberofrows; crow++) {
 
         QString modalita = grid->model()->data(grid->model()->index(crow, 0)).toString();
         QDate datascadenza = QDate::fromString(grid->model()->data(grid->model()->index(crow,1)).toString(),"dd/MM/yyyy");
@@ -634,6 +682,8 @@ void MainWindow::executeScadenziario()
         }
     }
 
+    bool ok = true;
+
     for(QString filename : filelist.keys())
     {
         QString year = filename.split(".").value(0).right(4);
@@ -653,7 +703,7 @@ void MainWindow::executeScadenziario()
 
         if(!QFileInfo(pathandfilename).isFile()){
             qWarning(logWarning())  << "A folder exists with same name: " << pathandfilename;
-            return;
+            return "Errore cartella con lo stesso nome del file ods";
         }
 
         qInfo(logInfo())  << "Adding to scadenziario " << pathandfilename;
@@ -671,8 +721,13 @@ void MainWindow::executeScadenziario()
         }
 
         book.AddRowToContent(filelist.value(filename));
-        book.Save(pathandfilename);
+        ok = (ok && book.Save(pathandfilename));
     }
+
+    if (ok)
+        return "N. " + QString::number(crow) + " righe aggiunte a N. " + QString::number(filelist.count()) + " files prima nota";
+    else
+        return "Errore nel salvataggio di almeno un file prima nota";
 }
 
 void MainWindow::createActions()

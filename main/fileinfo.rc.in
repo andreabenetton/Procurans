@@ -11,6 +11,8 @@
 	#include <winres.h>
 #endif
 
+IDI_ICON1 ICON DISCARDABLE "images\\split.ico"
+
 LANGUAGE LANG_ITALIAN, SUBLANG_DEFAULT
 
 1 VERSIONINFO
