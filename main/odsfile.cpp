@@ -145,7 +145,7 @@ void ODSContentFile::AddRows(QXmlStreamWriter* writer, QString previousrowstyle,
 
         for (auto &it : t) { 
             it->Serialize(writer, cellstyles->at(cols));
-            cols++;
+            cols += it->GetRepeated();
         }
 
         if(columns>cols){

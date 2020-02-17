@@ -10,6 +10,7 @@ class ODSCell
 {
 public:
     ODSCell(int repeat = 1);
+    int GetRepeated();
 
     virtual void Serialize(QXmlStreamWriter* writer, QString style = "")= 0;
 

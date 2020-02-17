@@ -113,6 +113,8 @@ private:
     QString curFile;
     QHash<QString, QString> paymentMethodType;
     QHash<QString, QString> naturaType;
+    QHash<QString, QString> bankAccount;
+
     Settings* m_setting;
 
     QString months[12] = { "Gennaio",

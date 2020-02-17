@@ -70,6 +70,11 @@ MainWindow::MainWindow(QWidget *parent)
     naturaType["N6"] = "Reverse charge";
     naturaType["N7"] = "IVA assolta in altro stato UE";
 
+    bankAccount["IT64U0503451861000000001728"] = "BPM";
+    bankAccount["IT23P0503451861000000001817"] = "BPM Fotovoltaico";
+    bankAccount["IT65Z0306951030615272528476"] = "Intesa Sanpaolo";
+    bankAccount["IT33U0843051030000000180277"] = "C.R.A.C.";
+
     ui->setupUi(this);
 
     createActions();
@@ -511,7 +516,7 @@ QString MainWindow::executePrimaNota()
         }
 
         {
-            QSharedPointer<ODSCell> pt(new ODSCellEmpty(3));
+            QSharedPointer<ODSCell> pt(new ODSCellEmpty(4));
             columns.append(pt);
         }
 
@@ -1039,7 +1044,8 @@ QMap<QString, QString> MainWindow::parsePayment(QXmlStreamReader& xml)
 
     addSubelementsDataToMap(xml, "DettaglioPagamento", { "ModalitaPagamento",
                                                          "DataScadenzaPagamento",
-                                                         "ImportoPagamento" }, payment);
+                                                         "ImportoPagamento",
+                                                         "IBAN"}, payment);
     return payment;
 }
 
@@ -1172,7 +1178,7 @@ QList<GridSchemaField*> MainWindow::createPaymentsGridSchema()
     schema.append(new GridSchemaField(QObject::tr("Modalita"), "ModalitaPagamento", &paymentMethodType));
     schema.append(new GridSchemaField(QObject::tr("Scadenza"), "DataScadenzaPagamento", DateColumn));
     schema.append(new GridSchemaField(QObject::tr("Importo"), "ImportoPagamento", FloatColumn, 2));
-    schema.append(new GridSchemaField(QObject::tr("Banca"), ""));
+    schema.append(new GridSchemaField(QObject::tr("Banca"), "IBAN", &bankAccount));
 
     return schema;
 }
@@ -1247,7 +1253,8 @@ void MainWindow::addPaymentsToUI(QList< QMap<QString,QString> >& paymentData, QL
 
     grid->setItemDelegateForColumn(0, cbid);
 
-    QStringList q = { "", "Banca BPM", "Banca Intesa", "CRAC" };
+    QStringList q(bankAccount.values());
+    q.append("");
     q.sort(Qt::CaseInsensitive);
     ComboBoxItemDelegate* cbid1 = new ComboBoxItemDelegate(q, grid);
 

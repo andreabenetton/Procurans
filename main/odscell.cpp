@@ -29,6 +29,11 @@ void ODSCell::WriteEnd(QXmlStreamWriter* writer)
     writer->writeEndElement();
 }
 
+int ODSCell::GetRepeated()
+{
+    return repeated;
+}
+
 QString ODSCell::TypeAttributeKey()
 {
     return "office:value-type";
