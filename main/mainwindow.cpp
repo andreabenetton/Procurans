@@ -921,6 +921,7 @@ void MainWindow::parseXMLFile(const QString &fileName)
     }
     statusBar()->showMessage(tr("Fattura validata"), 2000);
 */
+    this->setWindowTitle(QString(QApplication::applicationName() + ": " + strippedName(curFile)));
 
     statusBar()->showMessage(tr("Fattura caricata"), 2000);
 }
@@ -1216,7 +1217,7 @@ void MainWindow::addSummaryToUI(QList< QMap<QString,QString> >& summaryData, QLi
     z.sort(Qt::CaseInsensitive);
     ComboBoxItemDelegate* cbid = new ComboBoxItemDelegate(z, grid);
 
-    grid->setItemDelegateForColumn(3, cbid);
+    grid->setItemDelegateForColumn(4, cbid);
 
     QLineEdit* qle = this->findChild<QLineEdit*>("imponibileEdit");
     if (qle != nullptr) {
