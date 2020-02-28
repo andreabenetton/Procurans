@@ -35,6 +35,7 @@ find_package(Qt5Sql REQUIRED)
 find_package(Qt5Xml REQUIRED)
 
 set(src_files
+    license.h
     main.cpp
     mainwindow.cpp
     mainwindow.h
