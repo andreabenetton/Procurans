@@ -44,13 +44,29 @@ MainWindow::MainWindow(QWidget *parent)
     paymentMethodType["MP20"] = "SEPA Direct Debit CORE";
     paymentMethodType["MP21"] = "SEPA Direct Debit B2B";
     paymentMethodType["MP22"] = "Trattenuta su somme già riscosse";
+    paymentMethodType["MP23"] = "PagoPA";
 
     naturaType["N1"] = "Escluse ex. art. 15";
     naturaType["N2"] = "Non soggette";
     naturaType["N3"] = "Non Imponibili";
+    naturaType["N3.1"] = "Non Imponibili - esportazioni";
+    naturaType["N3.2"] = "Non Imponibili - cessioni intracomunitarie";
+    naturaType["N3.3"] = "Non Imponibili - cessioni verso San Marino";
+    naturaType["N3.4"] = "Non Imponibili - operazioni assimilate alle cessioni all'esportazione";
+    naturaType["N3.5"] = "Non Imponibili - a seguito di dichiarazioni d'intento";
+    naturaType["N3.6"] = "Non Imponibili - altre operazioni che non concorrono alla formazione del plafond";
     naturaType["N4"] = "Esenti";
     naturaType["N5"] = "Regime del margine";
-    naturaType["N6"] = "Reverse charge";
+    naturaType["N6"] = "Inversione contabile";
+    naturaType["N6.1"] = "Inversione contabile - cessione di rottami e altri materiali di recupero";
+    naturaType["N6.2"] = "Inversione contabile - cessione di oro e argento puro";
+    naturaType["N6.3"] = "Inversione contabile - subappalto nel settore edile";
+    naturaType["N6.4"] = "Inversione contabile - cessione di fabbricati";
+    naturaType["N6.5"] = "Inversione contabile - cessione di telefoni cellulari";
+    naturaType["N6.6"] = "Inversione contabile - cessione di prodotti elettronici";
+    naturaType["N6.7"] = "Inversione contabile - prestazioni comparto edile e settori connessi";
+    naturaType["N6.8"] = "Inversione contabile - operazioni settore energetico";
+    naturaType["N6.9"] = "Inversione contabile - altri casi";
     naturaType["N7"] = "IVA assolta in altro stato UE";
 
     bankAccount["IT64U0503451861000000001728"] = "BPM";
