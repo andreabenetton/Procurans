@@ -20,8 +20,8 @@ public:
     virtual QString Tag() = 0;
 
 protected:
-    QByteArray inbuffer;
-    QByteArray outbuffer;
+    QString inbuffer;
+    QString outbuffer;
 
     QXmlStreamReader* reader;
     QXmlStreamWriter* writer;

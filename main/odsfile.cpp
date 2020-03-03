@@ -19,7 +19,7 @@ void ODSFile::Load(const QString &full_path)
     }
 
     QTextStream in(&file);
-    inbuffer = in.readAll().toUtf8();
+    inbuffer = in.readAll();
 
     qInfo(logInfo()) << Tag() << " file loaded.";
 }
@@ -30,7 +30,7 @@ bool ODSFile::Save(const QString &full_path)
     file.open(QIODevice::WriteOnly | QIODevice::Truncate);
 
 
-    file.write(outbuffer);
+    file.write(outbuffer.toUtf8());
     const bool ok = file.commit();
 
     if (!ok)

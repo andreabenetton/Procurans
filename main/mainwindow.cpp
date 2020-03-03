@@ -268,14 +268,14 @@ QString MainWindow::executeElencoFatture()
         }
         {
             double imponibile = grid->model()->data(grid->model()->index(crow,1)).toFloat();
-            QSharedPointer<ODSCell> pt(new ODSCellFloat(imponibile));
+            QSharedPointer<ODSCell> pt(new ODSCellCurrency(ODSCurrency::EUR, imponibile));
             columns.append(pt);
 
             double imposta = grid->model()->data(grid->model()->index(crow,3)).toFloat();
-            QSharedPointer<ODSCell> pt1(new ODSCellFloat(imposta));
+            QSharedPointer<ODSCell> pt1(new ODSCellCurrency(ODSCurrency::EUR, imposta));
             columns.append(pt1);
 
-            QSharedPointer<ODSCell> pt2(new ODSCellFloat(imponibile + imposta));
+            QSharedPointer<ODSCell> pt2(new ODSCellCurrency(ODSCurrency::EUR, imponibile + imposta));
             columns.append(pt2);
         }
 
@@ -373,7 +373,7 @@ QString MainWindow::executeMastriniFornitori()
         }
 
         if (crow == 0) {
-            QSharedPointer<ODSCell> pt(new ODSCellFloat(totale));
+            QSharedPointer<ODSCell> pt(new ODSCellCurrency(ODSCurrency::EUR, totale));
             columns.append(pt);
         }
         else {
@@ -397,7 +397,7 @@ QString MainWindow::executeMastriniFornitori()
         }
 
         {
-            QSharedPointer<ODSCell> pt(new ODSCellFloat(importo));
+            QSharedPointer<ODSCell> pt(new ODSCellCurrency(ODSCurrency::EUR, importo));
             columns.append(pt);
         }
 
@@ -520,7 +520,7 @@ QString MainWindow::executePrimaNota()
         }
 
         {
-            QSharedPointer<ODSCell> pt(new ODSCellFloat(importo));
+            QSharedPointer<ODSCell> pt(new ODSCellCurrency(ODSCurrency::EUR, importo));
             columns.append(pt);
         }
 
@@ -642,7 +642,7 @@ QString MainWindow::executeScadenziario()
             {
             ODSCell* p;
                 if(cassa=="CRAC")
-                    p = new ODSCellFloat(importo);
+                    p = new ODSCellCurrency(ODSCurrency::EUR, importo);
                 else
                     p = new ODSCellEmpty();
                 QSharedPointer<ODSCell> pt(p);
@@ -657,7 +657,7 @@ QString MainWindow::executeScadenziario()
             {
             ODSCell* p;
                 if(cassa=="Banca Intesa")
-                    p = new ODSCellFloat(importo);
+                    p = new ODSCellCurrency(ODSCurrency::EUR, importo);
                 else
                     p = new ODSCellEmpty();
                 QSharedPointer<ODSCell> pt(p);
@@ -672,7 +672,7 @@ QString MainWindow::executeScadenziario()
             {
             ODSCell* p;
                 if(cassa=="Banca BPM")
-                    p = new ODSCellFloat(importo);
+                    p = new ODSCellCurrency(ODSCurrency::EUR, importo);
                 else
                     p = new ODSCellEmpty();
                 QSharedPointer<ODSCell> pt(p);

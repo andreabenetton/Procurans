@@ -88,28 +88,28 @@ private:
     QDate valueDate;
 };
 
+enum ODSCurrency {
+  EUR
+};
+
 class ODSCellCurrency: public ODSCell
 {
 public:
-    enum Currency {
-      EUR
-    };
-
-    ODSCellCurrency(Currency currency, double amoount, int repeat = 1);
+    ODSCellCurrency(ODSCurrency currency, double amoount, int repeat = 1);
 
     void Serialize(QXmlStreamWriter* writer, QString style = "");
 
     double getAmount();
-    Currency getCurrency();
+    ODSCurrency getCurrency();
 
 protected:
     QString TypeAttributeValue();
 
 private:
     double valueAmount;
-    Currency valueCurrency;
-    QMap<Currency,QString> symbols;
-    QMap<Currency,QString> iso;
+    ODSCurrency valueCurrency;
+    QMap<ODSCurrency,QString> symbols;
+    QMap<ODSCurrency,QString> iso;
 
 };
 

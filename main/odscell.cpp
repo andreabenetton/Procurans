@@ -115,12 +115,12 @@ void ODSCellFloat::Serialize(QXmlStreamWriter* writer, QString style)
 
 // ODSCellCurrency ***************************
 
-ODSCellCurrency::ODSCellCurrency(Currency currency, double number, int repeat) : ODSCell(repeat)
+ODSCellCurrency::ODSCellCurrency(ODSCurrency currency, double number, int repeat) : ODSCell(repeat)
 {
     valueAmount = number;
     valueCurrency = currency;
-    symbols.insert(Currency::EUR, "€");
-    iso.insert(Currency::EUR, "EUR");
+    symbols.insert(ODSCurrency::EUR, "€");
+    iso.insert(ODSCurrency::EUR, "EUR");
 }
 
 double ODSCellCurrency::getAmount()
@@ -128,7 +128,7 @@ double ODSCellCurrency::getAmount()
     return valueAmount;
 }
 
-ODSCellCurrency::Currency ODSCellCurrency::getCurrency()
+ODSCurrency ODSCellCurrency::getCurrency()
 {
     return valueCurrency;
 }
@@ -145,7 +145,18 @@ void ODSCellCurrency::Serialize(QXmlStreamWriter* writer, QString style)
     writer->writeAttribute("calcext:value-type", TypeAttributeValue());
     writer->writeAttribute("office:value", QString::number(valueAmount, 'f', 2));
     writer->writeAttribute("office:currency", iso.value(valueCurrency));
-    WriteValue(writer, QString::number(valueAmount, 'f', 2).replace(".",","));
+    QString out = "";
+    if(valueAmount<0) out = "-";
+    out += symbols.value(valueCurrency);
+    if(valueAmount<0)
+        out += QString::asprintf("%'.2f", -valueAmount);
+    else
+        out += QString::asprintf("%'.2f", valueAmount);
+    //out += QString::number(valueAmount, 'f', 2);
+    out.replace(".","!");
+    out.replace(",",".");
+    out.replace("!",",");
+    WriteValue(writer, out);
     WriteEnd(writer);
 }
 
