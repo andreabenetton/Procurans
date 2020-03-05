@@ -6,6 +6,7 @@
 #include <QTableView>
 #include <QDir>
 #include <QDebug>
+#include <QStringList>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -71,8 +72,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     bankAccount["IT64U0503451861000000001728"] = "BPM";
     bankAccount["IT23P0503451861000000001817"] = "BPM Fotovoltaico";
-    bankAccount["IT65Z0306951030615272528476"] = "Intesa Sanpaolo";
-    bankAccount["IT33U0843051030000000180277"] = "C.R.A.C.";
+    bankAccount["IT65Z0306951030615272528476"] = "Intesa";
+    bankAccount["IT33U0843051030000000180277"] = "CRAC";
 
     ui->setupUi(this);
 
@@ -641,7 +642,7 @@ QString MainWindow::executeScadenziario()
 
             {
             ODSCell* p;
-                if(cassa=="CRAC")
+                if(cassa==bankAccount["IT33U0843051030000000180277"])
                     p = new ODSCellCurrency(ODSCurrency::EUR, importo);
                 else
                     p = new ODSCellEmpty();
@@ -656,7 +657,7 @@ QString MainWindow::executeScadenziario()
 
             {
             ODSCell* p;
-                if(cassa=="Banca Intesa")
+                if(cassa==bankAccount["IT65Z0306951030615272528476"])
                     p = new ODSCellCurrency(ODSCurrency::EUR, importo);
                 else
                     p = new ODSCellEmpty();
@@ -671,7 +672,7 @@ QString MainWindow::executeScadenziario()
 
             {
             ODSCell* p;
-                if(cassa=="Banca BPM")
+                if(cassa==bankAccount["IT64U0503451861000000001728"])
                     p = new ODSCellCurrency(ODSCurrency::EUR, importo);
                 else
                     p = new ODSCellEmpty();
@@ -1168,6 +1169,7 @@ QList<GridSchemaField*> MainWindow::createDetailsGridSchema()
     schema.append(new GridSchemaField(QObject::tr("P.Unitario"), "PrezzoUnitario", FloatColumn, 2, true));
     schema.append(new GridSchemaField(QObject::tr("P.Totale"), "PrezzoTotale", FloatColumn, 2, true));
     schema.append(new GridSchemaField(QObject::tr("IVA"), "AliquotaIVA", FloatColumn, 0));
+    schema.append(new GridSchemaField(QObject::tr("Riferimento")));
 
     return schema;
 }
@@ -1186,7 +1188,7 @@ QList<GridSchemaField*> MainWindow::createPaymentsGridSchema()
 QList<GridSchemaField*> MainWindow::createSummaryGridSchema()
 {
     QList<GridSchemaField*> schema;
-    schema.append(new GridSchemaField(QObject::tr("Riferimento"), ""));
+    schema.append(new GridSchemaField(QObject::tr("Riferimento"), "Riferimento"));
     schema.append(new GridSchemaField(QObject::tr("Imponibile"), "ImponibileImporto", FloatColumn, 2));
     schema.append(new GridSchemaField(QObject::tr("Aliquota"), "AliquotaIVA", FloatColumn, 2));
     schema.append(new GridSchemaField(QObject::tr("Imposta"), "Imposta", FloatColumn, 2));
@@ -1212,11 +1214,11 @@ void MainWindow::addSummaryToUI(QList< QMap<QString,QString> >& summaryData, QLi
 
     grid->setModel(createGridModel(summaryData, summarySchema));
 
-    QStringList z(naturaType.values());
-    z.sort(Qt::CaseInsensitive);
-    ComboBoxItemDelegate* cbid = new ComboBoxItemDelegate(z, grid);
+    //QStringList z(naturaType.values());
+    //z.sort(Qt::CaseInsensitive);
+    //ComboBoxItemDelegate* cbid = new ComboBoxItemDelegate(z, grid);
 
-    grid->setItemDelegateForColumn(4, cbid);
+    //grid->setItemDelegateForColumn(4, cbid);
 
     QLineEdit* qle = this->findChild<QLineEdit*>("imponibileEdit");
     if (qle != nullptr) {
@@ -1231,15 +1233,81 @@ void MainWindow::addSummaryToUI(QList< QMap<QString,QString> >& summaryData, QLi
     }
 }
 
+void MainWindow::UpdateSummaryUI(const QModelIndex& topLeft, const QModelIndex& bottomRight)
+{
+    if((topLeft.column()==5)||(topLeft.column()==6))
+    {
+        QAbstractItemModel *detailsModel = ui->detailsTable->model();
+
+        QMap< QString, QMap<QString,QString>*> summaryData;
+
+        QMap<QString,QString> rowName;
+
+        for (int detailRow = 0; detailRow < detailsModel->rowCount(); ++detailRow) {
+
+            QString PrezzoTotale = detailsModel->data(detailsModel->index(detailRow, 4)).toString();
+            QString AliquotaIVA = detailsModel->data(detailsModel->index(detailRow, 5)).toString();
+            QString Riferimento = detailsModel->data(detailsModel->index(detailRow, 6)).toString();
+
+            QString rowName = AliquotaIVA + Riferimento;
+
+            QMap<QString,QString>* m = new QMap<QString,QString>;
+
+            float fPrezzoTotale = PrezzoTotale.toFloat();
+            float fImposta = fPrezzoTotale * AliquotaIVA.toFloat() / 100.00;
+
+            if (!summaryData.contains(rowName)) {
+                summaryData.insert(rowName, m);
+                m->insert("ImponibileImporto", QString::number(fPrezzoTotale));
+                m->insert("Riferimento", Riferimento);
+                m->insert("AliquotaIVA", AliquotaIVA);
+                m->insert("Imposta", QString::number(fImposta));
+            }
+            else {
+                m = summaryData.value(rowName);
+                float fLastPrezzoTotale = m->value("ImponibileImporto").toFloat();
+                m->remove("ImponibileImporto");
+                m->insert("ImponibileImporto", QString::number(fLastPrezzoTotale + fPrezzoTotale));
+                float fLastImposta = m->value("Imposta").toFloat();
+                m->remove("Imposta");
+                m->insert("Imposta", QString::number(fLastImposta + fImposta));
+            }
+
+        }
+
+        QList< QMap<QString,QString> > summaryData2;
+
+        for (auto var : summaryData) {
+            summaryData2.append(*var);
+        }
+
+        addSummaryToUI(summaryData2, createSummaryGridSchema());
+
+        for (auto var : summaryData) {
+            delete var;
+        }
+    }
+}
+
 void MainWindow::addDetailsToUI(QList< QMap<QString,QString> >& detailsData, QList<GridSchemaField*> detailsSchema)
 {
     QTableView *grid = ui->detailsTable;
 
-    grid->setModel(createGridModel(detailsData, detailsSchema));
+    QStandardItemModel* itemmodel = createGridModel(detailsData, detailsSchema);
+    grid->setModel(itemmodel);
+
+    bool ok = connect(
+        itemmodel, &QStandardItemModel::dataChanged,
+        this, &MainWindow::UpdateSummaryUI
+    );
+
+    Q_ASSERT( ok );
 
     grid->resizeColumnsToContents();
     //grid->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 }
+
+
 
 void MainWindow::addPaymentsToUI(QList< QMap<QString,QString> >& paymentData, QList<GridSchemaField*> paymentSchema)
 {

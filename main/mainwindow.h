@@ -31,6 +31,10 @@ public:
 protected:
     void closeEvent(QCloseEvent *event) override;
 
+public slots:
+
+    void UpdateSummaryUI(const QModelIndex& topLeft, const QModelIndex& bottomRight);
+
 private slots:
     void open();
     void about();
