@@ -474,58 +474,66 @@ QString MainWindow::executePrimaNota()
 
     int numberofrows = grid->model()->rowCount();
 
-    int crow = 0;
+    int execrow, crow = 0;
+
     for (crow = 0; crow < numberofrows; crow++) {
 
-        QDate datascadenza = QDate::fromString(grid->model()->data(grid->model()->index(crow,1)).toString(),"dd/MM/yyyy");
-        if (!datascadenza.isValid())
-            datascadenza = dataemissione;
+        QString modalita = grid->model()->data(grid->model()->index(crow, 0)).toString();
 
-        QString cassa = grid->model()->data(grid->model()->index(crow,3)).toString();
-        double importo = grid->model()->data(grid->model()->index(crow,2)).toFloat();
+        if (modalita == paymentMethodType["MP12"]) {
+
+            execrow++;
+
+            QDate datascadenza = QDate::fromString(grid->model()->data(grid->model()->index(crow,1)).toString(),"dd/MM/yyyy");
+            if ((!datascadenza.isValid())||datascadenza.isNull())
+                datascadenza = dataemissione;
+
+            QString cassa = grid->model()->data(grid->model()->index(crow,3)).toString();
+            double importo = grid->model()->data(grid->model()->index(crow,2)).toFloat();
 
 
-        QString filename = filenametemplate.arg(cassa, months[datascadenza.month()-1], QString::number(datascadenza.year()), "");
+            QString filename = filenametemplate.arg(cassa, months[datascadenza.month()-1], QString::number(datascadenza.year()), "");
 
-        QList<QList<QSharedPointer<ODSCell>>>* rows;
-        if (!filelist.contains(filename)) {
-            rows = new QList<QList<QSharedPointer<ODSCell>>>();
-            filelist.insert(filename,  rows);
+            QList<QList<QSharedPointer<ODSCell>>>* rows;
+            if (!filelist.contains(filename)) {
+                rows = new QList<QList<QSharedPointer<ODSCell>>>();
+                filelist.insert(filename,  rows);
+            }
+            else {
+                rows = filelist.value(filename);
+            }
+
+            QString rowcomment = rowcommenttemplate.arg(entity, numero , dataemissione.toString("dd/MM/yyyy"),totale, QString::number(crow+1), QString::number(numberofrows));
+
+            QList<QSharedPointer<ODSCell>> columns;
+
+            {
+                QSharedPointer<ODSCell> pt(new ODSCellDate(datascadenza));
+                columns.append(pt);
+            }
+
+            {
+                QSharedPointer<ODSCell> pt(new ODSCellEmpty);
+                columns.append(pt);
+            }
+
+            {
+                QSharedPointer<ODSCell> pt(new ODSCellString(rowcomment));
+                columns.append(pt);
+            }
+
+            {
+                QSharedPointer<ODSCell> pt(new ODSCellEmpty(4));
+                columns.append(pt);
+            }
+
+            {
+                QSharedPointer<ODSCell> pt(new ODSCellCurrency(ODSCurrency::EUR, importo));
+                columns.append(pt);
+            }
+
+            rows->append(columns);
         }
-        else {
-            rows = filelist.value(filename);
-        }
-
-        QString rowcomment = rowcommenttemplate.arg(entity, numero , dataemissione.toString("dd/MM/yyyy"),totale, QString::number(crow+1), QString::number(numberofrows));
-
-        QList<QSharedPointer<ODSCell>> columns;
-
-        {
-            QSharedPointer<ODSCell> pt(new ODSCellDate(datascadenza));
-            columns.append(pt);
-        }
-
-        {
-            QSharedPointer<ODSCell> pt(new ODSCellEmpty);
-            columns.append(pt);
-        }
-
-        {
-            QSharedPointer<ODSCell> pt(new ODSCellString(rowcomment));
-            columns.append(pt);
-        }
-
-        {
-            QSharedPointer<ODSCell> pt(new ODSCellEmpty(4));
-            columns.append(pt);
-        }
-
-        {
-            QSharedPointer<ODSCell> pt(new ODSCellCurrency(ODSCurrency::EUR, importo));
-            columns.append(pt);
-        }
-
-        rows->append(columns);
     }
 
     bool ok = true;
@@ -572,7 +580,7 @@ QString MainWindow::executePrimaNota()
     }
 
     if (ok)
-        return "N. " + QString::number(crow) + " righe aggiunte a N. " + QString::number(filelist.count()) + " files prima nota";
+        return "N. " + QString::number(execrow) + " righe aggiunte a N. " + QString::number(filelist.count()) + " files prima nota";
     else
         return "Errore nel salvataggio di almeno un file prima nota";
 
@@ -585,22 +593,34 @@ QString MainWindow::executeScadenziario()
     QString entity = this->findChild<QLineEdit*>("entitaEdit")->text();
     QString numero = this->findChild<QLineEdit*>("numeroEdit")->text();
 
+    QDate dataemissione = this->findChild<QDateEdit*>("dataemissioneEdit")->date();
+
     QTableView *grid = ui->paymentsTable;
 
     QMap<QString, QList<QList<QSharedPointer<ODSCell>>>*> filelist;
 
     int numberofrows = grid->model()->rowCount();
 
-    int crow = 0;
+    int execrow, crow = 0;
 
     for (crow = 0; crow < numberofrows; crow++) {
 
         QString modalita = grid->model()->data(grid->model()->index(crow, 0)).toString();
         QDate datascadenza = QDate::fromString(grid->model()->data(grid->model()->index(crow,1)).toString(),"dd/MM/yyyy");
+        if ((!datascadenza.isValid()) || datascadenza.isNull())
+            if(modalita == paymentMethodType["MP05"]) {
+                datascadenza = dataemissione.addMonths(1);
+            }
+            else {
+                datascadenza = dataemissione;
+            }
+
         QString cassa = grid->model()->data(grid->model()->index(crow,3)).toString();
         double importo = grid->model()->data(grid->model()->index(crow,2)).toFloat();
 
         if((modalita == paymentMethodType["MP12"])||(modalita == paymentMethodType["MP05"])) {
+
+            execrow++;
 
             QString filename = filenametemplate.arg(months[datascadenza.month()-1], QString::number(datascadenza.year()));
             QList<QList<QSharedPointer<ODSCell>>>* rows;
@@ -727,7 +747,7 @@ QString MainWindow::executeScadenziario()
     }
 
     if (ok)
-        return "N. " + QString::number(crow) + " righe aggiunte a N. " + QString::number(filelist.count()) + " files scadenziario";
+        return "N. " + QString::number(execrow) + " righe aggiunte a N. " + QString::number(filelist.count()) + " files scadenziario";
     else
         return "Errore nel salvataggio di almeno un file scadenziario";
 }
@@ -1220,17 +1240,26 @@ void MainWindow::addSummaryToUI(QList< QMap<QString,QString> >& summaryData, QLi
 
     //grid->setItemDelegateForColumn(4, cbid);
 
+    float fImponibile = computeTotal(summaryData, "ImponibileImporto");
     QLineEdit* qle = this->findChild<QLineEdit*>("imponibileEdit");
     if (qle != nullptr) {
-        QString imponibile = QString::number(computeTotal(summaryData, "ImponibileImporto"), 'f', 2);
+        QString imponibile = QString::number(fImponibile, 'f', 2);
         qle->setText(imponibile);
     }
 
+    float fImposta = computeTotal(summaryData, "Imposta");
     qle = this->findChild<QLineEdit*>("impostaEdit");
     if (qle != nullptr) {
-        QString imposta = QString::number(computeTotal(summaryData, "Imposta"));
+        QString imposta = QString::number(fImposta, 'f', 2);
         qle->setText(imposta);
     }
+
+    qle = this->findChild<QLineEdit*>("totaleEdit");
+    if (qle != nullptr) {
+        QString totale = QString::number(fImponibile + fImposta, 'f', 2);
+        qle->setText(totale);
+    }
+    
 }
 
 void MainWindow::UpdateSummaryUI(const QModelIndex& topLeft, const QModelIndex& bottomRight)
