@@ -10,10 +10,17 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "logger.h"
+#include "ods/logger.h"
 #include "settings.h"
 #include "comboboxitemdelegate.h"
 #include "gridschemafield.h"
+
+#include "ods/odscell.h"
+#include "ods/odscellempty.h"
+#include "ods/odscellstring.h"
+#include "ods/odscellfloat.h"
+#include "ods/odscelldate.h"
+#include "ods/odscellcurrency.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -202,30 +209,38 @@ void MainWindow::execute()
 
         if (m_setting->isExecute(Settings::Execute::elencofatture))
         {
+            QString r = executeElencoFatture();
             result.append("<p>");
-            result.append(executeElencoFatture());
+            result.append(r);
             result.append("</p>");
+            qInfo(logInfo()) << r;
         }
 
         if (m_setting->isExecute(Settings::Execute::mastrinifornitori))
         {
+            QString r = executeMastriniFornitori();
             result.append("<p>");
-            result.append(executeMastriniFornitori());
+            result.append(r);
             result.append("</p>");
+            qInfo(logInfo()) << r;
         }
 
         if (m_setting->isExecute(Settings::Execute::primanota))
         {
+            QString r = executePrimaNota();
             result.append("<p>");
-            result.append(executePrimaNota());
+            result.append(r);
             result.append("</p>");
+            qInfo(logInfo()) << r;
         }
 
         if (m_setting->isExecute(Settings::Execute::scadenziario))
         {
+            QString r = executeScadenziario();
             result.append("<p>");
-            result.append(executeScadenziario());
+            result.append(r);
             result.append("</p>");
+            qInfo(logInfo()) << r;
         }
 
         QFile::rename(curFile, curFile + "_importato");
@@ -340,6 +355,9 @@ QString MainWindow::executeMastriniFornitori()
     for (crow = 0; crow < grid->model()->rowCount(); crow++) {
 
         QDate datascadenza = QDate::fromString(grid->model()->data(grid->model()->index(crow,1)).toString(),"dd/MM/yyyy");
+        if (!datascadenza.isValid())
+            datascadenza = dataemissione.addMonths(1);
+
         double importo = grid->model()->data(grid->model()->index(crow,2)).toFloat();
         QString cassa = grid->model()->data(grid->model()->index(crow,3)).toString();
 
@@ -387,7 +405,18 @@ QString MainWindow::executeMastriniFornitori()
             columns.append(pt);
         }
 
-        {
+        QString modalita = grid->model()->data(grid->model()->index(crow, 0)).toString();
+
+        if ((modalita == "") ||
+            (modalita == paymentMethodType["MP01"]) ||
+            (modalita == paymentMethodType["MP02"]) ||
+            (modalita == paymentMethodType["MP03"]) ||
+            (modalita == paymentMethodType["MP08"])) {
+
+            QSharedPointer<ODSCell> pt(new ODSCellString("RD"));
+            columns.append(pt);
+        }
+        else {
             QSharedPointer<ODSCell> pt(new ODSCellDate(datascadenza));
             columns.append(pt);
         }
@@ -452,7 +481,6 @@ QString MainWindow::executeMastriniFornitori()
         return "N. " + QString::number(crow) + " righe aggiunte al file mastrino fornitore";
     else
         return "Errore nel salvataggio file mastrino fornitore";
-
 }
 
 QString MainWindow::executePrimaNota()
@@ -474,13 +502,16 @@ QString MainWindow::executePrimaNota()
 
     int numberofrows = grid->model()->rowCount();
 
-    int execrow, crow = 0;
+    int execrow = 0, crow = 0;
 
     for (crow = 0; crow < numberofrows; crow++) {
 
         QString modalita = grid->model()->data(grid->model()->index(crow, 0)).toString();
 
-        if (modalita == paymentMethodType["MP12"]) {
+        if ((modalita == paymentMethodType["MP12"]) ||
+            (modalita == paymentMethodType["MP09"]) ||
+            (modalita == paymentMethodType["MP10"]) ||
+            (modalita == paymentMethodType["MP11"]) ){
 
             execrow++;
 
@@ -601,7 +632,7 @@ QString MainWindow::executeScadenziario()
 
     int numberofrows = grid->model()->rowCount();
 
-    int execrow, crow = 0;
+    int execrow = 0, crow = 0;
 
     for (crow = 0; crow < numberofrows; crow++) {
 
@@ -1103,7 +1134,7 @@ QStandardItemModel* createGridModel(const QList< QMap<QString,QString> >  &data,
     }
 
     int outRow = 0;
-    for (int row = 0; row < rowN; row++) {   
+    for (int _row = 0; _row < rowN; _row++) {   
         QList<QStandardItem*> rowtemp;
         //QStandardItem* rowtemp[columnN];
         bool ignoreRow = false;
@@ -1112,7 +1143,7 @@ QStandardItemModel* createGridModel(const QList< QMap<QString,QString> >  &data,
             QString elementName = schema.at(column)->getElementName();
             QString value = "";
             if (elementName!="") {
-                value = data.at(row).value(elementName, "");
+                value = data.at(_row).value(elementName, "");
             }
             rowtemp.append(schema.at(column)->createGridItem(value));
             ignoreRow = (ignoreRow && schema.at(column)->getToBeIgnored());
@@ -1221,8 +1252,8 @@ double MainWindow::computeTotal(QList< QMap<QString,QString> >& data, QString xm
 {
     double result = 0.0;
     int rowN = data.size();
-    for (int row = 0; row < rowN; row++) {
-        auto item = data.at(row);
+    for (int _row = 0; _row < rowN; _row++) {
+        auto item = data.at(_row);
         result += item[xmlfield].toDouble();
     }
     return result;

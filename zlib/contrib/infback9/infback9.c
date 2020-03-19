@@ -351,7 +351,7 @@ void FAR *out_desc;
             state->ncode = BITS(4) + 4;
             DROPBITS(4);
             if (state->nlen > 286) {
-                strm->msg = (char *)"too many length symbols";
+                strm->msg = (char *)"too many length _symbols";
                 mode = BAD;
                 break;
             }

@@ -39,7 +39,7 @@ typedef struct {
    1446, which is the sum of 852 for literal/length codes and 594 for distance
    codes.  These values were found by exhaustive searches using the program
    examples/enough.c found in the zlib distribtution.  The arguments to that
-   program are the number of symbols, the initial root table size, and the
+   program are the number of _symbols, the initial root table size, and the
    maximum bit length of a code.  "enough 286 9 15" for literal/length codes
    returns returns 852, and "enough 32 6 15" for distance codes returns 594.
    The initial root table size (9 or 6) is found in the fifth argument of the

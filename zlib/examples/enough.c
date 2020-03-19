@@ -20,7 +20,7 @@
  */
 
 /*
-   Examine all possible Huffman codes for a given number of symbols and a
+   Examine all possible Huffman codes for a given number of _symbols and a
    maximum code length in bits to determine the maximum table size for zilb's
    inflate.  Only complete Huffman codes are counted.
 

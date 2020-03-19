@@ -6,7 +6,7 @@
 
 #include "odsdocument.h"
 #include "odsfile.h"
-#include "JlCompress.h"
+#include "quazip/JlCompress.h"
 
 ODSDocument::ODSDocument()
 {

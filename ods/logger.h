@@ -4,7 +4,6 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include <QApplication>
 #include <QFile>
 #include <QDir>
 #include <QScopedPointer>
@@ -27,6 +26,7 @@ public:
         return &instance;
     }
 
+    void Setup(QString appdir, QString logfilename);
     void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 
     Logger(Logger const&)          = delete;

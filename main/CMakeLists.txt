@@ -5,9 +5,9 @@ set(LEGAL_COPYRIGHT "Copyright (c) 2019 BlueTeam")
 set(LEGAL_TRADEMARK1 "GNU Affero General Public License ver. 3")
 set(LEGAL_TRADEMARK2 "https://www.gnu.org/licenses/agpl-3.0.en.html")
 set(MODULE_DESCRIPTION "Procurans")
-set(VERSION_MAJOR "0")
-set(VERSION_MINOR "1")
-set(VERSION_PATCH "1")
+set(VERSION_MAJOR "1")
+set(VERSION_MINOR "0")
+set(VERSION_PATCH "0")
 set(VERSION_REVISION "0")
 	
 set(APP_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}.${VERSION_REVISION}")
@@ -44,16 +44,8 @@ set(src_files
     comboboxitemdelegate.h
     gridschemafield.h
     gridschemafield.cpp
-    odsdocument.h
-    odsdocument.cpp
-    odsfile.h
-    odsfile.cpp
-    odscell.h
-    odscell.cpp
     settings.cpp
-    settings.h
-    logger.cpp
-    logger.h)
+    settings.h)
 
 qt5_add_resources(src_files application.qrc)
 
@@ -89,6 +81,7 @@ endif ()
 get_property(zlib_libs GLOBAL PROPERTY zlib_libs_property)
 
 target_link_libraries(${exe_name}
+    ods
     quazip
     ${zlib_libs}
     Qt5::Widgets

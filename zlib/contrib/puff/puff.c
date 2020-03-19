@@ -197,7 +197,7 @@ local int stored(struct state *s)
 }
 
 /*
- * Huffman code decoding tables.  count[1..MAXBITS] is the number of symbols of
+ * Huffman code decoding tables.  count[1..MAXBITS] is the number of _symbols of
  * each length, which for a canonical code are stepped through in order.
  * symbol[] are the symbol values in canonical order, where the number of
  * entries is the sum of the counts in count[].  The decoding process can be

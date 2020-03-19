@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 #include "mainwindow.h"
-#include "logger.h"
+#include "ods/logger.h"
 
 #include <QApplication>
 #include <QCommandLineParser>
@@ -31,6 +31,8 @@ int main(int argc, char *argv[])
     QApplication::setApplicationVersion(APP_VERSION); //defined in CMakeList.txt
 
     Logger *globalLogger = Logger::getInstance();
+    globalLogger->Setup(QCoreApplication::applicationDirPath(), "Procurans.log");
+
     qInstallMessageHandler(messageHandler);
     qInfo(logInfo()) << PRODUCT_NAME << " activated. Version:" << APP_VERSION << " Folder:" << QApplication::applicationDirPath();
 

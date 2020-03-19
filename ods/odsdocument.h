@@ -6,7 +6,8 @@
 
 #include <QObject>
 #include <QTemporaryDir>
-#include <odsfile.h>
+#include "odsfile.h"
+#include "odscontentfile.h"
 
 class ODSDocument
 {

@@ -90,7 +90,7 @@
 #ifndef local
 #  define local static
 #endif
-/* compile with -Dlocal if your debugger can't find static symbols */
+/* compile with -Dlocal if your debugger can't find static _symbols */
 
 
 #ifndef CASESENSITIVITYDEFAULT_NO

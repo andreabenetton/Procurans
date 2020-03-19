@@ -17,7 +17,7 @@
    file (appnote.txt) is distributed with the PKZIP program (even in the
    version without encryption capabilities).
 
-   If you don't need crypting in your application, just define symbols
+   If you don't need crypting in your application, just define _symbols
    NOCRYPT and NOUNCRYPT.
 
    This code support the "Traditional PKWARE Encryption".

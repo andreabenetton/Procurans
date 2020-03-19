@@ -38,7 +38,7 @@ unsigned FAR *bits;
 unsigned short FAR *work;
 {
     unsigned len;               /* a code's length in bits */
-    unsigned sym;               /* index of code symbols */
+    unsigned sym;               /* index of code _symbols */
     unsigned min, max;          /* minimum and maximum code lengths */
     unsigned root;              /* number of index bits for root table */
     unsigned curr;              /* number of index bits for current table */

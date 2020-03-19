@@ -584,7 +584,7 @@ local void cover_inflate(void)
     try("3 0", "fixed", 0);
     try("6", "invalid block type", 1);
     try("1 1 0 fe ff 0", "stored", 0);
-    try("fc 0 0", "too many length or distance symbols", 1);
+    try("fc 0 0", "too many length or distance _symbols", 1);
     try("4 0 fe ff", "invalid code lengths set", 1);
     try("4 0 24 49 0", "invalid bit length repeat", 1);
     try("4 0 24 e9 ff ff", "invalid bit length repeat", 1);

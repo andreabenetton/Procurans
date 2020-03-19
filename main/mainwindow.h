@@ -15,7 +15,7 @@ class QXmlStreamReader;
 QT_END_NAMESPACE
 
 #include "gridschemafield.h"
-#include "odsdocument.h"
+#include "ods/odsdocument.h"
 #include "settings.h"
 
 class MainWindow : public QMainWindow

@@ -375,7 +375,7 @@ local uLong crc32_combine_(crc1, crc2, len2)
     z_off64_t len2;
 {
     int n;
-    unsigned long row;
+    unsigned long _row;
     unsigned long even[GF2_DIM];    /* even-power-of-two zeros operator */
     unsigned long odd[GF2_DIM];     /* odd-power-of-two zeros operator */
 
@@ -385,10 +385,10 @@ local uLong crc32_combine_(crc1, crc2, len2)
 
     /* put operator for one zero bit in odd */
     odd[0] = 0xedb88320UL;          /* CRC-32 polynomial */
-    row = 1;
+    _row = 1;
     for (n = 1; n < GF2_DIM; n++) {
-        odd[n] = row;
-        row <<= 1;
+        odd[n] = _row;
+        _row <<= 1;
     }
 
     /* put operator for two zero bits in even */

@@ -10,8 +10,11 @@ Q_LOGGING_CATEGORY(logCritical, "Critical")
 
 Logger::Logger()
 {
-    QString appdir = QCoreApplication::applicationDirPath();
-    QString logfilenameandpath = QDir(appdir).filePath("Procurans.log");
+}
+
+void Logger::Setup(QString appdir, QString logfilename)
+{
+    QString logfilenameandpath = QDir(appdir).filePath(logfilename);
 
     Logger::logFile.reset(new QFile(logfilenameandpath));
     Logger::logFile.data()->open(QFile::Append | QFile::Text);
