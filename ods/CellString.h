@@ -1,23 +1,22 @@
-// Copyright 2019 - 2019, Andrea Benetton and the Procurans contributors
+// Copyright 2019 - 2020, Andrea Benetton and the Procurans contributors
 // SPDX-License-Identifier: AGPL-3.0-only
 
-#ifndef ODSCELLFLOAT_H
-#define ODSCELLFLOAT_H
+#ifndef ODSCELLSTRING_H
+#define ODSCELLSTRING_H
 
 #include <QObject>
-#include <QMap>
 #include <QXmlStreamWriter>
-#include "odscell.h"
+#include "CellAbstract.h"
 
-class ODSCellFloat: public ODSCell
+class CellString: public CellAbstract
 {
 public:
-    ODSCellFloat(double number, int repeat = 1);
-    ODSCellFloat(QXmlStreamReader& reader);
+    CellString(QString text, int repeat = 1); 
+    CellString(QXmlStreamReader& reader);
 
     static const QString CELLTYPE;
 
-    double getDouble();
+    QString getText();
 
     // implements ODSSerializable
     void Serialize(QXmlStreamWriter* writer);
@@ -26,15 +25,13 @@ public:
     QString InstanceCellType();
 
 private:
-    static const QString CELLVALUETAG;
-
-    double _valueNumber;
+    QString _valueText;
 
     // implements ODSSerializable
     void Deserialize(QXmlStreamReader& reader);
     void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
-    void SerializeProperties(QXmlStreamWriter* writer);
+    QString DeserializeSubitem(QXmlStreamReader& reader, int& c);
     void SerializeSubitems(QXmlStreamWriter* writer);
 };
 
-#endif // ODSCELLFLOAT_H
+#endif // ODSCELLSTRING_H

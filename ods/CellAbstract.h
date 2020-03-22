@@ -8,17 +8,17 @@
 #include <QDate>
 #include <QXmlStreamWriter>
 
-#include "odsserializable.h"
-#include "odsstyleable.h"
-#include "odsrepeatable.h"
+#include "SerializableAbstract.h"
+#include "StyleableAbstract.h"
+#include "RepeatableAbstract.h"
 
 // Abstract class base for all cell types
-class ODSCell : public ODSSerializable, public ODSStyleable, public ODSRepeatable
+class CellAbstract : public SerializableAbstract, public StyleableAbstract, public RepeatableAbstract
 {
 public:
-    ODSCell(int repeat = 1, QString style = "");
+    CellAbstract(int repeat = 1, QString style = "");
     
-    static ODSCell* Builder(QXmlStreamReader& reader);
+    static CellAbstract* Builder(QXmlStreamReader& reader);
 
     static const QString TAG;
     static const QString CELLTYPETAG;
@@ -33,7 +33,7 @@ public:
     virtual void Serialize(QXmlStreamWriter* writer) = 0;
 
 protected:
-    ODSCell(QXmlStreamReader& reader);
+    CellAbstract(QXmlStreamReader& reader);
 
     static const QString REPEATTAG;
     static const QString TEXTVALUETAG;

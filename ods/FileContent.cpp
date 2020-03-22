@@ -1,24 +1,24 @@
 // Copyright 2019 - 2019, Andrea Benetton and the Procurans contributors
 // SPDX-License-Identifier: AGPL-3.0-only
 
-#include "odscontentfile.h"
+#include "FileContent.h"
 
 #include <QDebug>
 #include <QList>
 #include <QSaveFile>
 
-#include "odsrow.h"
-#include "odscellempty.h"
+#include "Row.h"
+#include "CellEmpty.h"
 
-const QString ODSContentFile::Tag = "document-content";
-const QString ODSContentFile::filename = "content.xml";
+const QString FileContent::Tag = "document-content";
+const QString FileContent::filename = "content.xml";
 
-QString ODSContentFile::InstanceTag()
+QString FileContent::InstanceTag()
 {
-    return ODSContentFile::Tag;
+    return FileContent::Tag;
 }
 
-void ODSContentFile::Parse()
+void FileContent::Parse()
 {
     reader = new QXmlStreamReader(inbuffer);
     writer = new QXmlStreamWriter(&outbuffer);
@@ -75,7 +75,7 @@ void ODSContentFile::Parse()
     delete writer;
 }
 
-void ODSContentFile::ParseTableColumn(const QXmlStreamReader& reader, int* cols)
+void FileContent::ParseTableColumn(const QXmlStreamReader& reader, int* cols)
 {
     bool adddone = false;
     for (auto& it : reader.attributes()) {
@@ -112,12 +112,12 @@ void ODSContentFile::ParseTableColumn(const QXmlStreamReader& reader, int* cols)
 //    do {
 //        reader->readNext();
 //        if (IsStartElementNamed(*reader, "table:table-cell"))
-//            ODSCell c = ParseTableCell(*reader);
+//            CellAbstract c = ParseTableCell(*reader);
 //
 //    } while (IsNotEndElementNamed(*reader, "table:table-row"));
 //}
 
-void ODSContentFile::AddRows(QXmlStreamWriter* writer, QString previousrowstyle, int columns, QList<QString>* cellstyles)
+void FileContent::AddRows(QXmlStreamWriter* writer, QString previousrowstyle, int columns, QList<QString>* cellstyles)
 {
     for (int i = 0; i < rows->size(); ++i) {
         int cols = 0;
@@ -127,7 +127,7 @@ void ODSContentFile::AddRows(QXmlStreamWriter* writer, QString previousrowstyle,
         at.append("table:style-name", previousrowstyle);
         writer->writeAttributes(at);
 
-        QList<QSharedPointer<ODSCell>> t = rows->at(i);
+        QList<QSharedPointer<CellAbstract>> t = rows->at(i);
 
         for (auto& it : t) {
             //it->Serialize(writer, cellstyles->at(cols));
@@ -135,7 +135,7 @@ void ODSContentFile::AddRows(QXmlStreamWriter* writer, QString previousrowstyle,
         }
 
         if (columns > cols) {
-            ODSCellEmpty e(columns - cols);
+            CellEmpty e(columns - cols);
             e.Serialize(writer);
         }
         writer->writeEndElement();
@@ -143,12 +143,12 @@ void ODSContentFile::AddRows(QXmlStreamWriter* writer, QString previousrowstyle,
     }
 }
 
-void ODSContentFile::Add(QList<QList<QSharedPointer<ODSCell>>>* rowstoadd)
+void FileContent::Add(QList<QList<QSharedPointer<CellAbstract>>>* rowstoadd)
 {
     rows = rowstoadd;
 }
 
-void ODSContentFile::writeCurrentToken(QXmlStreamWriter* writer, const QXmlStreamReader& reader)
+void FileContent::writeCurrentToken(QXmlStreamWriter* writer, const QXmlStreamReader& reader)
 {
     switch (reader.tokenType()) {
     case QXmlStreamReader::NoToken:

@@ -6,23 +6,23 @@
 
 #include <QObject>
 #include <QTemporaryDir>
-#include "odsfile.h"
-#include "odscontentfile.h"
+#include "FileAbstract.h"
+#include "FileContent.h"
 
-class ODSDocument
+class Document
 {
 public:
 
     //static ODSDocument* FromFile(const QString &full_path);
 
-    ODSDocument();
+    Document();
 
     bool Save(const QString &full_path);
     bool Save();
 
     void Load(const QString &full_path);
 
-    void AddRowToContent(QList<QList<QSharedPointer<ODSCell>>>* rowstoadd);
+    void AddRowToContent(QList<QList<QSharedPointer<CellAbstract>>>* rowstoadd);
 
 private:
     void InitTempDir();
@@ -33,7 +33,7 @@ private:
     QTemporaryDir temp_dir_;
     QString temp_dir_path_;
 
-    ODSContentFile* contentfile;
+    FileContent* contentfile;
 };
 
 #endif // ODSDOCUMENT_H

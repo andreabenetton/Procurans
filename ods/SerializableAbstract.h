@@ -9,15 +9,15 @@
 #include <QXmlStreamReader>
 #include <QVariant>
 
-class ODSSerializable
+class SerializableAbstract
 {
 public:
-	ODSSerializable();
+	SerializableAbstract();
 	virtual void Serialize(QXmlStreamWriter* writer) = 0;
 	virtual QString InstanceTag() = 0;
 
 protected:
-	ODSSerializable(QXmlStreamReader& reader);
+	SerializableAbstract(QXmlStreamReader& reader);
 
 	virtual void Deserialize(QXmlStreamReader& reader) = 0;
 

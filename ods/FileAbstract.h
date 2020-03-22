@@ -9,9 +9,9 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 
-#include "odscell.h"
+#include "CellAbstract.h"
 
-class ODSFile
+class FileAbstract
 {
 public:
     void Load(const QString &full_path);

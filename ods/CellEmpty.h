@@ -6,13 +6,13 @@
 
 #include <QObject>
 #include <QXmlStreamWriter>
-#include "odscell.h"
+#include "CellAbstract.h"
 
-class ODSCellEmpty : public ODSCell
+class CellEmpty : public CellAbstract
 {
 public:
-    ODSCellEmpty(int repeat = 1, QString style = "");
-    ODSCellEmpty(QXmlStreamReader& reader);
+    CellEmpty(int repeat = 1, QString style = "");
+    CellEmpty(QXmlStreamReader& reader);
 
     static const QString CELLTYPE;
 

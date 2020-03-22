@@ -1,32 +1,32 @@
 // Copyright 2019 - 2019, Andrea Benetton and the Procurans contributors
 // SPDX-License-Identifier: AGPL-3.0-only
 
-#include "odsserializable.h"
+#include "SerializableAbstract.h"
 #include "functions.h"
 
-ODSSerializable::ODSSerializable()
+SerializableAbstract::SerializableAbstract()
 {
 
 }
 
-void ODSSerializable::SerializeStart(QXmlStreamWriter* writer)
+void SerializableAbstract::SerializeStart(QXmlStreamWriter* writer)
 {
     writer->writeStartElement(InstanceTag());
 }
 
-void ODSSerializable::SerializeEnd(QXmlStreamWriter* writer)
+void SerializableAbstract::SerializeEnd(QXmlStreamWriter* writer)
 {
     writer->writeEndElement();
 }
 
-void ODSSerializable::LoopForProperties(QXmlStreamReader& reader, int& numberofloopeditems)
+void SerializableAbstract::LoopForProperties(QXmlStreamReader& reader, int& numberofloopeditems)
 {
     for (auto& it : reader.attributes()) {
         DeserializeProperty(it.qualifiedName(), it.value());
     }
 }
 
-void ODSSerializable::LoopForSubitems(QXmlStreamReader& reader, int& numberofloopeditems)
+void SerializableAbstract::LoopForSubitems(QXmlStreamReader& reader, int& numberofloopeditems)
 {
     do {
         reader.readNext();

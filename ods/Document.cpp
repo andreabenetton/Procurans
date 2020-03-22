@@ -2,18 +2,18 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 #include <QDebug>
-#include "logger.h"
+#include "Logger.h"
 
-#include "odsdocument.h"
-#include "odsfile.h"
+#include "Document.h"
+#include "FileAbstract.h"
 #include "quazip/JlCompress.h"
 
-ODSDocument::ODSDocument()
+Document::Document()
 {
     InitTempDir();
 }
 
-void ODSDocument::InitTempDir()
+void Document::InitTempDir()
 {
     const bool do_remove = true;
     temp_dir_.setAutoRemove(do_remove);
@@ -33,7 +33,7 @@ void ODSDocument::InitTempDir()
     }
 }
 
-void ODSDocument::Load(const QString &full_path)
+void Document::Load(const QString &full_path)
 {
     InitTempDir();
 
@@ -50,8 +50,8 @@ void ODSDocument::Load(const QString &full_path)
     }
 
     for (auto path : extracted_file_paths_) {
-        if (path.endsWith(ODSContentFile::filename)) {
-            contentfile = new ODSContentFile();
+        if (path.endsWith(FileContent::filename)) {
+            contentfile = new FileContent();
             contentfile->Load(path);
             break;
         }
@@ -60,13 +60,13 @@ void ODSDocument::Load(const QString &full_path)
     qInfo(logInfo()) << "Unzipped: " << full_path;
 }
 
-void ODSDocument::AddRowToContent(QList<QList<QSharedPointer<ODSCell>>>* rowstoadd)
+void Document::AddRowToContent(QList<QList<QSharedPointer<CellAbstract>>>* rowstoadd)
 {
     contentfile->Add(rowstoadd);
     contentfile->Parse();
 }
 
-bool ODSDocument::Save(const QString &ods_path)
+bool Document::Save(const QString &ods_path)
 {
     if (contentfile == nullptr) { // || document_styles_ == nullptr)
         qWarning(logWarning()) <<"Nothing to save";
@@ -75,7 +75,7 @@ bool ODSDocument::Save(const QString &ods_path)
 
     QDir base_dir(temp_dir_path_);
 
-    QString contentfilepath = base_dir.filePath(ODSContentFile::filename);
+    QString contentfilepath = base_dir.filePath(FileContent::filename);
     contentfile->Save(contentfilepath);
 
     if (!JlCompress::compressDir(ods_path, temp_dir_path_)) {

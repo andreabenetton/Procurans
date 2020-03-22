@@ -1,22 +1,23 @@
 // Copyright 2019 - 2019, Andrea Benetton and the Procurans contributors
 // SPDX-License-Identifier: AGPL-3.0-only
 
-#ifndef ODSCELLDATE_H
-#define ODSCELLDATE_H
+#ifndef ODSCELLFLOAT_H
+#define ODSCELLFLOAT_H
 
 #include <QObject>
+#include <QMap>
 #include <QXmlStreamWriter>
-#include "odscell.h"
+#include "CellAbstract.h"
 
-class ODSCellDate: public ODSCell
+class CellFloat: public CellAbstract
 {
 public:
-    ODSCellDate(QDate date, int repeat = 1) ;
-    ODSCellDate(QXmlStreamReader& reader);
+    CellFloat(double number, int repeat = 1);
+    CellFloat(QXmlStreamReader& reader);
 
     static const QString CELLTYPE;
 
-    QDate getDate();
+    double getDouble();
 
     // implements ODSSerializable
     void Serialize(QXmlStreamWriter* writer);
@@ -27,7 +28,7 @@ public:
 private:
     static const QString CELLVALUETAG;
 
-    QDate _valueDate;
+    double _valueNumber;
 
     // implements ODSSerializable
     void Deserialize(QXmlStreamReader& reader);
@@ -36,4 +37,4 @@ private:
     void SerializeSubitems(QXmlStreamWriter* writer);
 };
 
-#endif // ODSCELLDATE_H
+#endif // ODSCELLFLOAT_H

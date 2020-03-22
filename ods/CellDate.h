@@ -1,22 +1,22 @@
-// Copyright 2019 - 2020, Andrea Benetton and the Procurans contributors
+// Copyright 2019 - 2019, Andrea Benetton and the Procurans contributors
 // SPDX-License-Identifier: AGPL-3.0-only
 
-#ifndef ODSCELLSTRING_H
-#define ODSCELLSTRING_H
+#ifndef ODSCELLDATE_H
+#define ODSCELLDATE_H
 
 #include <QObject>
 #include <QXmlStreamWriter>
-#include "odscell.h"
+#include "CellAbstract.h"
 
-class ODSCellString: public ODSCell
+class CellDate: public CellAbstract
 {
 public:
-    ODSCellString(QString text, int repeat = 1); 
-    ODSCellString(QXmlStreamReader& reader);
+    CellDate(QDate date, int repeat = 1) ;
+    CellDate(QXmlStreamReader& reader);
 
     static const QString CELLTYPE;
 
-    QString getText();
+    QDate getDate();
 
     // implements ODSSerializable
     void Serialize(QXmlStreamWriter* writer);
@@ -25,13 +25,15 @@ public:
     QString InstanceCellType();
 
 private:
-    QString _valueText;
+    static const QString CELLVALUETAG;
+
+    QDate _valueDate;
 
     // implements ODSSerializable
     void Deserialize(QXmlStreamReader& reader);
     void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
-    QString DeserializeSubitem(QXmlStreamReader& reader, int& c);
+    void SerializeProperties(QXmlStreamWriter* writer);
     void SerializeSubitems(QXmlStreamWriter* writer);
 };
 
-#endif // ODSCELLSTRING_H
+#endif // ODSCELLDATE_H

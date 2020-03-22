@@ -1,8 +1,8 @@
 // Copyright 2019 - 2019, Andrea Benetton and the Procurans contributors
 // SPDX-License-Identifier: AGPL-3.0-only
 
-#include "odsrow.h"
-#include "odscellempty.h"
+#include "Row.h"
+#include "CellEmpty.h"
 #include "functions.h"
 
 // Constants
@@ -10,12 +10,12 @@ const QString ODSRow::TAG = "table:table-row";
 const QString ODSRow::REPEATTAG = "table:number-rows-repeated";
 
 // Constructors
-ODSRow::ODSRow(int repeat, QString style) : ODSStyleable(style), ODSRepeatable(repeat)
+ODSRow::ODSRow(int repeat, QString style) : StyleableAbstract(style), RepeatableAbstract(repeat)
 {
     InitializeContainers();
 }
 
-ODSRow::ODSRow(QXmlStreamReader& reader) : ODSStyleable(""), ODSRepeatable(1)
+ODSRow::ODSRow(QXmlStreamReader& reader) : StyleableAbstract(""), RepeatableAbstract(1)
 {
     Q_ASSERT(reader.qualifiedName() == ODSRow::TAG);
 
@@ -36,7 +36,7 @@ void ODSRow::InitializeContainers()
 {
     _lastdefined = 0;
     _lastnonempty = 0;
-    _row = new QVector<QSharedPointer<ODSCell>>(256, QSharedPointer<ODSCell>(nullptr));
+    _row = new QVector<QSharedPointer<CellAbstract>>(256, QSharedPointer<CellAbstract>(nullptr));
 }
 
 int ODSRow::GetLastDefined()
@@ -59,24 +59,24 @@ QString ODSRow::RepeatTag()
 void ODSRow::Deserialize(QXmlStreamReader& reader)
 {
     int i = 0;
-    ODSSerializable::LoopForProperties(reader, i);
-    ODSSerializable::LoopForSubitems(reader, _lastdefined);
+    SerializableAbstract::LoopForProperties(reader, i);
+    SerializableAbstract::LoopForSubitems(reader, _lastdefined);
 }
 
 void ODSRow::DeserializeProperty(QStringRef attributename, QStringRef attributevalue)
 {
-    ODSRepeatable::DeserializeProperty(attributename, attributevalue);
-    ODSStyleable::DeserializeProperty(attributename, attributevalue);
+    RepeatableAbstract::DeserializeProperty(attributename, attributevalue);
+    StyleableAbstract::DeserializeProperty(attributename, attributevalue);
 }
 
 QString ODSRow::DeserializeSubitem(QXmlStreamReader& reader, int & numberofdeserializeitems)
 {
-    if (IsStartElementNamed(reader, ODSCell::TAG)) {
-        ODSCell* cell = ODSCell::Builder(reader);
-        (*_row)[numberofdeserializeitems] = QSharedPointer<ODSCell>(cell);
+    if (IsStartElementNamed(reader, CellAbstract::TAG)) {
+        CellAbstract* cell = CellAbstract::Builder(reader);
+        (*_row)[numberofdeserializeitems] = QSharedPointer<CellAbstract>(cell);
         numberofdeserializeitems += cell->GetRepeat();
 
-        if (cell->InstanceCellType() != ODSCellEmpty::CELLTYPE) {
+        if (cell->InstanceCellType() != CellEmpty::CELLTYPE) {
             _lastnonempty = numberofdeserializeitems;
         }
     }
@@ -90,11 +90,11 @@ QString ODSRow::InstanceTag()
 
 void ODSRow::Serialize(QXmlStreamWriter* writer)
 {
-    ODSSerializable::SerializeStart(writer);
-    ODSRepeatable::SerializeProperties(writer);
-    ODSStyleable::SerializeProperties(writer);
+    SerializableAbstract::SerializeStart(writer);
+    RepeatableAbstract::SerializeProperties(writer);
+    StyleableAbstract::SerializeProperties(writer);
     ODSRow::SerializeSubitems(writer);
-    ODSSerializable::SerializeEnd(writer);
+    SerializableAbstract::SerializeEnd(writer);
 }
 
 void ODSRow::SerializeProperties(QXmlStreamWriter* writer)
@@ -105,7 +105,7 @@ void ODSRow::SerializeSubitems(QXmlStreamWriter* writer)
 {
     for (int i = 0; i < _row->length(); i++)
     {
-        ODSCell* cell = (*_row)[i].get();
+        CellAbstract* cell = (*_row)[i].get();
         if (cell != nullptr)
         {
             cell->Serialize(writer);

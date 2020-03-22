@@ -10,16 +10,16 @@
 #include <QXmlStreamWriter>
 #include <QXmlStreamReader>
 
-#include <odsserializable.h>
-#include <odsstyleable.h>
-#include <odsrepeatable.h>
+#include "SerializableAbstract.h"
+#include "StyleableAbstract.h"
+#include "RepeatableAbstract.h"
 
-class ODSColumn : public ODSSerializable, public ODSStyleable, public ODSRepeatable
+class Column : public SerializableAbstract, public StyleableAbstract, public RepeatableAbstract
 {
 public:
-	ODSColumn(int repeat = 1, QString columnstyle = "", QString defaultcellstyle = "");
+	Column(int repeat = 1, QString columnstyle = "", QString defaultcellstyle = "");
 
-	static ODSColumn* Builder(QXmlStreamReader& reader);
+	static Column* Builder(QXmlStreamReader& reader);
 
 	static const QString TAG;
 	static const QString DEFAULTCELLSTYLETAG;
@@ -36,7 +36,7 @@ public:
 	QString InstanceTag();
 
 private:
-	ODSColumn(QXmlStreamReader& reader);
+	Column(QXmlStreamReader& reader);
 
 	int _lastdefined;
 	QString _defaultcellstyle;

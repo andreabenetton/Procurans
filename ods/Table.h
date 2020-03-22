@@ -1,8 +1,8 @@
 // Copyright 2019 - 2020, Andrea Benetton and the Procurans contributors
 // SPDX-License-Identifier: AGPL-3.0-only
 
-#ifndef ODSROW_H
-#define ODSROW_H
+#ifndef ODSSHEET_H
+#define ODSSHEET_H
 
 #include <QObject>
 #include <QString>
@@ -10,41 +10,44 @@
 #include <QXmlStreamWriter>
 #include <QSharedPointer>
 
-#include <odsserializable.h>
-#include <odsstyleable.h>
-#include <odsrepeatable.h>
+#include <SerializableAbstract.h>
+#include <StyleableAbstract.h>
 
-#include <odscell.h>
+#include <Column.h>
+#include <Row.h>
 
-class ODSRow : public ODSSerializable, public ODSStyleable, public ODSRepeatable
+class Table : public SerializableAbstract, public StyleableAbstract
 {
 public:
-	ODSRow(int repeat = 1, QString style = "");
+	Table(QString name = "");
+	Table(QXmlStreamReader& reader);
 
-	static ODSRow* Builder(QXmlStreamReader& reader);
-
+	static Table* Builder(QXmlStreamReader& reader);
 	static const QString TAG;
 
-	int GetLastDefined();
-	int GetLastNonEmpty();
+	QString GetName();
+	void SetName(QString name);
 
-	// implements ODSRepeatable
-	QString RepeatTag();
+	QString GetPrintRange();
+	void SetPrintRange(QString name);
 
 	// implements ODSSerializable
 	void Serialize(QXmlStreamWriter* writer);
 	QString InstanceTag();
 
 private:
-	ODSRow(QXmlStreamReader& reader);
+	static const QString NAMETAG;
+	static const QString PRINTRANGETAG;
 
-	static const QString REPEATTAG;
+	QString _name;
+	QString _printranges;
 
-	void InitializeContainers();
+	QVector<QSharedPointer<Column>>* _columns;
+	QVector<QSharedPointer<ODSRow>>* _rows;
 
-	int _lastdefined;
-	int _lastnonempty;
-	QVector<QSharedPointer<ODSCell>>* _row;
+	static int _sheetcount;
+
+	void Initialize();
 
 	// implements ODSSerializable
 	void Deserialize(QXmlStreamReader& reader);
@@ -54,4 +57,4 @@ private:
 	void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
 };
 
-#endif // ODSROW_H
+#endif // ODSSHEET_H

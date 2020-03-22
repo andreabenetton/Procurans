@@ -1,28 +1,27 @@
 // Copyright 2019 - 2019, Andrea Benetton and the Procurans contributors
 // SPDX-License-Identifier: AGPL-3.0-only
 
-#ifndef ODSSTYLEABLE_H
-#define ODSSTYLEABLE_H
+#ifndef ODSREPEATABLE_H
+#define ODSREPEATABLE_H
 
 #include <QObject>
 
-#include "odsserializable.h"
 
-class ODSStyleable : public ODSSerializable
+
+class RepeatableAbstract : public SerializableAbstract
 {
 public:
-	ODSStyleable(QString style = "");
+	RepeatableAbstract(int repeat = 1);
 
-	virtual QString StyleTag();
+	virtual QString RepeatTag() = 0;
 
-	QString GetStyle();
-	void SetStyle(QString style);
+	int GetRepeat();
 
 protected:
-	QString _style;
+	int _repeat;
 
 	void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
 	void SerializeProperties(QXmlStreamWriter* writer);
 };
 
-#endif // ODSSTYLEABLE_H
+#endif // ODSREPEATABLE_H

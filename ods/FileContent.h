@@ -12,7 +12,7 @@
 #include "odscell.h"
 #include "odsfile.h"
 
-class ODSContentFile : public ODSFile
+class FileContent : public FileAbstract
 {
 public:
     void Parse();
@@ -21,12 +21,12 @@ public:
     static const QString Tag;
     static const QString filename;
 
-    void Add(QList<QList<QSharedPointer<ODSCell>>>* rowstoadd);
+    void Add(QList<QList<QSharedPointer<CellAbstract>>>* rowstoadd);
 
 private:
     void AddRows(QXmlStreamWriter* writer, QString at, int columns, QList<QString>* cellstyles);
 
-    QList<QList<QSharedPointer<ODSCell>>>* rows;
+    QList<QList<QSharedPointer<CellAbstract>>>* rows;
     void ParseTableColumn(const QXmlStreamReader& reader, int* cols);
 
     void writeCurrentToken(QXmlStreamWriter* writer, const QXmlStreamReader& reader);

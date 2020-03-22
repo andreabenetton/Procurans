@@ -6,17 +6,17 @@
 
 #include <QObject>
 #include <QXmlStreamWriter>
-#include "odscell.h"
+#include "CellAbstract.h"
 
 enum ODSCurrency {
   EUR
 };
 
-class ODSCellCurrency: public ODSCell
+class CellCurrency: public CellAbstract
 {
 public:
-    ODSCellCurrency(ODSCurrency currency, double amoount, int repeat = 1);
-    ODSCellCurrency(QXmlStreamReader& reader);
+    CellCurrency(ODSCurrency currency, double amoount, int repeat = 1);
+    CellCurrency(QXmlStreamReader& reader);
 
     static const QString CELLTYPE;
 
