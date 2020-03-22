@@ -69,7 +69,7 @@ void ODSRow::DeserializeProperty(QStringRef attributename, QStringRef attributev
     ODSStyleable::DeserializeProperty(attributename, attributevalue);
 }
 
-QVariant ODSRow::DeserializeSubitem(QXmlStreamReader& reader, int & numberofdeserializeitems)
+QString ODSRow::DeserializeSubitem(QXmlStreamReader& reader, int & numberofdeserializeitems)
 {
     if (IsStartElementNamed(reader, ODSCell::TAG)) {
         ODSCell* cell = ODSCell::Builder(reader);
@@ -80,7 +80,7 @@ QVariant ODSRow::DeserializeSubitem(QXmlStreamReader& reader, int & numberofdese
             _lastnonempty = numberofdeserializeitems;
         }
     }
-    return 0;
+    return "";
 }
 
 QString ODSRow::InstanceTag()

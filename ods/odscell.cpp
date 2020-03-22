@@ -73,7 +73,7 @@ QString ODSCell::InstanceTag()
     return TAG;
 }
 
-QVariant ODSCell::DeserializeSubitem(QXmlStreamReader& reader, int& numberofdeserializeitems)
+QString ODSCell::DeserializeSubitem(QXmlStreamReader& reader, int& numberofdeserializeitems)
 {
     QString toret = "";
     if (reader.qualifiedName() == TEXTVALUETAG) {

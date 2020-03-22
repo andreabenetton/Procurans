@@ -20,25 +20,41 @@ class ODSSheet : public ODSSerializable, public ODSStyleable
 {
 public:
 	ODSSheet(QString name = "");
+	ODSSheet(QXmlStreamReader& reader);
 
+	static ODSSheet* Builder(QXmlStreamReader& reader);
 	static const QString TAG;
-	QString InstanceTag();
 
 	QString GetName();
 	void SetName(QString name);
 
-private:
-	void DeserializeProperty(QXmlStreamReader& reader);
+	QString GetPrintRange();
+	void SetPrintRange(QString name);
 
-	void WriteStartAttribute(QXmlStreamWriter* writer);
+	// implements ODSSerializable
+	void Serialize(QXmlStreamWriter* writer);
+	QString InstanceTag();
+
+private:
+	static const QString NAMETAG;
+	static const QString PRINTRANGETAG;
 
 	QString _name;
 	QString _printranges;
 
-	QVector<ODSColumn>* _columns;
-	QVector<ODSRow>* _rows;
+	QVector<QSharedPointer<ODSColumn>>* _columns;
+	QVector<QSharedPointer<ODSRow>>* _rows;
 
 	static int _sheetcount;
+
+	void Initialize();
+
+	// implements ODSSerializable
+	void Deserialize(QXmlStreamReader& reader);
+	QString DeserializeSubitem(QXmlStreamReader& reader, int& c);
+	void SerializeProperties(QXmlStreamWriter* writer);
+	void SerializeSubitems(QXmlStreamWriter* writer);
+	void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
 };
 
 #endif // ODSSHEET_H

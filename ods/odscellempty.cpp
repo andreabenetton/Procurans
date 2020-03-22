@@ -30,9 +30,9 @@ void ODSCellEmpty::DeserializeProperty(QStringRef attributename, QStringRef attr
     ODSStyleable::DeserializeProperty(attributename, attributevalue);
 }
 
-QVariant ODSCellEmpty::DeserializeSubitem(QXmlStreamReader& reader, int& numberofdeserializeitems)
+QString ODSCellEmpty::DeserializeSubitem(QXmlStreamReader& reader, int& numberofdeserializeitems)
 {
-    return 0;
+    return "";
 }
 
 void ODSCellEmpty::Serialize(QXmlStreamWriter* writer)

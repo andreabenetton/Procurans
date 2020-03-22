@@ -41,10 +41,10 @@ void ODSCellString::DeserializeProperty(QStringRef attributename, QStringRef att
     ODSStyleable::DeserializeProperty(attributename, attributevalue);
 }
 
-QVariant ODSCellString::DeserializeSubitem(QXmlStreamReader& reader, int& numberofdeserializeitems)
+QString ODSCellString::DeserializeSubitem(QXmlStreamReader& reader, int& numberofdeserializeitems)
 {
-    _valueText = ODSCell::DeserializeSubitem(reader, numberofdeserializeitems).toString();
-    return 0;
+    _valueText = ODSCell::DeserializeSubitem(reader, numberofdeserializeitems);
+    return "";
 }
 
 

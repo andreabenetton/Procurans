@@ -30,7 +30,7 @@ private:
     // implements ODSSerializable
     void Deserialize(QXmlStreamReader& reader);
     void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
-    QVariant DeserializeSubitem(QXmlStreamReader& reader, int& c);
+    QString DeserializeSubitem(QXmlStreamReader& reader, int& c);
     void SerializeSubitems(QXmlStreamWriter* writer);
 };
 

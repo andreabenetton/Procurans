@@ -24,7 +24,7 @@ protected:
 	void LoopForProperties(QXmlStreamReader& reader, int& numberofloopeditems);
 	virtual void DeserializeProperty(QStringRef attributename, QStringRef attributevalue) = 0;
 	void LoopForSubitems(QXmlStreamReader& reader, int& numberofloopeditems);
-	virtual QVariant DeserializeSubitem(QXmlStreamReader& reader, int& numberofdeserializeitems) = 0;
+	virtual QString DeserializeSubitem(QXmlStreamReader& reader, int& numberofdeserializeitems) = 0;
 
 	void SerializeStart(QXmlStreamWriter* writer);
 	virtual void SerializeProperties(QXmlStreamWriter* writer) = 0;

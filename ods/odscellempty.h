@@ -19,7 +19,7 @@ public:
     // implements ODSSerializable
     void Serialize(QXmlStreamWriter* writer);
     void Deserialize(QXmlStreamReader& reader);
-    QVariant DeserializeSubitem(QXmlStreamReader& reader, int& c);
+    QString DeserializeSubitem(QXmlStreamReader& reader, int& c);
     void SerializeProperties(QXmlStreamWriter* writer);
     void SerializeSubitems(QXmlStreamWriter* writer);
     void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);

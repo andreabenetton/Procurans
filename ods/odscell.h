@@ -41,7 +41,7 @@ protected:
     // implements ODSSerializable
     virtual void SerializeProperties(QXmlStreamWriter* writer);
     virtual void SerializeSubitems(QXmlStreamWriter* writer);
-    QVariant DeserializeSubitem(QXmlStreamReader& reader, int& c);
+    QString DeserializeSubitem(QXmlStreamReader& reader, int& c);
 
 };
 
