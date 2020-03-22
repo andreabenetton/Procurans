@@ -11,23 +11,26 @@
 
 #include "CellAbstract.h"
 
-class FileAbstract
-{
-public:
-    void Load(const QString &full_path);
-    bool Save(const QString &full_path);
+namespace Ods {
 
-    virtual void Parse() = 0;
-    //virtual QString Tag() = 0;
+    class FileAbstract
+    {
+    public:
+        void Load(const QString& full_path);
+        bool Save(const QString& full_path);
 
-protected:
-    QString inbuffer;
-    QString outbuffer;
+        virtual void Parse() = 0;
+        //virtual QString Tag() = 0;
 
-    bool IsStartElementNamed(QXmlStreamReader& xml, const QString& tokenName);
-    bool IsNotEndElementNamed(QXmlStreamReader& xml, const QString& tokenName);
+    protected:
+        QString inbuffer;
+        QString outbuffer;
 
-    QXmlStreamReader* reader;
-    QXmlStreamWriter* writer;
-};
+        bool IsStartElementNamed(QXmlStreamReader& xml, const QString& tokenName);
+        bool IsNotEndElementNamed(QXmlStreamReader& xml, const QString& tokenName);
+
+        QXmlStreamReader* reader;
+        QXmlStreamWriter* writer;
+    };
+}
 #endif // ODSFILE_H

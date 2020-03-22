@@ -3,12 +3,14 @@
 
 #include "functions.h"
 
-bool IsStartElementNamed(QXmlStreamReader& xml, const QString& tokenName)
-{
-    return ((xml.tokenType() == QXmlStreamReader::StartElement) && (xml.qualifiedName() == tokenName));
-}
+namespace Ods {
+    bool IsStartElementNamed(QXmlStreamReader& xml, const QString& tokenName)
+    {
+        return ((xml.tokenType() == QXmlStreamReader::StartElement) && (xml.qualifiedName() == tokenName));
+    }
 
-bool IsNotEndElementNamed(QXmlStreamReader& xml, const QString& tokenName)
-{
-    return !((xml.tokenType() == QXmlStreamReader::EndElement) && (xml.qualifiedName() == tokenName));
+    bool IsNotEndElementNamed(QXmlStreamReader& xml, const QString& tokenName)
+    {
+        return !((xml.tokenType() == QXmlStreamReader::EndElement) && (xml.qualifiedName() == tokenName));
+    }
 }

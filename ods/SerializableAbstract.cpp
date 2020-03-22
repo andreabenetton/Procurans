@@ -4,32 +4,30 @@
 #include "SerializableAbstract.h"
 #include "functions.h"
 
-SerializableAbstract::SerializableAbstract()
-{
+namespace Ods {
 
-}
-
-void SerializableAbstract::SerializeStart(QXmlStreamWriter* writer)
-{
-    writer->writeStartElement(InstanceTag());
-}
-
-void SerializableAbstract::SerializeEnd(QXmlStreamWriter* writer)
-{
-    writer->writeEndElement();
-}
-
-void SerializableAbstract::LoopForProperties(QXmlStreamReader& reader, int& numberofloopeditems)
-{
-    for (auto& it : reader.attributes()) {
-        DeserializeProperty(it.qualifiedName(), it.value());
+    void SerializableAbstract::SerializeStart(QXmlStreamWriter* writer)
+    {
+        writer->writeStartElement(InstanceTag());
     }
-}
 
-void SerializableAbstract::LoopForSubitems(QXmlStreamReader& reader, int& numberofloopeditems)
-{
-    do {
-        reader.readNext();
-        QVariant skip = DeserializeSubitem(reader, numberofloopeditems);
-    } while (IsNotEndElementNamed(reader, InstanceTag()));
+    void SerializableAbstract::SerializeEnd(QXmlStreamWriter* writer)
+    {
+        writer->writeEndElement();
+    }
+
+    void SerializableAbstract::LoopForProperties(QXmlStreamReader& reader, int& numberofloopeditems)
+    {
+        for (auto& it : reader.attributes()) {
+            DeserializeProperty(it.qualifiedName(), it.value());
+        }
+    }
+
+    void SerializableAbstract::LoopForSubitems(QXmlStreamReader& reader, int& numberofloopeditems)
+    {
+        do {
+            reader.readNext();
+            QVariant skip = DeserializeSubitem(reader, numberofloopeditems);
+        } while (IsNotEndElementNamed(reader, InstanceTag()));
+    }
 }

@@ -2,90 +2,92 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 #include <QDebug>
-#include "Logger.h"
 
 #include "Document.h"
 #include "FileAbstract.h"
 #include "quazip/JlCompress.h"
 
-Document::Document()
-{
-    InitTempDir();
-}
+namespace Ods {
 
-void Document::InitTempDir()
-{
-    const bool do_remove = true;
-    temp_dir_.setAutoRemove(do_remove);
-
-    if (dev_mode_) {
-        temp_dir_path_ = QDir::home().filePath("ods_dev_mode");
-        QDir dir(temp_dir_path_);
-
-        if (dir.exists() && !dir.removeRecursively())
-            qWarning(logWarning()) << "Failed to delete recursively: " << dir.Name;
-
-
-        if (!dir.mkpath("."))
-            qWarning(logWarning()) << "Can't create temp dir";
-    } else {
-        temp_dir_path_ = temp_dir_.path();
-    }
-}
-
-void Document::Load(const QString &full_path)
-{
-    InitTempDir();
-
-    if (!dev_mode_ && !temp_dir_.isValid()) {
-        qWarning(logWarning()) << "temp dir invalid";
-        return;
+    Document::Document()
+    {
+        InitTempDir();
     }
 
-    extracted_file_paths_ = JlCompress::extractDir(full_path, temp_dir_path_);
+    void Document::InitTempDir()
+    {
+        const bool do_remove = true;
+        temp_dir_.setAutoRemove(do_remove);
 
-    if (extracted_file_paths_.isEmpty()) {
-        qWarning(logWarning()) <<"Couldn't extract files";
-        return;
-    }
+        if (dev_mode_) {
+            temp_dir_path_ = QDir::home().filePath("ods_dev_mode");
+            QDir dir(temp_dir_path_);
 
-    for (auto path : extracted_file_paths_) {
-        if (path.endsWith(FileContent::filename)) {
-            contentfile = new FileContent();
-            contentfile->Load(path);
-            break;
+            if (dir.exists() && !dir.removeRecursively())
+                qWarning() << "Failed to delete recursively: " << dir.Name;
+
+
+            if (!dir.mkpath("."))
+                qWarning() << "Can't create temp dir";
+        }
+        else {
+            temp_dir_path_ = temp_dir_.path();
         }
     }
 
-    qInfo(logInfo()) << "Unzipped: " << full_path;
-}
+    void Document::Load(const QString& full_path)
+    {
+        InitTempDir();
 
-void Document::AddRowToContent(QList<QList<QSharedPointer<CellAbstract>>>* rowstoadd)
-{
-    contentfile->Add(rowstoadd);
-    contentfile->Parse();
-}
+        if (!dev_mode_ && !temp_dir_.isValid()) {
+            qWarning() << "temp dir invalid";
+            return;
+        }
 
-bool Document::Save(const QString &ods_path)
-{
-    if (contentfile == nullptr) { // || document_styles_ == nullptr)
-        qWarning(logWarning()) <<"Nothing to save";
-        return false;
+        extracted_file_paths_ = JlCompress::extractDir(full_path, temp_dir_path_);
+
+        if (extracted_file_paths_.isEmpty()) {
+            qWarning() << "Couldn't extract files";
+            return;
+        }
+
+        for (auto path : extracted_file_paths_) {
+            if (path.endsWith(FileContent::filename)) {
+                contentfile = new FileContent();
+                contentfile->Load(path);
+                break;
+            }
+        }
+
+        qInfo() << "Unzipped: " << full_path;
     }
 
-    QDir base_dir(temp_dir_path_);
-
-    QString contentfilepath = base_dir.filePath(FileContent::filename);
-    contentfile->Save(contentfilepath);
-
-    if (!JlCompress::compressDir(ods_path, temp_dir_path_)) {
-        qWarning(logWarning()) << "Failed to compress dir";
-        return false;
+    void Document::AddRowToContent(QList<QList<QSharedPointer<CellAbstract>>>* rowstoadd)
+    {
+        contentfile->Add(rowstoadd);
+        contentfile->Parse();
     }
 
-    qInfo(logInfo()) << "Zipped: " << ods_path;
+    bool Document::Save(const QString& ods_path)
+    {
+        if (contentfile == nullptr) { // || document_styles_ == nullptr)
+            qWarning() << "Nothing to save";
+            return false;
+        }
 
-    return true;
+        QDir base_dir(temp_dir_path_);
+
+        QString contentfilepath = base_dir.filePath(FileContent::filename);
+        contentfile->Save(contentfilepath);
+
+        if (!JlCompress::compressDir(ods_path, temp_dir_path_)) {
+            qWarning() << "Failed to compress dir";
+            return false;
+        }
+
+        qInfo() << "Zipped: " << ods_path;
+
+        return true;
+    }
 }
-
 

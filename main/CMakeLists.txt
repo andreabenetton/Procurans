@@ -34,18 +34,20 @@ find_package(Qt5XmlPatterns REQUIRED)
 find_package(Qt5Sql REQUIRED)
 find_package(Qt5Xml REQUIRED)
 
-set(src_files
-    license.h
-    main.cpp
-    mainwindow.cpp
-    mainwindow.h
-    mainwindow.ui
-    comboboxitemdelegate.cpp
-    comboboxitemdelegate.h
-    gridschemafield.h
-    gridschemafield.cpp
-    settings.cpp
-    settings.h)
+set(src_files	
+	license.h
+	main.cpp
+	mainwindow.cpp
+	mainwindow.h
+	mainwindow.ui
+	comboboxitemdelegate.cpp
+	comboboxitemdelegate.h
+	gridschemafield.h
+	gridschemafield.cpp
+	Logger.cpp
+	Logger.h
+	settings.cpp
+	settings.h)
 
 qt5_add_resources(src_files application.qrc)
 

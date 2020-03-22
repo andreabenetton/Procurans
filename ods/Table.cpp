@@ -4,122 +4,125 @@
 #include "Table.h"
 #include "functions.h"
 
-const QString Table::TAG = "table:table";
-const QString Table::NAMETAG = "table:name";
-const QString Table::PRINTRANGETAG = "table:print-ranges";
+namespace Ods {
 
-int Table::_sheetcount = 1;
+    const QString Table::kTag = "table:table";
+    const QString Table::NAMETAG = "table:name";
+    const QString Table::PRINTRANGETAG = "table:print-ranges";
 
-Table::Table(QString name)
-{
-    Initialize();
+    int Table::_sheetcount = 1;
 
-    if (name != "") {
-        _name = name;
-    }
-    else {
-        _name = "Sheet" + QString::number(_sheetcount++);
-    }
-}
-
-Table::Table(QXmlStreamReader& reader)
-{
-    Q_ASSERT(reader.qualifiedName() == Table::TAG);
-    Initialize();
-    Deserialize(reader);
-}
-
-// Static methods
-Table* Table::Builder(QXmlStreamReader& reader)
-{
-    Q_ASSERT(reader.qualifiedName() == Table::TAG);
-
-    return new Table(reader);
-}
-
-// Methods
-void Table::Initialize()
-{
-    _rows = new QVector<QSharedPointer<ODSRow>>(256);
-    _columns = new QVector<QSharedPointer<Column>>(256);
-    _printranges = "";
-}
-
-// implements ODSSerializable
-void Table::Deserialize(QXmlStreamReader& reader)
-{
-    int i = 0;
-    SerializableAbstract::LoopForProperties(reader, i);
-    int j = 0;
-    SerializableAbstract::LoopForSubitems(reader, j);
-}
-
-void Table::DeserializeProperty(QStringRef attributename, QStringRef attributevalue)
-{
-    StyleableAbstract::DeserializeProperty(attributename, attributevalue);
-    if (attributename == NAMETAG) {
-        _name = attributevalue.toString();
-    }
-    if (attributename == PRINTRANGETAG) {
-        _printranges = attributevalue.toString();
-    }
-}
-
-QString Table::DeserializeSubitem(QXmlStreamReader& reader, int& numberofdeserializeitems)
-{
-    if (IsStartElementNamed(reader, Column::TAG)) {
-        Column* column = Column::Builder(reader);
-        (*_columns)[numberofdeserializeitems] = QSharedPointer<Column>(column);
-        numberofdeserializeitems += column->GetRepeat();
-    }
-    if (IsStartElementNamed(reader, ODSRow::TAG)) {
-        ODSRow* row = ODSRow::Builder(reader);
-        (*_rows)[numberofdeserializeitems] = QSharedPointer<ODSRow>(row);
-        numberofdeserializeitems += row->GetRepeat();
-    }
-    return "";
-}
-
-QString Table::InstanceTag()
-{
-    return TAG;
-}
-
-void Table::Serialize(QXmlStreamWriter* writer)
-{
-    SerializableAbstract::SerializeStart(writer);
-    StyleableAbstract::SerializeProperties(writer);
-    Table::SerializeSubitems(writer);
-    SerializableAbstract::SerializeEnd(writer);
-}
-
-void Table::SerializeProperties(QXmlStreamWriter* writer)
-{
-    if (_name != "") {
-        writer->writeAttribute(Table::NAMETAG, _name);
-    }
-    if (_printranges != "") {
-        writer->writeAttribute(Table::PRINTRANGETAG, _printranges);
-    }
-}
-
-void Table::SerializeSubitems(QXmlStreamWriter* writer)
-{
-    for (int i = 0; i < _columns->length(); i++)
+    Table::Table(QString name)
     {
-        Column* column = (*_columns)[i].get();
-        if (column != nullptr)
-        {
-            column->Serialize(writer);
+        Initialize();
+
+        if (name != "") {
+            _name = name;
+        }
+        else {
+            _name = "Sheet" + QString::number(_sheetcount++);
         }
     }
 
-    for (int i = 0; i < _rows->length(); i++)
+    Table::Table(QXmlStreamReader& reader)
     {
-        ODSRow* row = (*_rows)[i].get();
-        if (row != nullptr)
+        Q_ASSERT(reader.qualifiedName() == Table::kTag);
+        Initialize();
+        Deserialize(reader);
+    }
+
+    // Static methods
+    Table* Table::Builder(QXmlStreamReader& reader)
+    {
+        Q_ASSERT(reader.qualifiedName() == Table::kTag);
+
+        return new Table(reader);
+    }
+
+    // Methods
+    void Table::Initialize()
+    {
+        _rows = new QVector<QSharedPointer<ODSRow>>(256);
+        _columns = new QVector<QSharedPointer<Column>>(256);
+        _printranges = "";
+    }
+
+    // implements ODSSerializable
+    void Table::Deserialize(QXmlStreamReader& reader)
+    {
+        int i = 0;
+        SerializableAbstract::LoopForProperties(reader, i);
+        int j = 0;
+        SerializableAbstract::LoopForSubitems(reader, j);
+    }
+
+    void Table::DeserializeProperty(QStringRef attributename, QStringRef attributevalue)
+    {
+        StyleableAbstract::DeserializeProperty(attributename, attributevalue);
+        if (attributename == NAMETAG) {
+            _name = attributevalue.toString();
+        }
+        if (attributename == PRINTRANGETAG) {
+            _printranges = attributevalue.toString();
+        }
+    }
+
+    QString Table::DeserializeSubitem(QXmlStreamReader& reader, int& numberofdeserializeitems)
+    {
+        if (IsStartElementNamed(reader, Column::kTag)) {
+            Column* column = Column::Builder(reader);
+            (*_columns)[numberofdeserializeitems] = QSharedPointer<Column>(column);
+            numberofdeserializeitems += column->GetRepeat();
+        }
+        if (IsStartElementNamed(reader, ODSRow::kTag)) {
+            ODSRow* row = ODSRow::Builder(reader);
+            (*_rows)[numberofdeserializeitems] = QSharedPointer<ODSRow>(row);
+            numberofdeserializeitems += row->GetRepeat();
+        }
+        return "";
+    }
+
+    QString Table::InstanceTag()
+    {
+        return kTag;
+    }
+
+    void Table::Serialize(QXmlStreamWriter* writer)
+    {
+        SerializableAbstract::SerializeStart(writer);
+        StyleableAbstract::SerializeProperties(writer);
+        Table::SerializeSubitems(writer);
+        SerializableAbstract::SerializeEnd(writer);
+    }
+
+    void Table::SerializeProperties(QXmlStreamWriter* writer)
+    {
+        if (_name != "") {
+            writer->writeAttribute(Table::NAMETAG, _name);
+        }
+        if (_printranges != "") {
+            writer->writeAttribute(Table::PRINTRANGETAG, _printranges);
+        }
+    }
+
+    void Table::SerializeSubitems(QXmlStreamWriter* writer)
+    {
+        for (int i = 0; i < _columns->length(); i++)
         {
-            row->Serialize(writer);
+            Column* column = (*_columns)[i].get();
+            if (column != nullptr)
+            {
+                column->Serialize(writer);
+            }
+        }
+
+        for (int i = 0; i < _rows->length(); i++)
+        {
+            ODSRow* row = (*_rows)[i].get();
+            if (row != nullptr)
+            {
+                row->Serialize(writer);
+            }
         }
     }
 }

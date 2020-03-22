@@ -9,32 +9,34 @@
 #include <QXmlStreamWriter>
 #include "CellAbstract.h"
 
-class CellFloat: public CellAbstract
-{
-public:
-    CellFloat(double number, int repeat = 1);
-    CellFloat(QXmlStreamReader& reader);
+namespace Ods {
 
-    static const QString CELLTYPE;
+    class CellFloat : public CellAbstract
+    {
+    public:
+        CellFloat(double number, int repeat = 1);
+        CellFloat(QXmlStreamReader& reader);
 
-    double getDouble();
+        static const QString kCellTypeValue;
 
-    // implements ODSSerializable
-    void Serialize(QXmlStreamWriter* writer);
+        double getDouble();
 
-    // implements ODSCell
-    QString InstanceCellType();
+        // implements ODSSerializable
+        void Serialize(QXmlStreamWriter* writer);
 
-private:
-    static const QString CELLVALUETAG;
+        // implements ODSCell
+        QString InstanceCellType();
 
-    double _valueNumber;
+    private:
+        static const QString kCellTypeAttribute;
 
-    // implements ODSSerializable
-    void Deserialize(QXmlStreamReader& reader);
-    void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
-    void SerializeProperties(QXmlStreamWriter* writer);
-    void SerializeSubitems(QXmlStreamWriter* writer);
-};
+        double _valueNumber;
 
+        // implements ODSSerializable
+        void Deserialize(QXmlStreamReader& reader);
+        void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
+        void SerializeProperties(QXmlStreamWriter* writer);
+        void SerializeSubitems(QXmlStreamWriter* writer);
+    };
+}
 #endif // ODSCELLFLOAT_H

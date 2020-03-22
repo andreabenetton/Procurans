@@ -35,11 +35,8 @@ set(lib_files
 		FileAbstract.h
 		FileContent.cpp
 		FileContent.h
-		filelist.txt
 		functions.cpp
 		functions.h
-		Logger.cpp
-		Logger.h
 		RepeatableAbstract.cpp
 		RepeatableAbstract.h
 		Row.cpp

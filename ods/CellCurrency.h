@@ -8,43 +8,45 @@
 #include <QXmlStreamWriter>
 #include "CellAbstract.h"
 
-enum ODSCurrency {
-  EUR
-};
+namespace Ods {
 
-class CellCurrency: public CellAbstract
-{
-public:
-    CellCurrency(ODSCurrency currency, double amoount, int repeat = 1);
-    CellCurrency(QXmlStreamReader& reader);
+    enum ODSCurrency {
+        EUR
+    };
 
-    static const QString CELLTYPE;
+    class CellCurrency : public CellAbstract
+    {
+    public:
+        CellCurrency(ODSCurrency currency, double amoount, int repeat = 1);
+        CellCurrency(QXmlStreamReader& reader);
 
-    double getAmount();
-    ODSCurrency getCurrency();
+        static const QString kCellTypeValue;
 
-    // implements ODSSerializable
-    void Serialize(QXmlStreamWriter* writer);
+        double getAmount();
+        ODSCurrency getCurrency();
 
-    // implements ODSCell
-    QString InstanceCellType();
+        // implements ODSSerializable
+        void Serialize(QXmlStreamWriter* writer);
 
-private:
-    static const QString CELLVALUETAG;
-    static const QString CELLCURRENCYTAG;
+        // implements ODSCell
+        QString InstanceCellType();
 
-    void InitializeCurrencies();
+    private:
+        static const QString kCellTypeAttribute;
+        static const QString kCellCurrencyAttribute;
 
-    double _valueAmount;
-    ODSCurrency _valueCurrency;
-    QMap<ODSCurrency, QString> _symbols;
-    QMap<ODSCurrency, QString> _iso;
+        void InitializeCurrencies();
 
-    // implements ODSSerializable
-    void Deserialize(QXmlStreamReader& reader);
-    void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
-    void SerializeProperties(QXmlStreamWriter* writer);
-    void SerializeSubitems(QXmlStreamWriter* writer);
-};
+        double _valueAmount;
+        ODSCurrency _valueCurrency;
+        QMap<ODSCurrency, QString> _symbols;
+        QMap<ODSCurrency, QString> _iso;
 
+        // implements ODSSerializable
+        void Deserialize(QXmlStreamReader& reader);
+        void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
+        void SerializeProperties(QXmlStreamWriter* writer);
+        void SerializeSubitems(QXmlStreamWriter* writer);
+    };
+}
 #endif // ODSCELLCURRENCY_H

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 #include "settings.h"
-#include "ods/logger.h"
+#include "Logger.h"
 
 #include <QtWidgets>
 

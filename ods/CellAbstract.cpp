@@ -9,86 +9,89 @@
 #include "CellFloat.h"
 #include "CellCurrency.h"
 
-// Constants
-const QString CellAbstract::TAG = "table:table-cell";
-const QString CellAbstract::CELLTYPETAG = "office:value-type";
-const QString CellAbstract::REPEATTAG = "table:number-columns-repeated";
-const QString CellAbstract::TEXTVALUETAG = "text:p";
+namespace Ods {
 
-// Constructors
-CellAbstract::CellAbstract(int repeat, QString style) : StyleableAbstract(style), RepeatableAbstract(repeat) {}
+    // Constants
+    const QString CellAbstract::kTag = "table:table-cell";
+    const QString CellAbstract::kCellTypeAttribute = "office:value-type";
+    const QString CellAbstract::kRepeatAttribute = "table:number-columns-repeated";
+    const QString CellAbstract::kTextTag = "text:p";
 
-CellAbstract::CellAbstract(QXmlStreamReader& reader) : StyleableAbstract(""), RepeatableAbstract(1)
-{
-    Q_ASSERT(reader.qualifiedName() == CellAbstract::TAG);
-}
+    // Constructors
+    CellAbstract::CellAbstract(int repeat, QString style) : StyleableAbstract(style), RepeatableAbstract(repeat) {}
 
-// Static methods
-CellAbstract* CellAbstract::Builder(QXmlStreamReader& reader)
-{
-    Q_ASSERT(reader.qualifiedName() == CellAbstract::TAG);
-
-    if (!reader.attributes().hasAttribute(CellAbstract::CELLTYPETAG))
+    CellAbstract::CellAbstract(QXmlStreamReader& reader) : StyleableAbstract(""), RepeatableAbstract(1)
     {
-        return new CellEmpty(reader);
+        Q_ASSERT(reader.qualifiedName() == CellAbstract::kTag);
     }
 
-    QString type = reader.attributes().value(CellAbstract::CELLTYPETAG).toString();
-    if (type.isEmpty())
+    // Static methods
+    CellAbstract* CellAbstract::Builder(QXmlStreamReader& reader)
     {
-        return new CellEmpty(reader);
+        Q_ASSERT(reader.qualifiedName() == CellAbstract::kTag);
+
+        if (!reader.attributes().hasAttribute(CellAbstract::kCellTypeAttribute))
+        {
+            return new CellEmpty(reader);
+        }
+
+        QString type = reader.attributes().value(CellAbstract::kCellTypeAttribute).toString();
+        if (type.isEmpty())
+        {
+            return new CellEmpty(reader);
+        }
+        if (type == CellString::kCellTypeValue)
+        {
+            return new CellString(reader);
+        }
+        if (type == CellDate::kCellTypeValue)
+        {
+            return new CellDate(reader);
+        }
+        if (type == CellFloat::kCellTypeValue)
+        {
+            return new CellFloat(reader);
+        }
+        if (type == CellCurrency::kCellTypeValue)
+        {
+            return new CellCurrency(reader);
+        }
+        Q_ASSERT(false);
+        //return nullptr;
     }
-    if (type == CellString::CELLTYPE)
+
+    // Methods
+
+
+    // implements ODSRepeatable
+    QString CellAbstract::RepeatTag()
     {
-        return new CellString(reader);
+        return kRepeatAttribute;
     }
-    if (type == CellDate::CELLTYPE)
+
+    // implements ODSSerializable
+    QString CellAbstract::InstanceTag()
     {
-        return new CellDate(reader);
+        return kTag;
     }
-    if (type == CellFloat::CELLTYPE)
+
+    QString CellAbstract::DeserializeSubitem(QXmlStreamReader& reader, int& numberofdeserializeitems)
     {
-        return new CellFloat(reader);
+        QString toret = "";
+        if (reader.qualifiedName() == kTextTag) {
+            toret = reader.readElementText();
+            numberofdeserializeitems++;
+        }
+        return toret;
     }
-    if (type == CellCurrency::CELLTYPE)
+
+    void CellAbstract::SerializeProperties(QXmlStreamWriter* writer)
     {
-        return new CellCurrency(reader);
+        writer->writeAttribute(CellAbstract::kCellTypeAttribute, InstanceCellType());
+        writer->writeAttribute("calcext:value-type", InstanceCellType());
     }
-    Q_ASSERT(false);
-    //return nullptr;
-}
 
-// Methods
-
-
-// implements ODSRepeatable
-QString CellAbstract::RepeatTag()
-{
-    return REPEATTAG;
-}
-
-// implements ODSSerializable
-QString CellAbstract::InstanceTag()
-{
-    return TAG;
-}
-
-QString CellAbstract::DeserializeSubitem(QXmlStreamReader& reader, int& numberofdeserializeitems)
-{
-    QString toret = "";
-    if (reader.qualifiedName() == TEXTVALUETAG) {
-        toret = reader.readElementText();
-        numberofdeserializeitems++;
+    void CellAbstract::SerializeSubitems(QXmlStreamWriter* writer)
+    {
     }
-    return toret;
-}
-
-void CellAbstract::SerializeProperties(QXmlStreamWriter* writer)
-{
-    writer->writeAttribute(CellAbstract::CELLTYPETAG, InstanceCellType());
-    writer->writeAttribute("calcext:value-type", InstanceCellType());
-}
-
-void CellAbstract::SerializeSubitems(QXmlStreamWriter* writer)
-{
 }

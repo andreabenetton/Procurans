@@ -8,7 +8,8 @@
 #include <QString>
 #include <QXmlStreamReader>
 
-bool IsStartElementNamed(QXmlStreamReader& xml, const QString& tokenName);
-bool IsNotEndElementNamed(QXmlStreamReader& xml, const QString& tokenName);
-
+namespace Ods {
+	bool IsStartElementNamed(QXmlStreamReader& xml, const QString& tokenName);
+	bool IsNotEndElementNamed(QXmlStreamReader& xml, const QString& tokenName);
+}
 #endif // FUNCTIONS_H

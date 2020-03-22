@@ -8,24 +8,26 @@
 #include <QXmlStreamWriter>
 #include "CellAbstract.h"
 
-class CellEmpty : public CellAbstract
-{
-public:
-    CellEmpty(int repeat = 1, QString style = "");
-    CellEmpty(QXmlStreamReader& reader);
+namespace Ods {
 
-    static const QString CELLTYPE;
+    class CellEmpty : public CellAbstract
+    {
+    public:
+        CellEmpty(int repeat = 1, QString style = "");
+        CellEmpty(QXmlStreamReader& reader);
 
-    // implements ODSSerializable
-    void Serialize(QXmlStreamWriter* writer);
-    void Deserialize(QXmlStreamReader& reader);
-    QString DeserializeSubitem(QXmlStreamReader& reader, int& c);
-    void SerializeProperties(QXmlStreamWriter* writer);
-    void SerializeSubitems(QXmlStreamWriter* writer);
-    void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
+        static const QString kCellTypeValue;
 
-    // implements ODSCell
-    QString InstanceCellType();
-};
+        // implements ODSSerializable
+        void Serialize(QXmlStreamWriter* writer);
+        void Deserialize(QXmlStreamReader& reader);
+        QString DeserializeSubitem(QXmlStreamReader& reader, int& c);
+        void SerializeProperties(QXmlStreamWriter* writer);
+        void SerializeSubitems(QXmlStreamWriter* writer);
+        void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
 
+        // implements ODSCell
+        QString InstanceCellType();
+    };
+}
 #endif // ODSCELLEMPTY_H

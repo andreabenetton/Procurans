@@ -16,45 +16,47 @@
 #include <Column.h>
 #include <Row.h>
 
-class Table : public SerializableAbstract, public StyleableAbstract
-{
-public:
-	Table(QString name = "");
-	Table(QXmlStreamReader& reader);
+namespace Ods {
 
-	static Table* Builder(QXmlStreamReader& reader);
-	static const QString TAG;
+	class Table : public SerializableAbstract, public StyleableAbstract
+	{
+	public:
+		Table(QString name = "");
+		Table(QXmlStreamReader& reader);
 
-	QString GetName();
-	void SetName(QString name);
+		static Table* Builder(QXmlStreamReader& reader);
+		static const QString kTag;
 
-	QString GetPrintRange();
-	void SetPrintRange(QString name);
+		QString GetName();
+		void SetName(QString name);
 
-	// implements ODSSerializable
-	void Serialize(QXmlStreamWriter* writer);
-	QString InstanceTag();
+		QString GetPrintRange();
+		void SetPrintRange(QString name);
 
-private:
-	static const QString NAMETAG;
-	static const QString PRINTRANGETAG;
+		// implements ODSSerializable
+		void Serialize(QXmlStreamWriter* writer);
+		QString InstanceTag();
 
-	QString _name;
-	QString _printranges;
+	private:
+		static const QString NAMETAG;
+		static const QString PRINTRANGETAG;
 
-	QVector<QSharedPointer<Column>>* _columns;
-	QVector<QSharedPointer<ODSRow>>* _rows;
+		QString _name;
+		QString _printranges;
 
-	static int _sheetcount;
+		QVector<QSharedPointer<Column>>* _columns;
+		QVector<QSharedPointer<ODSRow>>* _rows;
 
-	void Initialize();
+		static int _sheetcount;
 
-	// implements ODSSerializable
-	void Deserialize(QXmlStreamReader& reader);
-	QString DeserializeSubitem(QXmlStreamReader& reader, int& c);
-	void SerializeProperties(QXmlStreamWriter* writer);
-	void SerializeSubitems(QXmlStreamWriter* writer);
-	void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
-};
+		void Initialize();
 
+		// implements ODSSerializable
+		void Deserialize(QXmlStreamReader& reader);
+		QString DeserializeSubitem(QXmlStreamReader& reader, int& c);
+		void SerializeProperties(QXmlStreamWriter* writer);
+		void SerializeSubitems(QXmlStreamWriter* writer);
+		void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
+	};
+}
 #endif // ODSSHEET_H

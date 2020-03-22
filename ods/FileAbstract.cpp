@@ -6,48 +6,50 @@
 #include <QDebug>
 #include <QList>
 #include <QSaveFile>
-#include "Logger.h"
 
-void FileAbstract::Load(const QString &full_path)
-{
-    QFile file(full_path);
+namespace Ods {
 
-    if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        qWarning(logWarning()) << "Failed to open file: " << file.fileName() << "error :" <<file.errorString();
-        inbuffer = "";
-        return;
+    void FileAbstract::Load(const QString& full_path)
+    {
+        QFile file(full_path);
+
+        if (!file.open(QFile::ReadOnly | QFile::Text)) {
+            qWarning() << "Failed to open file: " << file.fileName() << "error :" << file.errorString();
+            inbuffer = "";
+            return;
+        }
+
+        QTextStream in(&file);
+        inbuffer = in.readAll();
+
+        //    qInfo(logInfo()) << Tag() << " file loaded.";
     }
 
-    QTextStream in(&file);
-    inbuffer = in.readAll();
+    bool FileAbstract::Save(const QString& full_path)
+    {
+        QSaveFile file(full_path);
+        file.open(QIODevice::WriteOnly | QIODevice::Truncate);
 
-//    qInfo(logInfo()) << Tag() << " file loaded.";
+
+        file.write(outbuffer.toUtf8());
+        const bool ok = file.commit();
+
+        if (!ok)
+            qWarning() << "Failed to save file: " << full_path;
+
+        //    qInfo(logInfo()) << Tag() << " file saved.";
+
+        return ok;
+    }
+
+    bool FileAbstract::IsStartElementNamed(QXmlStreamReader& xml, const QString& tokenName)
+    {
+        return ((xml.tokenType() == QXmlStreamReader::StartElement) && (xml.name() == tokenName));
+    }
+
+    bool FileAbstract::IsNotEndElementNamed(QXmlStreamReader& xml, const QString& tokenName)
+    {
+        return !((xml.tokenType() == QXmlStreamReader::EndElement) && (xml.name() == tokenName));
+    }
+
 }
-
-bool FileAbstract::Save(const QString &full_path)
-{
-    QSaveFile file(full_path);
-    file.open(QIODevice::WriteOnly | QIODevice::Truncate);
-
-
-    file.write(outbuffer.toUtf8());
-    const bool ok = file.commit();
-
-    if (!ok)
-        qWarning(logWarning()) << "Failed to save file: " << full_path;
-
-//    qInfo(logInfo()) << Tag() << " file saved.";
-
-    return ok;
-}
-
- bool FileAbstract::IsStartElementNamed(QXmlStreamReader& xml, const QString& tokenName)
-{
-    return ((xml.tokenType() == QXmlStreamReader::StartElement) && (xml.name() == tokenName));
-}
-
- bool FileAbstract::IsNotEndElementNamed(QXmlStreamReader& xml, const QString& tokenName)
- {
-     return !((xml.tokenType() == QXmlStreamReader::EndElement) && (xml.name() == tokenName));
- }
-

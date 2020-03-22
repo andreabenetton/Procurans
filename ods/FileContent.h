@@ -9,27 +9,29 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 
-#include "odscell.h"
-#include "odsfile.h"
+#include "CellAbstract.h"
+#include "FileAbstract.h"
 
-class FileContent : public FileAbstract
-{
-public:
-    void Parse();
-    QString InstanceTag();
+namespace Ods {
 
-    static const QString Tag;
-    static const QString filename;
+    class FileContent : public FileAbstract
+    {
+    public:
+        void Parse();
+        QString InstanceTag();
 
-    void Add(QList<QList<QSharedPointer<CellAbstract>>>* rowstoadd);
+        static const QString Tag;
+        static const QString filename;
 
-private:
-    void AddRows(QXmlStreamWriter* writer, QString at, int columns, QList<QString>* cellstyles);
+        void Add(QList<QList<QSharedPointer<CellAbstract>>>* rowstoadd);
 
-    QList<QList<QSharedPointer<CellAbstract>>>* rows;
-    void ParseTableColumn(const QXmlStreamReader& reader, int* cols);
+    private:
+        void AddRows(QXmlStreamWriter* writer, QString at, int columns, QList<QString>* cellstyles);
 
-    void writeCurrentToken(QXmlStreamWriter* writer, const QXmlStreamReader& reader);
-};
+        QList<QList<QSharedPointer<CellAbstract>>>* rows;
+        void ParseTableColumn(const QXmlStreamReader& reader, int* cols);
 
+        void writeCurrentToken(QXmlStreamWriter* writer, const QXmlStreamReader& reader);
+    };
+}
 #endif // ODSCONTENTFILE_H

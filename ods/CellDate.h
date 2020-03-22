@@ -8,32 +8,34 @@
 #include <QXmlStreamWriter>
 #include "CellAbstract.h"
 
-class CellDate: public CellAbstract
-{
-public:
-    CellDate(QDate date, int repeat = 1) ;
-    CellDate(QXmlStreamReader& reader);
+namespace Ods {
 
-    static const QString CELLTYPE;
+    class CellDate : public CellAbstract
+    {
+    public:
+        CellDate(QDate date, int repeat = 1);
+        CellDate(QXmlStreamReader& reader);
 
-    QDate getDate();
+        static const QString kCellTypeValue;
 
-    // implements ODSSerializable
-    void Serialize(QXmlStreamWriter* writer);
+        QDate getDate();
 
-    // implements ODSCell
-    QString InstanceCellType();
+        // implements ODSSerializable
+        void Serialize(QXmlStreamWriter* writer);
 
-private:
-    static const QString CELLVALUETAG;
+        // implements ODSCell
+        QString InstanceCellType();
 
-    QDate _valueDate;
+    private:
+        static const QString kCellTypeAttribute;
 
-    // implements ODSSerializable
-    void Deserialize(QXmlStreamReader& reader);
-    void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
-    void SerializeProperties(QXmlStreamWriter* writer);
-    void SerializeSubitems(QXmlStreamWriter* writer);
-};
+        QDate _valueDate;
 
+        // implements ODSSerializable
+        void Deserialize(QXmlStreamReader& reader);
+        void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
+        void SerializeProperties(QXmlStreamWriter* writer);
+        void SerializeSubitems(QXmlStreamWriter* writer);
+    };
+}
 #endif // ODSCELLDATE_H

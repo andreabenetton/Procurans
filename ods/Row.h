@@ -16,42 +16,44 @@
 
 #include "CellAbstract.h"
 
-class ODSRow : public SerializableAbstract, public StyleableAbstract, public RepeatableAbstract
-{
-public:
-	ODSRow(int repeat = 1, QString style = "");
+namespace Ods {
 
-	static ODSRow* Builder(QXmlStreamReader& reader);
+	class ODSRow : public SerializableAbstract, public StyleableAbstract, public RepeatableAbstract
+	{
+	public:
+		ODSRow(int repeat = 1, QString style = "");
 
-	static const QString TAG;
+		static ODSRow* Builder(QXmlStreamReader& reader);
 
-	int GetLastDefined();
-	int GetLastNonEmpty();
+		static const QString kTag;
 
-	// implements ODSRepeatable
-	QString RepeatTag();
+		int GetLastDefined();
+		int GetLastNonEmpty();
 
-	// implements ODSSerializable
-	void Serialize(QXmlStreamWriter* writer);
-	QString InstanceTag();
+		// implements ODSRepeatable
+		QString RepeatTag();
 
-private:
-	ODSRow(QXmlStreamReader& reader);
+		// implements ODSSerializable
+		void Serialize(QXmlStreamWriter* writer);
+		QString InstanceTag();
 
-	static const QString REPEATTAG;
+	private:
+		ODSRow(QXmlStreamReader& reader);
 
-	void InitializeContainers();
+		static const QString kRepeatAttribute;
 
-	int _lastdefined;
-	int _lastnonempty;
-	QVector<QSharedPointer<CellAbstract>>* _row;
+		void InitializeContainers();
 
-	// implements ODSSerializable
-	void Deserialize(QXmlStreamReader& reader);
-	QString DeserializeSubitem(QXmlStreamReader& reader, int& c);
-	void SerializeProperties(QXmlStreamWriter* writer);
-	void SerializeSubitems(QXmlStreamWriter* writer);
-	void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
-};
+		int _lastdefined;
+		int _lastnonempty;
+		QVector<QSharedPointer<CellAbstract>>* _row;
 
+		// implements ODSSerializable
+		void Deserialize(QXmlStreamReader& reader);
+		QString DeserializeSubitem(QXmlStreamReader& reader, int& c);
+		void SerializeProperties(QXmlStreamWriter* writer);
+		void SerializeSubitems(QXmlStreamWriter* writer);
+		void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
+	};
+}
 #endif // ODSROW_H

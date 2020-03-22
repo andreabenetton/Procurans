@@ -14,39 +14,42 @@
 #include "StyleableAbstract.h"
 #include "RepeatableAbstract.h"
 
-class Column : public SerializableAbstract, public StyleableAbstract, public RepeatableAbstract
-{
-public:
-	Column(int repeat = 1, QString columnstyle = "", QString defaultcellstyle = "");
+namespace Ods {
 
-	static Column* Builder(QXmlStreamReader& reader);
+	class Column : public SerializableAbstract, public StyleableAbstract, public RepeatableAbstract
+	{
+	public:
+		Column(int repeat = 1, QString columnstyle = "", QString defaultcellstyle = "");
 
-	static const QString TAG;
-	static const QString DEFAULTCELLSTYLETAG;
+		static Column* Builder(QXmlStreamReader& reader);
 
-	int GetLastDefined();
-	QString GetDefaultCellStyle();
-	void SetDefaultCellStyle(QString defaultstyle);
+		static const QString kTag;
+		static const QString kRepeatAttribute;
+		static const QString kDefaultCellStyleAttribute;
 
-	// implements ODSRepeatable
-	QString RepeatTag();
+		int GetLastDefined();
+		QString GetDefaultCellStyle();
+		void SetDefaultCellStyle(QString defaultstyle);
 
-	// implements ODSSerializable
-	void Serialize(QXmlStreamWriter* writer);
-	QString InstanceTag();
+		// implements ODSRepeatable
+		QString RepeatTag();
 
-private:
-	Column(QXmlStreamReader& reader);
+		// implements ODSSerializable
+		void Serialize(QXmlStreamWriter* writer);
+		QString InstanceTag();
 
-	int _lastdefined;
-	QString _defaultcellstyle;
+	private:
+		Column(QXmlStreamReader& reader);
 
-	// implements ODSSerializable
-	void Deserialize(QXmlStreamReader& reader);
-	QString DeserializeSubitem(QXmlStreamReader& reader, int& c);
-	void SerializeProperties(QXmlStreamWriter* writer);
-	void SerializeSubitems(QXmlStreamWriter* writer);
-	void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
-};
+		int _lastdefined;
+		QString _defaultcellstyle;
 
+		// implements ODSSerializable
+		void Deserialize(QXmlStreamReader& reader);
+		QString DeserializeSubitem(QXmlStreamReader& reader, int& c);
+		void SerializeProperties(QXmlStreamWriter* writer);
+		void SerializeSubitems(QXmlStreamWriter* writer);
+		void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
+	};
+}
 #endif // ODSCOLUMN_H

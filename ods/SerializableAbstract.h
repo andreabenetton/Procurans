@@ -9,27 +9,28 @@
 #include <QXmlStreamReader>
 #include <QVariant>
 
-class SerializableAbstract
-{
-public:
-	SerializableAbstract();
-	virtual void Serialize(QXmlStreamWriter* writer) = 0;
-	virtual QString InstanceTag() = 0;
+namespace Ods {
 
-protected:
-	SerializableAbstract(QXmlStreamReader& reader);
+	class SerializableAbstract
+	{
+	public:
 
-	virtual void Deserialize(QXmlStreamReader& reader) = 0;
+		virtual void Serialize(QXmlStreamWriter* writer) = 0;
+		virtual QString InstanceTag() = 0;
 
-	void LoopForProperties(QXmlStreamReader& reader, int& numberofloopeditems);
-	virtual void DeserializeProperty(QStringRef attributename, QStringRef attributevalue) = 0;
-	void LoopForSubitems(QXmlStreamReader& reader, int& numberofloopeditems);
-	virtual QString DeserializeSubitem(QXmlStreamReader& reader, int& numberofdeserializeitems) = 0;
+	protected:
 
-	void SerializeStart(QXmlStreamWriter* writer);
-	virtual void SerializeProperties(QXmlStreamWriter* writer) = 0;
-	virtual void SerializeSubitems(QXmlStreamWriter* writer) = 0;
-	void SerializeEnd(QXmlStreamWriter* writer);
-};
+		virtual void Deserialize(QXmlStreamReader& reader) = 0;
 
+		void LoopForProperties(QXmlStreamReader& reader, int& numberofloopeditems);
+		virtual void DeserializeProperty(QStringRef attributename, QStringRef attributevalue) = 0;
+		void LoopForSubitems(QXmlStreamReader& reader, int& numberofloopeditems);
+		virtual QString DeserializeSubitem(QXmlStreamReader& reader, int& numberofdeserializeitems) = 0;
+
+		void SerializeStart(QXmlStreamWriter* writer);
+		virtual void SerializeProperties(QXmlStreamWriter* writer) = 0;
+		virtual void SerializeSubitems(QXmlStreamWriter* writer) = 0;
+		void SerializeEnd(QXmlStreamWriter* writer);
+	};
+}
 #endif // ODSSERIALIZABLE_H

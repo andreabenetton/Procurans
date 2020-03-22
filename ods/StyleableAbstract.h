@@ -8,21 +8,23 @@
 
 #include "SerializableAbstract.h"
 
-class StyleableAbstract : public SerializableAbstract
-{
-public:
-	StyleableAbstract(QString style = "");
+namespace Ods {
 
-	virtual QString StyleTag();
+	class StyleableAbstract : public SerializableAbstract
+	{
+	public:
+		StyleableAbstract(QString style = "");
 
-	QString GetStyle();
-	void SetStyle(QString style);
+		virtual QString StyleTag();
 
-protected:
-	QString _style;
+		QString GetStyle();
+		void SetStyle(QString style);
 
-	void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
-	void SerializeProperties(QXmlStreamWriter* writer);
-};
+	protected:
+		QString _style;
 
+		void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
+		void SerializeProperties(QXmlStreamWriter* writer);
+	};
+}
 #endif // ODSSTYLEABLE_H

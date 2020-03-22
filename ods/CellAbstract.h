@@ -12,37 +12,38 @@
 #include "StyleableAbstract.h"
 #include "RepeatableAbstract.h"
 
-// Abstract class base for all cell types
-class CellAbstract : public SerializableAbstract, public StyleableAbstract, public RepeatableAbstract
-{
-public:
-    CellAbstract(int repeat = 1, QString style = "");
-    
-    static CellAbstract* Builder(QXmlStreamReader& reader);
+namespace Ods {
+    // Abstract class base for all cell types
+    class CellAbstract : public SerializableAbstract, public StyleableAbstract, public RepeatableAbstract
+    {
+    public:
+        CellAbstract(int repeat = 1, QString style = "");
 
-    static const QString TAG;
-    static const QString CELLTYPETAG;
+        static CellAbstract* Builder(QXmlStreamReader& reader);
 
-    virtual QString InstanceCellType() = 0;
+        static const QString kTag;
+        static const QString kCellTypeAttribute;
 
-    // implements ODSRepeatable
-    QString RepeatTag();
+        virtual QString InstanceCellType() = 0;
 
-    // implements ODSSerializable
-    QString InstanceTag();
-    virtual void Serialize(QXmlStreamWriter* writer) = 0;
+        // implements ODSRepeatable
+        QString RepeatTag();
 
-protected:
-    CellAbstract(QXmlStreamReader& reader);
+        // implements ODSSerializable
+        QString InstanceTag();
+        virtual void Serialize(QXmlStreamWriter* writer) = 0;
 
-    static const QString REPEATTAG;
-    static const QString TEXTVALUETAG;
+    protected:
+        CellAbstract(QXmlStreamReader& reader);
 
-    // implements ODSSerializable
-    virtual void SerializeProperties(QXmlStreamWriter* writer);
-    virtual void SerializeSubitems(QXmlStreamWriter* writer);
-    QString DeserializeSubitem(QXmlStreamReader& reader, int& c);
+        static const QString kRepeatAttribute;
+        static const QString kTextTag;
 
-};
+        // implements ODSSerializable
+        virtual void SerializeProperties(QXmlStreamWriter* writer);
+        virtual void SerializeSubitems(QXmlStreamWriter* writer);
+        QString DeserializeSubitem(QXmlStreamReader& reader, int& c);
 
+    };
+}
 #endif // ODSCELL_H

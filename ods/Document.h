@@ -9,31 +9,34 @@
 #include "FileAbstract.h"
 #include "FileContent.h"
 
-class Document
-{
-public:
+namespace Ods {
 
-    //static ODSDocument* FromFile(const QString &full_path);
+    class Document
+    {
+    public:
 
-    Document();
+        //static ODSDocument* FromFile(const QString &full_path);
 
-    bool Save(const QString &full_path);
-    bool Save();
+        Document();
 
-    void Load(const QString &full_path);
+        bool Save(const QString& full_path);
+        bool Save();
 
-    void AddRowToContent(QList<QList<QSharedPointer<CellAbstract>>>* rowstoadd);
+        void Load(const QString& full_path);
 
-private:
-    void InitTempDir();
+        void AddRowToContent(QList<QList<QSharedPointer<CellAbstract>>>* rowstoadd);
 
-    const bool dev_mode_ = true;
-    QStringList extracted_file_paths_;
+    private:
+        void InitTempDir();
 
-    QTemporaryDir temp_dir_;
-    QString temp_dir_path_;
+        const bool dev_mode_ = true;
+        QStringList extracted_file_paths_;
 
-    FileContent* contentfile;
-};
+        QTemporaryDir temp_dir_;
+        QString temp_dir_path_;
 
+        FileContent* contentfile;
+    };
+
+}
 #endif // ODSDOCUMENT_H

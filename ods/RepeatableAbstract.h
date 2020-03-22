@@ -5,23 +5,26 @@
 #define ODSREPEATABLE_H
 
 #include <QObject>
+#include <QXmlStreamWriter>
 
+#include "SerializableAbstract.h"
 
+namespace Ods {
 
-class RepeatableAbstract : public SerializableAbstract
-{
-public:
-	RepeatableAbstract(int repeat = 1);
+	class RepeatableAbstract : public SerializableAbstract
+	{
+	public:
+		RepeatableAbstract(int repeat = 1);
 
-	virtual QString RepeatTag() = 0;
+		virtual QString RepeatTag() = 0;
 
-	int GetRepeat();
+		int GetRepeat();
 
-protected:
-	int _repeat;
+	protected:
+		int _repeat;
 
-	void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
-	void SerializeProperties(QXmlStreamWriter* writer);
-};
-
+		void DeserializeProperty(QStringRef attributename, QStringRef attributevalue);
+		void SerializeProperties(QXmlStreamWriter* writer);
+	};
+}
 #endif // ODSREPEATABLE_H

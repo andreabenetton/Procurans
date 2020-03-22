@@ -4,36 +4,38 @@
 #include "StyleableAbstract.h"
 #include "functions.h"
 
-StyleableAbstract::StyleableAbstract(QString style)
-{
-    _style = style;
-}
-
-QString StyleableAbstract::GetStyle()
-{
-    return _style;
-}
-
-void StyleableAbstract::SetStyle(QString style)
-{
-    _style = style;
-}
-
-QString StyleableAbstract::StyleTag()
-{
-    return "table:style-name";
-}
-
-void StyleableAbstract::DeserializeProperty(QStringRef attributename, QStringRef attributevalue)
-{
-    if (attributename == StyleTag()) {
-        _style = attributevalue.toString();
+namespace Ods {
+    StyleableAbstract::StyleableAbstract(QString style)
+    {
+        _style = style;
     }
-}
 
-void StyleableAbstract::SerializeProperties(QXmlStreamWriter* writer)
-{
-    if (_style != "") {
-        writer->writeAttribute(StyleTag(), _style);
+    QString StyleableAbstract::GetStyle()
+    {
+        return _style;
+    }
+
+    void StyleableAbstract::SetStyle(QString style)
+    {
+        _style = style;
+    }
+
+    QString StyleableAbstract::StyleTag()
+    {
+        return "table:style-name";
+    }
+
+    void StyleableAbstract::DeserializeProperty(QStringRef attributename, QStringRef attributevalue)
+    {
+        if (attributename == StyleTag()) {
+            _style = attributevalue.toString();
+        }
+    }
+
+    void StyleableAbstract::SerializeProperties(QXmlStreamWriter* writer)
+    {
+        if (_style != "") {
+            writer->writeAttribute(StyleTag(), _style);
+        }
     }
 }
