@@ -23,7 +23,7 @@ include_directories(${Procurans_SOURCE_DIR})
 link_directories(${Procurans_BINARY_DIR}/lib)
 
 if (NOT MSVC)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 endif (NOT MSVC)
 
 #find_package(Qt5LinguistTools REQUIRED)
@@ -70,7 +70,7 @@ if (WIN32)
 
     add_executable(${exe_name} WIN32
         ${src_files}
-		${CMAKE_CURRENT_BINARY_DIR}/fileinfo.rc
+        ${CMAKE_CURRENT_BINARY_DIR}/fileinfo.rc
         #${TS_FILES}
 )
 else ()
@@ -83,7 +83,7 @@ endif ()
 get_property(zlib_libs GLOBAL PROPERTY zlib_libs_property)
 
 target_link_libraries(${exe_name}
-    ods
+    qoasis
     quazip
     ${zlib_libs}
     Qt5::Widgets

@@ -1,7 +1,7 @@
 message(STATUS ${CMAKE_CURRENT_LIST_FILE})
 
 if (NOT MSVC)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 endif (NOT MSVC)
 
 # Find includes in corresponding build directories

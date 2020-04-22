@@ -10,21 +10,24 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "logger.h"
+#include "Logger.h"
 #include "settings.h"
 #include "comboboxitemdelegate.h"
 #include "gridschemafield.h"
 
-#include "ods/Document.h"
-#include "ods/CellAbstract.h"
-#include "ods/CellEmpty.h"
-#include "ods/CellString.h"
-#include "ods/CellFloat.h"
-#include "ods/CellDate.h"
-#include "ods/CellCurrency.h"
+#include "qoasis/tag.h"
+#include "qoasis/currency.h"
+#include "qoasis/table/tablecell.h"
+#include "qoasis/table/tablecellempty.h"
+#include "qoasis/table/tablecellstring.h"
+#include "qoasis/table/tablecellfloat.h"
+#include "qoasis/table/tablecelldate.h"
+#include "qoasis/table/tablecellcurrency.h"
 
 
-using namespace Ods;
+using namespace qoasis;
+using namespace qoasis::office;
+using namespace qoasis::table;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -265,37 +268,37 @@ QString MainWindow::executeElencoFatture()
 
     QTableView *grid = ui->summaryTable;
 
-    QList<QList<QSharedPointer<CellAbstract>>> rows;
+    QList<QList<QSharedPointer<Tablecell>>> rows;
 
     int crow = 0;
 
     for (crow = 0; crow < grid->model()->rowCount(); crow++) {
 
-        QList<QSharedPointer<CellAbstract>> columns;
+        QList<QSharedPointer<Tablecell>> columns;
 
         {
-            QSharedPointer<CellAbstract> pt(new CellString(entity));
+            QSharedPointer<Tablecell> pt(new TablecellString(entity));
             columns.append(pt);
         }
         {
             QString riferimento = grid->model()->data(grid->model()->index(crow,0)).toString();
-            QSharedPointer<CellAbstract> pt(new CellString(riferimento));
+            QSharedPointer<Tablecell> pt(new TablecellString(riferimento));
             columns.append(pt);
         }
         {
-            QSharedPointer<CellAbstract> pt(new CellString(numero));
+            QSharedPointer<Tablecell> pt(new TablecellString(numero));
             columns.append(pt);
         }
         {
             double imponibile = grid->model()->data(grid->model()->index(crow,1)).toFloat();
-            QSharedPointer<CellAbstract> pt(new CellCurrency(ODSCurrency::EUR, imponibile));
+            QSharedPointer<Tablecell> pt(new TablecellCurrency(Currency::EUR, imponibile));
             columns.append(pt);
 
             double imposta = grid->model()->data(grid->model()->index(crow,3)).toFloat();
-            QSharedPointer<CellAbstract> pt1(new CellCurrency(ODSCurrency::EUR, imposta));
+            QSharedPointer<Tablecell> pt1(new TablecellCurrency(Currency::EUR, imposta));
             columns.append(pt1);
 
-            QSharedPointer<CellAbstract> pt2(new CellCurrency(ODSCurrency::EUR, imponibile + imposta));
+            QSharedPointer<Tablecell> pt2(new TablecellCurrency(Currency::EUR, imponibile + imposta));
             columns.append(pt2);
         }
 
@@ -318,8 +321,11 @@ QString MainWindow::executeElencoFatture()
 
     qInfo(logInfo())  << "Adding to elenco fatture: " << pathandfilename;
 
-    Document book;
-    book.Load(pathandfilename);
+    FileOds book(pathandfilename);
+    book.Load();
+
+    QSharedPointer<DocumentContent> content = book.GetContent();
+    QSharedPointer<Table> table = content->GetBody()->GetSpreadsheet()->GetTable(0);
 
     //backupit
     if(m_setting->isExecute(Settings::Execute::backupfiles)){
@@ -329,7 +335,7 @@ QString MainWindow::executeElencoFatture()
         if (dir.mkpath(backuppath))
             dir.rename(pathandfilename, QDir(backuppath).filePath(backupfilename));
     }
-    book.AddRowToContent(&rows);
+    //book.AddRowToContent(&rows);
     if(book.Save(pathandfilename))
         return "N. " + QString::number(crow) + " righe aggiunte al file fatture";
     else
@@ -352,7 +358,7 @@ QString MainWindow::executeMastriniFornitori()
 
     QTableView *grid = ui->paymentsTable;
 
-    QList<QList<QSharedPointer<CellAbstract>>> rows;
+    QList<QList<QSharedPointer<Tablecell>>> rows;
 
     int crow = 0;
 
@@ -365,47 +371,47 @@ QString MainWindow::executeMastriniFornitori()
         double importo = grid->model()->data(grid->model()->index(crow,2)).toFloat();
         QString cassa = grid->model()->data(grid->model()->index(crow,3)).toString();
 
-        QList<QSharedPointer<CellAbstract>> columns;
+        QList<QSharedPointer<Tablecell>> columns;
 
         if (crow == 0) {
-            QSharedPointer<CellAbstract> pt(new CellDate(dataemissione));
+            QSharedPointer<Tablecell> pt(new TablecellDate(dataemissione));
             columns.append(pt);
         }
         else {
-            QSharedPointer<CellAbstract> pt(new CellEmpty);
+            QSharedPointer<Tablecell> pt(new TablecellEmpty);
             columns.append(pt);
         }
 
         {
-            QSharedPointer<CellAbstract> pt(new CellEmpty);
+            QSharedPointer<Tablecell> pt(new TablecellEmpty);
             columns.append(pt);
         }
 
         if (crow == 0) {
-            QSharedPointer<CellAbstract> pt(new CellString(numero));
+            QSharedPointer<Tablecell> pt(new TablecellString(numero));
             columns.append(pt);
         }
         else {
-            QSharedPointer<CellAbstract> pt(new CellEmpty);
+            QSharedPointer<Tablecell> pt(new TablecellEmpty);
             columns.append(pt);
         }
 
         {
-            QSharedPointer<CellAbstract> pt(new CellEmpty);
+            QSharedPointer<Tablecell> pt(new TablecellEmpty);
             columns.append(pt);
         }
 
         if (crow == 0) {
-            QSharedPointer<CellAbstract> pt(new CellCurrency(ODSCurrency::EUR, totale));
+            QSharedPointer<Tablecell> pt(new TablecellCurrency(Currency::EUR, totale));
             columns.append(pt);
         }
         else {
-            QSharedPointer<CellAbstract> pt(new CellEmpty);
+            QSharedPointer<Tablecell> pt(new TablecellEmpty);
             columns.append(pt);
         }
 
         {
-            QSharedPointer<CellAbstract> pt(new CellEmpty);
+            QSharedPointer<Tablecell> pt(new TablecellEmpty);
             columns.append(pt);
         }
 
@@ -417,36 +423,36 @@ QString MainWindow::executeMastriniFornitori()
             (modalita == paymentMethodType["MP03"]) ||
             (modalita == paymentMethodType["MP08"])) {
 
-            QSharedPointer<CellAbstract> pt(new CellString("RD"));
+            QSharedPointer<Tablecell> pt(new TablecellString("RD"));
             columns.append(pt);
         }
         else {
-            QSharedPointer<CellAbstract> pt(new CellDate(datascadenza));
+            QSharedPointer<Tablecell> pt(new TablecellDate(datascadenza));
             columns.append(pt);
         }
 
         {
-            QSharedPointer<CellAbstract> pt(new CellEmpty);
+            QSharedPointer<Tablecell> pt(new TablecellEmpty);
             columns.append(pt);
         }
 
         {
-            QSharedPointer<CellAbstract> pt(new CellCurrency(ODSCurrency::EUR, importo));
+            QSharedPointer<Tablecell> pt(new TablecellCurrency(Currency::EUR, importo));
             columns.append(pt);
         }
 
         {
-            QSharedPointer<CellAbstract> pt(new CellEmpty);
+            QSharedPointer<Tablecell> pt(new TablecellEmpty);
             columns.append(pt);
         }
 
         {
-            QSharedPointer<CellAbstract> pt(new CellString(""));
+            QSharedPointer<Tablecell> pt(new TablecellString(""));
             columns.append(pt);
         }
 
         {
-            QSharedPointer<CellAbstract> pt(new CellString(cassa));
+            QSharedPointer<Tablecell> pt(new TablecellString(cassa));
             columns.append(pt);
         }
 
@@ -469,8 +475,8 @@ QString MainWindow::executeMastriniFornitori()
 
     qInfo(logInfo())  << "Adding to mastrino fornitore: " << pathandfilename;
 
-    Document book;
-    book.Load(pathandfilename);
+    FileOds book(pathandfilename);
+    book.Load();
 
     //backupit
     QString backupfilename = filenametemplate.arg(entity.replace(".", ""), QString::number(QDateTime::currentSecsSinceEpoch()));
@@ -480,7 +486,7 @@ QString MainWindow::executeMastriniFornitori()
         if (dir.mkpath(backuppath))
             dir.rename(pathandfilename, QDir(backuppath).filePath(backupfilename));
     }
-    book.AddRowToContent(&rows);
+    //book.AddRowToContent(&rows);
     if (book.Save(pathandfilename))
         return "N. " + QString::number(crow) + " righe aggiunte al file mastrino fornitore";
     else
@@ -502,7 +508,7 @@ QString MainWindow::executePrimaNota()
 
     QTableView *grid = ui->paymentsTable;
 
-    QMap<QString, QList<QList<QSharedPointer<CellAbstract>>>*> filelist;
+    QMap<QString, QList<QList<QSharedPointer<Tablecell>>>*> filelist;
 
     int numberofrows = grid->model()->rowCount();
 
@@ -529,9 +535,9 @@ QString MainWindow::executePrimaNota()
 
             QString filename = filenametemplate.arg(cassa, months[datascadenza.month()-1], QString::number(datascadenza.year()), "");
 
-            QList<QList<QSharedPointer<CellAbstract>>>* rows;
+            QList<QList<QSharedPointer<Tablecell>>>* rows;
             if (!filelist.contains(filename)) {
-                rows = new QList<QList<QSharedPointer<CellAbstract>>>();
+                rows = new QList<QList<QSharedPointer<Tablecell>>>();
                 filelist.insert(filename,  rows);
             }
             else {
@@ -540,30 +546,30 @@ QString MainWindow::executePrimaNota()
 
             QString rowcomment = rowcommenttemplate.arg(entity, numero , dataemissione.toString("dd/MM/yyyy"),totale, QString::number(crow+1), QString::number(numberofrows));
 
-            QList<QSharedPointer<CellAbstract>> columns;
+            QList<QSharedPointer<Tablecell>> columns;
 
             {
-                QSharedPointer<CellAbstract> pt(new CellDate(datascadenza));
+                QSharedPointer<Tablecell> pt(new TablecellDate(datascadenza));
                 columns.append(pt);
             }
 
             {
-                QSharedPointer<CellAbstract> pt(new CellEmpty);
+                QSharedPointer<Tablecell> pt(new TablecellEmpty);
                 columns.append(pt);
             }
 
             {
-                QSharedPointer<CellAbstract> pt(new CellString(rowcomment));
+                QSharedPointer<Tablecell> pt(new TablecellString(rowcomment));
                 columns.append(pt);
             }
 
             {
-                QSharedPointer<CellAbstract> pt(new CellEmpty(4));
+                QSharedPointer<Tablecell> pt(new TablecellEmpty(4));
                 columns.append(pt);
             }
 
             {
-                QSharedPointer<CellAbstract> pt(new CellCurrency(ODSCurrency::EUR, importo));
+                QSharedPointer<Tablecell> pt(new TablecellCurrency(Currency::EUR, importo));
                 columns.append(pt);
             }
 
@@ -597,8 +603,8 @@ QString MainWindow::executePrimaNota()
 
         qInfo(logInfo())  << "Adding to prima nota: " << pathandfilename;
 
-        Document book;
-        book.Load(pathandfilename);
+        FileOds book(pathandfilename);
+        book.Load();
 
         //backupit
         if(m_setting->isExecute(Settings::Execute::backupfiles)){
@@ -610,7 +616,7 @@ QString MainWindow::executePrimaNota()
                 dir.rename(pathandfilename, QDir(backuppath).filePath(backupfilename));
         }
 
-        book.AddRowToContent(filelist.value(filename));
+        //book.AddRowToContent(filelist.value(filename));
         ok = (ok && book.Save(pathandfilename));
     }
 
@@ -632,7 +638,7 @@ QString MainWindow::executeScadenziario()
 
     QTableView *grid = ui->paymentsTable;
 
-    QMap<QString, QList<QList<QSharedPointer<CellAbstract>>>*> filelist;
+    QMap<QString, QList<QList<QSharedPointer<Tablecell>>>*> filelist;
 
     int numberofrows = grid->model()->rowCount();
 
@@ -642,13 +648,14 @@ QString MainWindow::executeScadenziario()
 
         QString modalita = grid->model()->data(grid->model()->index(crow, 0)).toString();
         QDate datascadenza = QDate::fromString(grid->model()->data(grid->model()->index(crow,1)).toString(),"dd/MM/yyyy");
-        if ((!datascadenza.isValid()) || datascadenza.isNull())
+        if ((!datascadenza.isValid()) || datascadenza.isNull()) {
             if(modalita == paymentMethodType["MP05"]) {
                 datascadenza = dataemissione.addMonths(1);
             }
             else {
                 datascadenza = dataemissione;
             }
+        }
 
         QString cassa = grid->model()->data(grid->model()->index(crow,3)).toString();
         double importo = grid->model()->data(grid->model()->index(crow,2)).toFloat();
@@ -658,9 +665,9 @@ QString MainWindow::executeScadenziario()
             execrow++;
 
             QString filename = filenametemplate.arg(months[datascadenza.month()-1], QString::number(datascadenza.year()));
-            QList<QList<QSharedPointer<CellAbstract>>>* rows;
+            QList<QList<QSharedPointer<Tablecell>>>* rows;
             if (!filelist.contains(filename)) {
-                rows = new QList<QList<QSharedPointer<CellAbstract>>>();
+                rows = new QList<QList<QSharedPointer<Tablecell>>>();
                 filelist.insert(filename,  rows);
             }
             else {
@@ -668,70 +675,70 @@ QString MainWindow::executeScadenziario()
             }
 
 
-            QList<QSharedPointer<CellAbstract>> columns;
+            QList<QSharedPointer<Tablecell>> columns;
 
             {
-                QSharedPointer<CellAbstract> pt(new CellString(numero));
+                QSharedPointer<Tablecell> pt(new TablecellString(numero));
                 columns.append(pt);
             }
 
             {
-                QSharedPointer<CellAbstract> pt(new CellString(entity));
+                QSharedPointer<Tablecell> pt(new TablecellString(entity));
                 columns.append(pt);
             }
 
             {
-                QSharedPointer<CellAbstract> pt(new CellEmpty(2));
+                QSharedPointer<Tablecell> pt(new TablecellEmpty(2));
                 columns.append(pt);
             }
 
             {
-                QSharedPointer<CellAbstract> pt(new CellDate(datascadenza));
+                QSharedPointer<Tablecell> pt(new TablecellDate(datascadenza));
                 columns.append(pt);
             }
 
             {
-                QSharedPointer<CellAbstract> pt(new CellEmpty());
+                QSharedPointer<Tablecell> pt(new TablecellEmpty());
                 columns.append(pt);
             }
 
             {
-                CellAbstract* p;
+                Tablecell* p;
                 if(cassa==bankAccount["IT33U0843051030000000180277"])
-                    p = new CellCurrency(ODSCurrency::EUR, importo);
+                    p = new TablecellCurrency(Currency::EUR, importo);
                 else
-                    p = new CellEmpty();
-                QSharedPointer<CellAbstract> pt(p);
+                    p = new TablecellEmpty();
+                QSharedPointer<Tablecell> pt(p);
                 columns.append(pt);
             }
 
             {
-                QSharedPointer<CellAbstract> pt(new CellEmpty());
+                QSharedPointer<Tablecell> pt(new TablecellEmpty());
                 columns.append(pt);
             }
 
             {
-                CellAbstract* p;
+                Tablecell* p;
                 if(cassa==bankAccount["IT65Z0306951030615272528476"])
-                    p = new CellCurrency(ODSCurrency::EUR, importo);
+                    p = new TablecellCurrency(Currency::EUR, importo);
                 else
-                    p = new CellEmpty();
-                QSharedPointer<CellAbstract> pt(p);
+                    p = new TablecellEmpty();
+                QSharedPointer<Tablecell> pt(p);
                 columns.append(pt);
             }
 
             {
-                QSharedPointer<CellAbstract> pt(new CellEmpty());
+                QSharedPointer<Tablecell> pt(new TablecellEmpty());
                 columns.append(pt);
             }
 
             {
-                CellAbstract* p;
+                Tablecell* p;
                 if(cassa==bankAccount["IT64U0503451861000000001728"])
-                    p = new CellCurrency(ODSCurrency::EUR, importo);
+                    p = new TablecellCurrency(Currency::EUR, importo);
                 else
-                    p = new CellEmpty();
-                QSharedPointer<CellAbstract> pt(p);
+                    p = new TablecellEmpty();
+                QSharedPointer<Tablecell> pt(p);
                 columns.append(pt);
             }
 
@@ -765,8 +772,8 @@ QString MainWindow::executeScadenziario()
 
         qInfo(logInfo())  << "Adding to scadenziario " << pathandfilename;
 
-        Document book;
-        book.Load(pathandfilename);
+        FileOds book(pathandfilename);
+        book.Load();
 
         //backupit
         if(m_setting->isExecute(Settings::Execute::backupfiles)){
@@ -777,7 +784,7 @@ QString MainWindow::executeScadenziario()
                 dir.rename(pathandfilename, QDir(backuppath).filePath(backupfilename));
         }
 
-        book.AddRowToContent(filelist.value(filename));
+        //book.AddRowToContent(filelist.value(filename));
         ok = (ok && book.Save(pathandfilename));
     }
 
