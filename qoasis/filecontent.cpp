@@ -8,43 +8,42 @@
 #include "filecontent.h"
 #include "office/documentcontent.h"
 
-namespace qoasis {
+namespace qoasis
+{
+	const QLatin1String FileContent::kFileName = QLatin1String("content.xml");
 
-    const QLatin1String FileContent::kFileName = QLatin1String("content.xml");
+	FileContent::FileContent(const QString& full_path) : FileXml(full_path)
+	{
+	}
 
-    FileContent::FileContent(const QString& full_path) : FileXml(full_path)
-    {
+	QLatin1String FileContent::instanceFileName()
+	{
+		return FileContent::kFileName;
+	}
 
-    }
+	QLatin1String FileContent::getRootTag()
+	{
+		return DocumentContent::kTag;
+	}
 
-    QLatin1String FileContent::instanceFileName()
-    {
-        return FileContent::kFileName;
-    }
+	bool FileContent::create()
+	{
+		content_ = QSharedPointer<DocumentContent>(new DocumentContent());
+		return true;
+	}
 
-    QLatin1String FileContent::getRootTag()
-    {
-        return DocumentContent::kTag;
-    }
+	void FileContent::read(QXmlStreamReader& reader)
+	{
+		content_ = QSharedPointer<DocumentContent>(new DocumentContent(reader));
+	}
 
-    bool FileContent::create()
-    {
-        content_ = QSharedPointer<DocumentContent>(new DocumentContent());
-        return true;
-    }
+	void FileContent::write(QXmlStreamWriter* writer)
+	{
+		content_->write(writer);
+	}
 
-    void FileContent::read(QXmlStreamReader& reader)
-    {
-        content_ = QSharedPointer<DocumentContent>(new DocumentContent(reader));
-    }
-
-    void FileContent::write(QXmlStreamWriter* writer)
-    {
-        content_->write(writer);
-    }
-
-    QSharedPointer<DocumentContent> FileContent::getContent()
-    {
-        return content_;
-    }
+	QSharedPointer<DocumentContent> FileContent::getContent()
+	{
+		return content_;
+	}
 }

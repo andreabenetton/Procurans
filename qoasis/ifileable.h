@@ -4,21 +4,20 @@
 #ifndef IFILEABLE_H
 #define IFILEABLE_H
 
-namespace qoasis {
+namespace qoasis
+{
+	class IFileable
+	{
+	public:
+		IFileable(const QString& full_path);
 
-    class IFileable
-    {
-    public:
-        IFileable(const QString& full_path);
+		virtual bool exist();
+		virtual bool load() = 0;
+		virtual bool save(const QString& full_path, bool overwrite_protected = true) = 0;
+		virtual bool save();
 
-        virtual bool exist();
-        virtual bool load() = 0;
-        virtual bool save(const QString& full_path, bool overwrite_protected = true) = 0;
-        virtual bool save();
-
-    protected:
-        QString full_path_;
-
-    };
+	protected:
+		QString full_path_;
+	};
 }
 #endif // IFILEABLE_H

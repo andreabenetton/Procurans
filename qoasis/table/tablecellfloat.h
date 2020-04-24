@@ -6,32 +6,32 @@
 
 #include "tablecell.h"
 
-namespace qoasis::table {
+namespace qoasis::table
+{
+	class TablecellFloat : public Tablecell
+	{
+	public:
+		TablecellFloat(double number, int repeat = 1);
+		TablecellFloat(QXmlStreamReader& reader);
+		TablecellFloat(const TablecellFloat& obj);
 
-    class TablecellFloat : public Tablecell
-    {
-    public:
-        TablecellFloat(double number, int repeat = 1);
-        TablecellFloat(QXmlStreamReader& reader);
-        TablecellFloat(const TablecellFloat &obj);
+		static const QLatin1String kCellTypeValue;
 
-        static const QLatin1String kCellTypeValue;
+		double getDouble() const;
 
-        double getDouble() const;
+		// implements Tablecell
+		QLatin1String instanceCellType() override;
 
-        // implements Tablecell
-        QLatin1String instanceCellType() override;
+	protected:
+		// implements Tag
+		void readAttribute(QStringRef name, QStringRef value) override;
+		void writeAttributes(QXmlStreamWriter* writer) override;
+		void writeSubtags(QXmlStreamWriter* writer) override;
 
-    protected:
-        // implements Tag
-        void readAttribute(QStringRef name, QStringRef value) override;
-        void writeAttributes(QXmlStreamWriter* writer) override;
-        void writeSubtags(QXmlStreamWriter* writer) override;
+	private:
+		static const QLatin1String kCellTypeAttribute;
 
-    private:
-        static const QLatin1String kCellTypeAttribute;
-
-        double value_number_;
-    };
+		double value_number_;
+	};
 }
 #endif // TABLECELLFLOAT_H

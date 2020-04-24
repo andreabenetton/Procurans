@@ -9,28 +9,27 @@
 #include "filecontent.h"
 #include "office/documentcontent.h"
 
-namespace qoasis {
+namespace qoasis
+{
+	class FileOds : public IFileable
+	{
+	public:
+		explicit FileOds(const QString& full_path);
 
-    class FileOds : public IFileable
-    {
-    public:
-	    explicit FileOds(const QString& full_path);
+		virtual bool create();
+		bool load() override;
+		bool save(const QString& full_path, bool overwrite_protected = true) override;
 
-        virtual bool create();
-        bool load() override;
-        bool save(const QString& full_path, bool overwrite_protected = true) override;
+		QSharedPointer<DocumentContent> getContent() const;
 
-        QSharedPointer<DocumentContent> getContent() const;
+	private:
+		bool temp_dir_valid_ = false;
+		QStringList extracted_file_paths_;
 
-    private:
-        bool temp_dir_valid_ = false;
-        QStringList extracted_file_paths_;
+		QTemporaryDir temp_dir_;
+		QString temp_dir_path_;
 
-        QTemporaryDir temp_dir_;
-        QString temp_dir_path_;
-
-        FileContent* content_file_;
-    };
-
+		FileContent* content_file_;
+	};
 }
 #endif // FILEODS_H

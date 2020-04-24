@@ -6,36 +6,35 @@
 
 #include <QMap>
 
-namespace qoasis {
+namespace qoasis
+{
+	class Currency
+	{
+	public:
+		static const int EUR = 978;
 
-    class Currency
-    {
-    public:
-        static const int EUR = 978;
+		Currency(int constant = EUR);
+		Currency(QString iso);
+		Currency(const Currency& obj);
 
-        Currency(int constant = EUR);
-        Currency(QString iso);
-        Currency(const Currency &obj);
+		static QString getSymbol(int constant);
+		static QString getIso(int constant);
+		static QString getSymbolFromIso(QString iso);
 
-        static QString getSymbol(int constant);
-        static QString getIso(int constant);
-        static QString getSymbolFromIso(QString iso);
+		bool getIsValid() const;
+		QString getSymbol() const;
+		QString getIso() const;
+		QString formatAmount(double amount) const;
 
-        bool getIsValid() const;
-        QString getSymbol() const;
-        QString getIso() const;
-        QString formatAmount(double amount) const;
+	private:
+		static bool type_initialized_;
+		static QMap<int, QString> symbols_;
+		static QMap<int, QString> iso_;
+		static QMap<int, int> decimals_;
+		static void addCurrency(int constant, QString symbol, QString iso, int decimals);
 
-    private:
-        static bool type_initialized_;
-        static QMap<int, QString> symbols_;
-        static QMap<int, QString> iso_;
-        static QMap<int, int> decimals_;
-        static void addCurrency(int constant, QString symbol, QString iso, int decimals);
-
-        bool is_valid_ = false;
-        int currency_;
-    };
-
+		bool is_valid_ = false;
+		int currency_;
+	};
 };
 #endif // CURRENCY_H

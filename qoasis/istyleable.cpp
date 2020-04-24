@@ -3,42 +3,43 @@
 
 #include "istyleable.h"
 
-namespace qoasis {
+namespace qoasis
+{
+	IStyleable::IStyleable(QString style)
+	{
+		style_ = style;
+	}
 
-    IStyleable::IStyleable(QString style)
-    {
-        style_ = style;
-    }
+	IStyleable::IStyleable(const IStyleable& obj)
+	{
+		style_ = obj.style_;
+	}
 
-    IStyleable::IStyleable(const IStyleable &obj)
-    {
-        style_ = obj.style_;
-    }
+	QString IStyleable::getStyle() const
+	{
+		return style_;
+	}
 
-    QString IStyleable::getStyle() const
-    {
-        return style_;
-    }
+	void IStyleable::setStyle(const QString style)
+	{
+		style_ = style;
+	}
 
-    void IStyleable::setStyle(const QString style)
-    {
-        style_ = style;
-    }
+	QLatin1String IStyleable::styleTag()
+	{
+		return QLatin1String("table:style-name");
+	}
 
-    QLatin1String IStyleable::styleTag()
-    {
-        return QLatin1String("table:style-name");
-    }
+	void IStyleable::readStyle(QStringRef value)
+	{
+		style_ = value.toString();
+	}
 
-    void IStyleable::readStyle(QStringRef value)
-    {
-        style_ = value.toString();
-    }
-
-    void IStyleable::writeStyle(QXmlStreamWriter* writer)
-    {
-        if (style_ != "") {
-            writer->writeAttribute(styleTag(), style_);
-        }
-    }
+	void IStyleable::writeStyle(QXmlStreamWriter* writer)
+	{
+		if (style_ != "")
+		{
+			writer->writeAttribute(styleTag(), style_);
+		}
+	}
 }

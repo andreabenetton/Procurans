@@ -3,61 +3,65 @@
 
 #include "inameable.h"
 
-namespace qoasis {
+namespace qoasis
+{
+	QMap<QLatin1String, int> INameable::items_type_counter_;
 
-    QMap<QLatin1String, int> INameable::items_type_counter_;
+	INameable::INameable(QString name)
+	{
+		const QLatin1String default_name = defaultName();
 
-    INameable::INameable(QString name)
-    {
-	    const QLatin1String default_name = defaultName();
+		int count = 1;
+		if (!items_type_counter_.contains(default_name))
+		{
+			items_type_counter_.insert(default_name, count);
+		}
+		else
+		{
+			count = items_type_counter_.value(default_name);
+		}
 
-        int count = 1;
-        if(!items_type_counter_.contains(default_name)) {
-            items_type_counter_.insert(default_name, count);
-        }
-        else {
-            count = items_type_counter_.value(default_name);
-        }
+		if (name != "")
+		{
+			name_ = name;
+		}
+		else
+		{
+			name_ = default_name + QString::number(count);
+			items_type_counter_.insert(default_name, ++count);
+		}
+	}
 
-        if (name != "") {
-            name_ = name;
-        }
-        else {
-            name_ = default_name + QString::number(count);
-            items_type_counter_.insert(default_name, ++count);
-        }
+	INameable::INameable(const INameable& obj)
+	{
+		name_ = "Copy of " + obj.name_;
+	}
 
-    }
+	QLatin1String INameable::defaultName()
+	{
+		return nameTag();
+	}
 
-    INameable::INameable(const INameable &obj)
-    {
-        name_ = "Copy of " + obj.name_;
-    }
+	QString INameable::getName() const
+	{
+		return name_;
+	}
 
-    QLatin1String INameable::defaultName()
-    {
-        return nameTag();
-    }
+	void INameable::setName(QString name)
+	{
+		name_ = name;
+	}
 
-    QString INameable::getName() const
-    {
-        return name_;
-    }
+	void INameable::readName(QStringRef value)
+	{
+		name_ = value.toString();
+	}
 
-    void INameable::setName(QString name)
-    {
-        name_ = name;
-    }
-
-    void INameable::readName(QStringRef value)
-    {
-        name_ = value.toString();
-    }
-
-    void INameable::writeName(QXmlStreamWriter* writer)
-    {
-        if (name_ != "") {
-            writer->writeAttribute(nameTag(), name_);
-        }
-    }
+	void INameable::writeName(QXmlStreamWriter* writer)
+	{
+		if (name_ != "")
+		{
+			writer->writeAttribute(nameTag(), name_);
+		}
+	}
 }

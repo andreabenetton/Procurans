@@ -3,38 +3,45 @@
 
 #include "tablecellempty.h"
 
-namespace qoasis::table {
-    // Constants
-    const QLatin1String TablecellEmpty::kCellTypeValue = QLatin1String("");
+namespace qoasis::table
+{
+	// Constants
+	const QLatin1String TablecellEmpty::kCellTypeValue = QLatin1String("");
 
-    // Constructors
-    TablecellEmpty::TablecellEmpty(int repeat, QString style) : Tablecell(repeat, style) {}
+	// Constructors
+	TablecellEmpty::TablecellEmpty(int repeat, QString style) : Tablecell(repeat, style)
+	{
+	}
 
-    TablecellEmpty::TablecellEmpty(QXmlStreamReader& reader) : Tablecell(reader) {}
+	TablecellEmpty::TablecellEmpty(QXmlStreamReader& reader) : Tablecell(reader)
+	{
+	}
 
-    TablecellEmpty::TablecellEmpty(const TablecellEmpty &obj): Tablecell(obj) {}
+	TablecellEmpty::TablecellEmpty(const TablecellEmpty& obj): Tablecell(obj)
+	{
+	}
 
-    // Methods
-    QLatin1String TablecellEmpty::instanceCellType()
-    {
-        return kCellTypeValue;
-    }
+	// Methods
+	QLatin1String TablecellEmpty::instanceCellType()
+	{
+		return kCellTypeValue;
+	}
 
-    // implements Tag
-    void TablecellEmpty::readAttribute(QStringRef name, QStringRef value)
-    {
-        Tablecell::readAttribute(name, value);
-    }
+	// implements Tag
+	void TablecellEmpty::readAttribute(QStringRef name, QStringRef value)
+	{
+		Tablecell::readAttribute(name, value);
+	}
 
-    void TablecellEmpty::readSubtag(QXmlStreamReader& reader)
-    {
-    }
+	void TablecellEmpty::readSubtag(QXmlStreamReader& reader)
+	{
+	}
 
-    void TablecellEmpty::writeAttributes(QXmlStreamWriter* writer)
-    {
-    }
+	void TablecellEmpty::writeAttributes(QXmlStreamWriter* writer)
+	{
+	}
 
-    void TablecellEmpty::writeSubtags(QXmlStreamWriter* writer)
-    {
-    }
+	void TablecellEmpty::writeSubtags(QXmlStreamWriter* writer)
+	{
+	}
 }

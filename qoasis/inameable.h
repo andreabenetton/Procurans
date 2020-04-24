@@ -7,29 +7,28 @@
 #include <QXmlStreamWriter>
 #include <QMap>
 
-namespace qoasis {
+namespace qoasis
+{
+	class INameable
+	{
+	public:
+		INameable(QString name = "");
+		INameable(const INameable& obj);
 
-    class INameable
-    {
-    public:
-        INameable(QString name = "");
-        INameable(const INameable &obj);
+		virtual QLatin1String nameTag() = 0;
+		virtual QLatin1String defaultName();
 
-        virtual QLatin1String nameTag() = 0;
-        virtual QLatin1String defaultName();
+		QString getName() const;
+		void setName(QString name);
 
-        QString getName() const;
-        void setName(QString name);
+	protected:
+		QString name_;
 
-    protected:
-        QString name_;
+		void readName(QStringRef value);
+		void writeName(QXmlStreamWriter* writer);
 
-        void readName(QStringRef value);
-        void writeName(QXmlStreamWriter* writer);
-
-    private:
-        static QMap<QLatin1String, int> items_type_counter_;
-    };
-
+	private:
+		static QMap<QLatin1String, int> items_type_counter_;
+	};
 };
 #endif // INAMEABLE_H

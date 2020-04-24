@@ -9,25 +9,25 @@
 
 using namespace qoasis::office;
 
-namespace qoasis {
+namespace qoasis
+{
+	class FileContent : public FileXml
+	{
+	public:
+		explicit FileContent(const QString& full_path);
 
-    class FileContent : public FileXml
-    {
-    public:
-	    explicit FileContent(const QString& full_path);
+		virtual bool create();
+		QSharedPointer<DocumentContent> getContent();
+		QLatin1String instanceFileName() override;
 
-        virtual bool create();
-        QSharedPointer<DocumentContent> getContent();
-        QLatin1String instanceFileName() override;
+		static const QLatin1String kFileName;
 
-        static const QLatin1String kFileName;
+	protected:
+		QLatin1String getRootTag() override;
+		void read(QXmlStreamReader& xml) override;
+		void write(QXmlStreamWriter* xml) override;
 
-    protected:
-        QLatin1String getRootTag() override;
-	    void read(QXmlStreamReader& xml) override;
-	    void write(QXmlStreamWriter* xml) override;
-
-        QSharedPointer<DocumentContent> content_;
-    };
+		QSharedPointer<DocumentContent> content_;
+	};
 }
 #endif // FILECONTENT_H

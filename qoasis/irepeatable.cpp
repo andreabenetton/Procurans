@@ -3,34 +3,35 @@
 
 #include "irepeatable.h"
 
-namespace qoasis {
+namespace qoasis
+{
+	// Constructors
+	IRepeatable::IRepeatable(int repeat)
+	{
+		repeat_ = repeat;
+	}
 
-    // Constructors
-    IRepeatable::IRepeatable(int repeat)
-    {
-        repeat_ = repeat;
-    }
+	IRepeatable::IRepeatable(const IRepeatable& obj)
+	{
+		repeat_ = obj.repeat_;
+	}
 
-    IRepeatable::IRepeatable(const IRepeatable &obj)
-    {
-        repeat_ = obj.repeat_;
-    }
+	// Methods
+	int IRepeatable::getRepeat() const
+	{
+		return repeat_;
+	}
 
-    // Methods
-    int IRepeatable::getRepeat() const
-    {
-        return repeat_;
-    }
+	void IRepeatable::readRepeat(QStringRef value)
+	{
+		repeat_ = value.toInt();
+	}
 
-    void IRepeatable::readRepeat(QStringRef value)
-    {
-        repeat_ = value.toInt();
-    }
-
-    void IRepeatable::writeRepeat(QXmlStreamWriter* writer)
-    {
-        if (repeat_ > 1) {
-            writer->writeAttribute(repeatTag(), QString::number(repeat_));
-        }
-    }
+	void IRepeatable::writeRepeat(QXmlStreamWriter* writer)
+	{
+		if (repeat_ > 1)
+		{
+			writer->writeAttribute(repeatTag(), QString::number(repeat_));
+		}
+	}
 }

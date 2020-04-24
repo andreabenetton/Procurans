@@ -6,19 +6,19 @@
 
 #include "tablecell.h"
 
-namespace qoasis::table {
+namespace qoasis::table
+{
+	class TablecellString : public Tablecell
+	{
+	public:
+		TablecellString(QString text, int repeat = 1);
+		TablecellString(QXmlStreamReader& reader);
+		TablecellString(const TablecellString& obj);
 
-    class TablecellString : public Tablecell
-    {
-    public:
-        TablecellString(QString text, int repeat = 1);
-        TablecellString(QXmlStreamReader& reader);
-        TablecellString(const TablecellString &obj);
+		static const QLatin1String kCellTypeValue;
 
-        static const QLatin1String kCellTypeValue;
-
-        // implements Tablecell
-        QLatin1String instanceCellType() override;
-    };
+		// implements Tablecell
+		QLatin1String instanceCellType() override;
+	};
 }
 #endif // TABLECELLSTRING_H

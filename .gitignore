@@ -72,7 +72,14 @@ Release
 # Python byte code
 *.pyc
 
-# Binaries
-# --------
-*.dll
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables/Binaries
 *.exe
+*.out
+*.app
+*.dll

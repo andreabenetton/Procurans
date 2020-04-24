@@ -6,29 +6,29 @@
 
 #include "../tag.h"
 
-namespace qoasis::style {
-    // Abstract class base for all cell types
-    class Style : public Tag
-    {
-    public:
-        Style();
-        Style(const Style&obj);
+namespace qoasis::style
+{
+	// Abstract class base for all cell types
+	class Style : public Tag
+	{
+	public:
+		Style();
+		Style(const Style& obj);
 
-        static const QLatin1String kTag;
+		static const QLatin1String kTag;
 
 
-        // implements Tag
-        virtual QLatin1String InstanceTag();
+		// implements Tag
+		virtual QLatin1String InstanceTag();
 
-    protected:
-        Style(QXmlStreamReader& reader);
+	protected:
+		Style(QXmlStreamReader& reader);
 
-        // implements Tag
-        void writeAttributes(QXmlStreamWriter* writer) override;
-        void writeSubtags(QXmlStreamWriter* writer) override;
-        void readAttribute(QStringRef name, QStringRef value) override;
-        void readSubtag(QXmlStreamReader& reader) override;
-
-    };
+		// implements Tag
+		void writeAttributes(QXmlStreamWriter* writer) override;
+		void writeSubtags(QXmlStreamWriter* writer) override;
+		void readAttribute(QStringRef name, QStringRef value) override;
+		void readSubtag(QXmlStreamReader& reader) override;
+	};
 }
 #endif // TABLECELL_H

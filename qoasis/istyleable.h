@@ -6,24 +6,24 @@
 
 #include <QXmlStreamWriter>
 
-namespace qoasis {
-
-    class IStyleable
+namespace qoasis
+{
+	class IStyleable
 	{
 	public:
-        IStyleable(QString style = "");
-        IStyleable(const IStyleable &obj);
+		IStyleable(QString style = "");
+		IStyleable(const IStyleable& obj);
 
-        virtual QLatin1String styleTag();
+		virtual QLatin1String styleTag();
 
 		QString getStyle() const;
 		void setStyle(QString style);
 
 	protected:
-        QString style_;
+		QString style_;
 
-        void readStyle(QStringRef value);
-        void writeStyle(QXmlStreamWriter* writer);
+		void readStyle(QStringRef value);
+		void writeStyle(QXmlStreamWriter* writer);
 	};
 }
 #endif // ISTYLEABLE_H

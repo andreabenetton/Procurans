@@ -9,32 +9,31 @@
 
 using namespace qoasis::table;
 
-namespace qoasis::office {
+namespace qoasis::office
+{
+	class Spreadsheet : public Tag
+	{
+	public:
+		Spreadsheet();
+		Spreadsheet(QXmlStreamReader& reader);
+		Spreadsheet(const Spreadsheet& obj);
 
-    class Spreadsheet : public Tag
-    {
-    public:
-        Spreadsheet();
-        Spreadsheet(QXmlStreamReader& reader);
-        Spreadsheet(const Spreadsheet &obj);
+		static QSharedPointer<Tag> builder(QXmlStreamReader& reader);
+		static const QLatin1String kTag;
 
-        static QSharedPointer<Tag> builder(QXmlStreamReader& reader);
-        static const QLatin1String kTag;
+		QSharedPointer<Table> getTable(QString& name);
+		QSharedPointer<Table> getTable(int index);
 
-        QSharedPointer<Table> getTable(QString& name);
-        QSharedPointer<Table> getTable(int index);
+		// implements Tag
+		QLatin1String instanceTag() override;
 
-        // implements Tag
-        QLatin1String instanceTag() override;
+	protected:
+		// implements Tag
+		void readSubtag(QXmlStreamReader& reader) override;
+		void writeSubtags(QXmlStreamWriter* writer) override;
 
-    protected:
-        // implements Tag
-        void readSubtag(QXmlStreamReader& reader) override;
-        void writeSubtags(QXmlStreamWriter* writer) override;
-
-    private:
-        QVector<QSharedPointer<Table>> tables_;
-
-    };
+	private:
+		QVector<QSharedPointer<Table>> tables_;
+	};
 }
 #endif // SPREADSHEET_H
