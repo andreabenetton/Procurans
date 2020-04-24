@@ -322,10 +322,10 @@ QString MainWindow::executeElencoFatture()
     qInfo(logInfo())  << "Adding to elenco fatture: " << pathandfilename;
 
     FileOds book(pathandfilename);
-    book.Load();
+    book.load();
 
-    QSharedPointer<DocumentContent> content = book.GetContent();
-    QSharedPointer<Table> table = content->GetBody()->GetSpreadsheet()->GetTable(0);
+    QSharedPointer<DocumentContent> content = book.getContent();
+    QSharedPointer<Table> table = content->getBody()->getSpreadsheet()->getTable(0);
 
     //backupit
     if(m_setting->isExecute(Settings::Execute::backupfiles)){
@@ -336,7 +336,7 @@ QString MainWindow::executeElencoFatture()
             dir.rename(pathandfilename, QDir(backuppath).filePath(backupfilename));
     }
     //book.AddRowToContent(&rows);
-    if(book.Save(pathandfilename))
+    if(book.save(pathandfilename))
         return "N. " + QString::number(crow) + " righe aggiunte al file fatture";
     else
         return "Errore nel salvataggio file fatture";
@@ -476,7 +476,7 @@ QString MainWindow::executeMastriniFornitori()
     qInfo(logInfo())  << "Adding to mastrino fornitore: " << pathandfilename;
 
     FileOds book(pathandfilename);
-    book.Load();
+    book.load();
 
     //backupit
     QString backupfilename = filenametemplate.arg(entity.replace(".", ""), QString::number(QDateTime::currentSecsSinceEpoch()));
@@ -487,7 +487,7 @@ QString MainWindow::executeMastriniFornitori()
             dir.rename(pathandfilename, QDir(backuppath).filePath(backupfilename));
     }
     //book.AddRowToContent(&rows);
-    if (book.Save(pathandfilename))
+    if (book.save(pathandfilename))
         return "N. " + QString::number(crow) + " righe aggiunte al file mastrino fornitore";
     else
         return "Errore nel salvataggio file mastrino fornitore";
@@ -604,7 +604,7 @@ QString MainWindow::executePrimaNota()
         qInfo(logInfo())  << "Adding to prima nota: " << pathandfilename;
 
         FileOds book(pathandfilename);
-        book.Load();
+        book.load();
 
         //backupit
         if(m_setting->isExecute(Settings::Execute::backupfiles)){
@@ -617,7 +617,7 @@ QString MainWindow::executePrimaNota()
         }
 
         //book.AddRowToContent(filelist.value(filename));
-        ok = (ok && book.Save(pathandfilename));
+        ok = (ok && book.save(pathandfilename));
     }
 
     if (ok)
@@ -773,7 +773,7 @@ QString MainWindow::executeScadenziario()
         qInfo(logInfo())  << "Adding to scadenziario " << pathandfilename;
 
         FileOds book(pathandfilename);
-        book.Load();
+        book.load();
 
         //backupit
         if(m_setting->isExecute(Settings::Execute::backupfiles)){
@@ -785,7 +785,7 @@ QString MainWindow::executeScadenziario()
         }
 
         //book.AddRowToContent(filelist.value(filename));
-        ok = (ok && book.Save(pathandfilename));
+        ok = (ok && book.save(pathandfilename));
     }
 
     if (ok)

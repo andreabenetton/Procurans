@@ -4,7 +4,6 @@
 #ifndef ISTYLEABLE_H
 #define ISTYLEABLE_H
 
-#include <QObject>
 #include <QXmlStreamWriter>
 
 namespace qoasis {
@@ -15,16 +14,16 @@ namespace qoasis {
         IStyleable(QString style = "");
         IStyleable(const IStyleable &obj);
 
-        virtual QLatin1String StyleTag();
+        virtual QLatin1String styleTag();
 
-		QString GetStyle();
-		void SetStyle(QString style);
+		QString getStyle() const;
+		void setStyle(QString style);
 
 	protected:
         QString style_;
 
-        void DeserializeProperty(QStringRef attributevalue);
-        void SerializeProperties(QXmlStreamWriter* writer);
+        void readStyle(QStringRef value);
+        void writeStyle(QXmlStreamWriter* writer);
 	};
 }
 #endif // ISTYLEABLE_H

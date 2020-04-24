@@ -5,26 +5,26 @@
 
 namespace qoasis {
 
-    QMap<QLatin1String, int> INameable::itemstypecounter_;
+    QMap<QLatin1String, int> INameable::items_type_counter_;
 
     INameable::INameable(QString name)
     {
-        QLatin1String defaultname = DefaultName();
+	    const QLatin1String default_name = defaultName();
 
         int count = 1;
-        if(!itemstypecounter_.contains(defaultname)) {
-            itemstypecounter_.insert(defaultname, count);
+        if(!items_type_counter_.contains(default_name)) {
+            items_type_counter_.insert(default_name, count);
         }
         else {
-            count = itemstypecounter_.value(defaultname);
+            count = items_type_counter_.value(default_name);
         }
 
         if (name != "") {
             name_ = name;
         }
         else {
-            name_ = defaultname + QString::number(count);
-            itemstypecounter_.insert(defaultname, ++count);
+            name_ = default_name + QString::number(count);
+            items_type_counter_.insert(default_name, ++count);
         }
 
     }
@@ -34,30 +34,30 @@ namespace qoasis {
         name_ = "Copy of " + obj.name_;
     }
 
-    QLatin1String INameable::DefaultName()
+    QLatin1String INameable::defaultName()
     {
-        return NameTag();
+        return nameTag();
     }
 
-    QString INameable::GetName()
+    QString INameable::getName() const
     {
         return name_;
     }
 
-    void INameable::SetName(QString name)
+    void INameable::setName(QString name)
     {
         name_ = name;
     }
 
-    void INameable::DeserializeProperty(QStringRef attributevalue)
+    void INameable::readName(QStringRef value)
     {
-        name_ = attributevalue.toString();
+        name_ = value.toString();
     }
 
-    void INameable::SerializeProperties(QXmlStreamWriter* writer)
+    void INameable::writeName(QXmlStreamWriter* writer)
     {
         if (name_ != "") {
-            writer->writeAttribute(NameTag(), name_);
+            writer->writeAttribute(nameTag(), name_);
         }
     }
 }

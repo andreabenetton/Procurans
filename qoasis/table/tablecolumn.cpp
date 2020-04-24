@@ -11,84 +11,87 @@ namespace qoasis::table {
     const QLatin1String Tablecolumn::kDefaultCellStyleAttribute = QLatin1String("table:default-cell-style-name");
 
     // Constructors
-    Tablecolumn::Tablecolumn(int repeat, QString columnstyle, QString defaultcellstyle) : IStyleable(columnstyle), IRepeatable(repeat)
+    Tablecolumn::Tablecolumn(int repeat, QString style, QString default_cell_style) : Tag(), IStyleable(style),
+                                                                                      IRepeatable(repeat)
     {
-        lastdefined_ = 0;
-        defaultcellstyle_ = defaultcellstyle;
+        last_defined_ = 0;
+        default_cell_style_ = default_cell_style;
     }
 
-    Tablecolumn::Tablecolumn(QXmlStreamReader& reader) : IStyleable(""), IRepeatable(1)
+    Tablecolumn::Tablecolumn(QXmlStreamReader& reader) : Tag(), IStyleable(""), IRepeatable(1)
     {
         Q_ASSERT(reader.qualifiedName() == Tablecolumn::kTag);
-        Tag::Read(reader);
+        Tag::read(reader);
     }
 
-    Tablecolumn::Tablecolumn(const Tablecolumn &obj): IStyleable(obj), IRepeatable(obj)
+    Tablecolumn::Tablecolumn(const Tablecolumn &obj): Tag(), IStyleable(obj), IRepeatable(obj)
     {
-        lastdefined_ = obj.lastdefined_;
-        defaultcellstyle_ = obj.defaultcellstyle_;
+        last_defined_ = obj.last_defined_;
+        default_cell_style_ = obj.default_cell_style_;
     }
 
     // Static methods
-    QSharedPointer<Tablecolumn> Tablecolumn::Builder(QXmlStreamReader& reader)
+    QSharedPointer<Tablecolumn> Tablecolumn::builder(QXmlStreamReader& reader)
     {
         Q_ASSERT(reader.qualifiedName() == Tablecolumn::kTag);
         return QSharedPointer<Tablecolumn>(new Tablecolumn(reader));
     }
 
     // Methods
-    int Tablecolumn::GetLastDefined()
+    int Tablecolumn::getLastDefined() const
     {
-        return lastdefined_;
+        return last_defined_;
     }
 
-    QString Tablecolumn::GetDefaultCellStyle()
+    QString Tablecolumn::getDefaultCellStyle() const
     {
-        return defaultcellstyle_;
+        return default_cell_style_;
     }
 
-    void Tablecolumn::SetDefaultCellStyle(QString style)
+    void Tablecolumn::setDefaultCellStyle(QString style)
     {
-        defaultcellstyle_ = style;
+        default_cell_style_ = style;
     }
 
-    // implements ODSRepeatable
-    QLatin1String Tablecolumn::RepeatTag()
+    // implements IRepeatable
+    QLatin1String Tablecolumn::repeatTag()
     {
-        return Tablecolumn::kRepeatAttribute;
+        return kRepeatAttribute;
     }
 
-    // implements ODSSerializable
-    QLatin1String Tablecolumn::InstanceTag()
+    // implements Tag
+    QLatin1String Tablecolumn::instanceTag()
     {
-        return Tablecolumn::kTag;
+        return kTag;
     }
 
-    void Tablecolumn::ReadAttribute(QStringRef attributename, QStringRef attributevalue)
+    void Tablecolumn::readAttribute(QStringRef name, QStringRef value)
     {
-        if (attributename == RepeatTag()) {
-            IRepeatable::DeserializeProperty(attributevalue);
+        if (name == repeatTag()) {
+            IRepeatable::readRepeat(value);
             return;
         }
-        if (attributename == StyleTag()) {
-            IStyleable::DeserializeProperty(attributevalue);
+        if (name == styleTag()) {
+            IStyleable::readStyle(value);
             return;
         }
-        if (attributename == kDefaultCellStyleAttribute) {
-            defaultcellstyle_ = attributevalue.toString();
+        if (name == kDefaultCellStyleAttribute) {
+            default_cell_style_ = value.toString();
             return;
         }
         // Deserialize present but unsupported attributes
-        Tag::ReadAttribute(attributename, attributevalue);
+        Tag::readAttribute(name, value);
     }
 
-    void Tablecolumn::WriteAttributes(QXmlStreamWriter* writer)
+    void Tablecolumn::writeAttributes(QXmlStreamWriter* writer)
     {
-        IRepeatable::SerializeProperties(writer);
-        IStyleable::SerializeProperties(writer);
-        if (defaultcellstyle_ != "") {
-            writer->writeAttribute(Tablecolumn::kDefaultCellStyleAttribute, defaultcellstyle_);
+        IRepeatable::writeRepeat(writer);
+        IStyleable::writeStyle(writer);
+        if (default_cell_style_ != "") {
+            writer->writeAttribute(Tablecolumn::kDefaultCellStyleAttribute, default_cell_style_);
         }
+        // Serialize present but unsupported attributes
+        Tag::writeAttributes(writer);
     }
 
 }

@@ -4,9 +4,6 @@
 #ifndef TABLECELLSTRING_H
 #define TABLECELLSTRING_H
 
-#include <QObject>
-#include <QXmlStreamWriter>
-
 #include "tablecell.h"
 
 namespace qoasis::table {
@@ -21,8 +18,7 @@ namespace qoasis::table {
         static const QLatin1String kCellTypeValue;
 
         // implements Tablecell
-        virtual QLatin1String InstanceCellType();
-
+        QLatin1String instanceCellType() override;
     };
 }
 #endif // TABLECELLSTRING_H

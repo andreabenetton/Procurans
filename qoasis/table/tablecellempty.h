@@ -4,9 +4,6 @@
 #ifndef TABLECELLEMPTY_H
 #define TABLECELLEMPTY_H
 
-#include <QObject>
-#include <QXmlStreamWriter>
-
 #include "tablecell.h"
 
 namespace qoasis::table {
@@ -21,14 +18,14 @@ namespace qoasis::table {
         static const QLatin1String kCellTypeValue;
 
         // implements Tablecell
-        virtual QLatin1String InstanceCellType();
+        QLatin1String instanceCellType() override;
 
     protected:
         // implements Tags
-        virtual void ReadSubtag(QXmlStreamReader& reader);
-        virtual void WriteAttributes(QXmlStreamWriter* writer);
-        virtual void WriteSubtags(QXmlStreamWriter* writer);
-        virtual void ReadAttribute(QStringRef attributename, QStringRef attributevalue);
+        void readSubtag(QXmlStreamReader& reader) override;
+        void writeAttributes(QXmlStreamWriter* writer) override;
+        void writeSubtags(QXmlStreamWriter* writer) override;
+        void readAttribute(QStringRef name, QStringRef value) override;
     };
 }
 #endif // TABLECELLEMPTY_H

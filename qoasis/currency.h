@@ -13,29 +13,29 @@ namespace qoasis {
     public:
         static const int EUR = 978;
 
-        Currency(int currencyconstant);
-        Currency(QString currencyISO);
+        Currency(int constant = EUR);
+        Currency(QString iso);
         Currency(const Currency &obj);
 
-        static QString GetSymbol(int currencyconstant);
-        static QString GetISO(int currencyconstant);
+        static QString getSymbol(int constant);
+        static QString getIso(int constant);
+        static QString getSymbolFromIso(QString iso);
 
-        bool GetIsValid();
-        QString GetSymbol();
-        QString GetSymbolFromISO(QString ISO);
-        QString GetISO();
-
-        QString FormatAmount(double amount);
+        bool getIsValid() const;
+        QString getSymbol() const;
+        QString getIso() const;
+        QString formatAmount(double amount) const;
 
     private:
-        static bool _typeinitialized;
-        static QMap<int, QString> _symbols;
-        static QMap<int, QString> _iso;
-        static QMap<int, int> _decimals;
-        static void AddCurrency(int currencyconstant, QString symbol, QString ISO, int decimals);
+        static bool type_initialized_;
+        static QMap<int, QString> symbols_;
+        static QMap<int, QString> iso_;
+        static QMap<int, int> decimals_;
+        static void addCurrency(int constant, QString symbol, QString iso, int decimals);
 
-        bool _isvalid = false;
-        int _currency;
+        bool is_valid_ = false;
+        int currency_;
     };
+
 };
 #endif // CURRENCY_H

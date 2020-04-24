@@ -45,7 +45,7 @@ namespace qoasis::office {
     DocumentContent::DocumentContent(QXmlStreamReader& reader) : Tag()
     {
         Q_ASSERT(reader.qualifiedName() == DocumentContent::kTag);
-        Read(reader);
+        read(reader);
     }
 
     DocumentContent::DocumentContent(const DocumentContent &obj)
@@ -54,54 +54,54 @@ namespace qoasis::office {
     }
 
     // Static methods
-    QSharedPointer<Tag> DocumentContent::Builder(QXmlStreamReader& reader)
+    QSharedPointer<Tag> DocumentContent::builder(QXmlStreamReader& reader)
     {
         Q_ASSERT(reader.qualifiedName() == DocumentContent::kTag);
         return QSharedPointer<Tag>(new DocumentContent(reader));
     }
 
     // Methods
-    QString DocumentContent::GetVersion()
+    QString DocumentContent::getVersion() const
     {
         return version_;
     }
 
-    QSharedPointer<Body> DocumentContent::GetBody()
+    QSharedPointer<Body> DocumentContent::getBody() const
     {
         return body_;
     }
 
     // implements Tag
-    QLatin1String DocumentContent::InstanceTag()
+    QLatin1String DocumentContent::instanceTag()
     {
         return DocumentContent::kTag;
     }
 
-    void DocumentContent::ReadAttribute(QStringRef attributename, QStringRef attributevalue)
+    void DocumentContent::readAttribute(QStringRef name, QStringRef value)
     {
-        if(attributename.split(':').first()=="xmlns") {
-            namespaces_.insert(attributename.toString(), attributevalue.toString());
+        if(name.split(':').first()=="xmlns") {
+            namespaces_.insert(name.toString(), value.toString());
             return;
         }
-        if(attributename==kVersionAttribute) {
-            version_ = attributevalue.toString();
+        if(name==kVersionAttribute) {
+            version_ = value.toString();
             return;
         }
         // Deserialize present but unsupported attributes
-        Tag::ReadAttribute(attributename, attributevalue);
+        Tag::readAttribute(name, value);
     }
 
-    void DocumentContent::ReadSubtag(QXmlStreamReader& reader)
+    void DocumentContent::readSubtag(QXmlStreamReader& reader)
     {
-        if (IsStartElementNamed(reader, Body::kTag)) {
+        if (isStartElementNamed(reader, Body::kTag)) {
             body_ = QSharedPointer<Body>(new Body(reader));
             return;
         }
         // Deserialize present but unsupported subtags
-        Tag::ReadSubtag(reader);
+        Tag::readSubtag(reader);
     }
 
-    void DocumentContent::WriteAttributes(QXmlStreamWriter* writer)
+    void DocumentContent::writeAttributes(QXmlStreamWriter* writer)
     {
         QMapIterator<QString, QString> i(namespaces_);
         while (i.hasNext()) {
@@ -111,15 +111,15 @@ namespace qoasis::office {
         writer->writeAttribute(kVersionAttribute, version_);
 
         // Serialize present but unsupported attributes
-        Tag::WriteAttributes(writer);
+        Tag::writeAttributes(writer);
     }
 
-    void DocumentContent::WriteSubtags(QXmlStreamWriter* writer)
+    void DocumentContent::writeSubtags(QXmlStreamWriter* writer)
     {
         if (body_ != nullptr) {
-            body_->Write(writer);
+            body_->write(writer);
         }
         // Serialize present but unsupported subtags
-        Tag::WriteSubtags(writer);
+        Tag::writeSubtags(writer);
     }
 }

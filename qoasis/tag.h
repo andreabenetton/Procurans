@@ -16,37 +16,35 @@ namespace qoasis {
     class Tag
 	{
 	public:
-        Tag(const Tag &obj);
-        virtual ~Tag();
+		virtual ~Tag() = default;
+		explicit Tag(const Tag &obj);
 
-        virtual void Write(QXmlStreamWriter* writer);
-        virtual QLatin1String InstanceTag();
+        virtual void write(QXmlStreamWriter* writer);
+        virtual QLatin1String instanceTag();
 
 	protected:
         Tag();
         Tag(QXmlStreamReader& reader);
 
-        virtual void Read(QXmlStreamReader& reader);
+        virtual void read(QXmlStreamReader& reader);
 
-        virtual void ReadAttribute(QStringRef attributename, QStringRef attributevalue);
-        virtual void ReadSubtag(QXmlStreamReader& reader);
+        virtual void readAttribute(QStringRef name, QStringRef value);
+        virtual void readSubtag(QXmlStreamReader& reader);
 
-        virtual void WriteAttributes(QXmlStreamWriter* writer);
-        virtual void WriteSubtags(QXmlStreamWriter* writer);
+        virtual void writeAttributes(QXmlStreamWriter* writer);
+        virtual void writeSubtags(QXmlStreamWriter* writer);
 
-        bool IsStartElementNamed(QXmlStreamReader& xml, const QString& tokenName);
-        bool IsNotEndElementNamed(QXmlStreamReader& xml, const QString& tokenName);
+        bool isStartElementNamed(QXmlStreamReader& xml, const QString& token_name);
+        bool isNotEndElementNamed(QXmlStreamReader& xml, const QString& token_name);
 
     private:
-        void Initialize();
+        void loopToReadAttributes(QXmlStreamReader& reader);
+        void loopToReadSubtag(QXmlStreamReader& reader);
 
-        void LoopToReadAttributes(QXmlStreamReader& reader);
-        void LoopToReadSubtag(QXmlStreamReader& reader);
+        void writeStart(QXmlStreamWriter* writer);
+        void writeEnd(QXmlStreamWriter* writer);
 
-        void WriteStart(QXmlStreamWriter* writer);
-        void WriteEnd(QXmlStreamWriter* writer);
-
-        QVector<QSharedPointer<Tag>>* subtags_;
+        QVector<QSharedPointer<Tag>> subtags_;
         QMap<QString, QString> attributes_;
     };
 }

@@ -11,23 +11,23 @@ namespace qoasis {
     IFileable::IFileable(const QString& full_path)
     {
        full_path_ = full_path;
-       if (Exist()) {
+       if (IFileable::exist()) {
             qInfo() << "File exist: " << full_path;
        } else {
             qInfo() << "File not exist: " << full_path;
        }
     }
 
-    bool IFileable::Exist()
+    bool IFileable::exist()
     {
-        QFileInfo check_file(full_path_);
+	    const QFileInfo check_file(full_path_);
         // check if file exists and if yes: Is it really a file and no directory?
-        return (check_file.exists() && check_file.isFile());
+        return check_file.exists() && check_file.isFile();
     }
 
-    bool IFileable::Save()
+    bool IFileable::save()
     {
-        return Save(full_path_);
+        return save(full_path_);
     }
 
 }

@@ -20,23 +20,23 @@ namespace qoasis {
         }
     }
 
-    QSharedPointer<DocumentContent> FileOds::GetContent()
+    QSharedPointer<DocumentContent> FileOds::getContent() const
     {
-        return contentfile->GetContent();
+        return content_file_->getContent();
     }
 
-    bool FileOds::Create()
+    bool FileOds::create()
     {
-        if (Exist()||!temp_dir_valid_) {
+        if (exist()||!temp_dir_valid_) {
             return false;
         }
-        contentfile = new FileContent(QDir(temp_dir_path_).filePath(FileContent::FileName));
+        content_file_ = new FileContent(QDir(temp_dir_path_).filePath(FileContent::kFileName));
         return true;
     }
 
-    bool FileOds::Load()
+    bool FileOds::load()
     {
-        if (!Exist()||!temp_dir_valid_) {
+        if (!exist()||!temp_dir_valid_) {
             return false;
         }
 
@@ -51,29 +51,29 @@ namespace qoasis {
 
         bool content_file_loaded = false;
         for (auto path : extracted_file_paths_) {
-            if (path.endsWith(FileContent::FileName)) {
-                contentfile = new FileContent(path);
-                content_file_loaded = contentfile->Load();
+            if (path.endsWith(FileContent::kFileName)) {
+                content_file_ = new FileContent(path);
+                content_file_loaded = content_file_->load();
             }
         }
         return content_file_loaded;
     }
 
-    bool FileOds::Save(const QString& full_path, bool overwriteprotected)
+    bool FileOds::save(const QString& full_path, bool overwrite_protected)
     {
-        if (overwriteprotected && Exist()) {
+        if (overwrite_protected && exist()) {
             qCritical() << "File already exists: " << qPrintable(full_path_);
             return false;
         }
 
-        if (contentfile == nullptr) { // || document_styles_ == nullptr)
+        if (content_file_ == nullptr) { // || document_styles_ == nullptr)
             qWarning() << "Nothing to save";
             return false;
         }
 
         QDir base_dir(temp_dir_path_);
 
-        bool content_file_saved = contentfile->Save();
+        const bool content_file_saved = content_file_->save();
         if(!content_file_saved) {
             return false;
         }

@@ -4,11 +4,6 @@
 #ifndef FILECONTENT_H
 #define FILECONTENT_H
 
-#include <QObject>
-#include <QFile>
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
-
 #include "office/documentcontent.h"
 #include "filexml.h"
 
@@ -16,21 +11,21 @@ using namespace qoasis::office;
 
 namespace qoasis {
 
-    class FileContent : public FileXML
+    class FileContent : public FileXml
     {
     public:
-        FileContent(const QString& full_path);
+	    explicit FileContent(const QString& full_path);
 
-        virtual bool Create();
-        QSharedPointer<DocumentContent> GetContent();
-        QLatin1String InstanceFileName();
+        virtual bool create();
+        QSharedPointer<DocumentContent> getContent();
+        QLatin1String instanceFileName() override;
 
-        static const QLatin1String FileName;
+        static const QLatin1String kFileName;
 
     protected:
-        QLatin1String GetRootTag();   
-        virtual void Read(QXmlStreamReader& xml);
-        virtual void Write(QXmlStreamWriter* xml);
+        QLatin1String getRootTag() override;
+	    void read(QXmlStreamReader& xml) override;
+	    void write(QXmlStreamWriter* xml) override;
 
         QSharedPointer<DocumentContent> content_;
     };

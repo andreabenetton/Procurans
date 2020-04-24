@@ -15,26 +15,26 @@ namespace qoasis::table {
     TablecellEmpty::TablecellEmpty(const TablecellEmpty &obj): Tablecell(obj) {}
 
     // Methods
-    QLatin1String TablecellEmpty::InstanceCellType()
+    QLatin1String TablecellEmpty::instanceCellType()
     {
         return kCellTypeValue;
     }
 
     // implements Tag
-    void TablecellEmpty::ReadAttribute(QStringRef attributename, QStringRef attributevalue)
+    void TablecellEmpty::readAttribute(QStringRef name, QStringRef value)
     {
-        Tablecell::ReadAttribute(attributename, attributevalue);
+        Tablecell::readAttribute(name, value);
     }
 
-    void TablecellEmpty::ReadSubtag(QXmlStreamReader& reader)
-    {
-    }
-
-    void TablecellEmpty::WriteAttributes(QXmlStreamWriter* writer)
+    void TablecellEmpty::readSubtag(QXmlStreamReader& reader)
     {
     }
 
-    void TablecellEmpty::WriteSubtags(QXmlStreamWriter* writer)
+    void TablecellEmpty::writeAttributes(QXmlStreamWriter* writer)
+    {
+    }
+
+    void TablecellEmpty::writeSubtags(QXmlStreamWriter* writer)
     {
     }
 }

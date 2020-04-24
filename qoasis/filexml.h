@@ -4,32 +4,29 @@
 #ifndef FILEXML_H
 #define FILEXML_H
 
-#include <QObject>
 #include <QFile>
-#include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 
 #include "ifileable.h"
-#include "tag.h"
 
 namespace qoasis {
 
-    class FileXML : public IFileable
+    class FileXml : public IFileable
     {
     public:
-        FileXML(const QString& full_path);
+	    explicit FileXml(const QString& full_path);
 
-        virtual bool Load();
-        virtual bool Save(const QString& full_path, bool overwriteprotected = true);
-        virtual bool Save();
-        virtual QLatin1String InstanceFileName() = 0;
+        bool load() override;
+        bool save(const QString& full_path, bool overwrite_protected = true) override;
+	    bool save() override;
+        virtual QLatin1String instanceFileName() = 0;
 
     protected:
-        virtual QLatin1String GetRootTag() = 0;
-        virtual void Read(QXmlStreamReader& xml) = 0;
-        virtual void Write(QXmlStreamWriter* xml) = 0;
-        bool IsStartElementNamed(QXmlStreamReader& xml, const QString& tokenName);
-        bool IsNotEndElementNamed(QXmlStreamReader& xml, const QString& tokenName);
+        virtual QLatin1String getRootTag() = 0;
+        virtual void read(QXmlStreamReader& xml) = 0;
+        virtual void write(QXmlStreamWriter* xml) = 0;
+        bool isStartElementNamed(QXmlStreamReader& xml, const QString& token_name);
+        bool isNotEndElementNamed(QXmlStreamReader& xml, const QString& token_name);
     };
 }
 #endif // FILEXML_H

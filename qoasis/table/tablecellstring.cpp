@@ -14,7 +14,7 @@ namespace qoasis::table {
 
     TablecellString::TablecellString(QXmlStreamReader& reader) : Tablecell(reader)
     {
-        Read(reader);
+        read(reader);
     }
 
     TablecellString::TablecellString(const TablecellString &obj): Tablecell(obj)
@@ -23,7 +23,7 @@ namespace qoasis::table {
     }
 
     // implements Tablecell
-    QLatin1String TablecellString::InstanceCellType()
+    QLatin1String TablecellString::instanceCellType()
     {
         return kCellTypeValue;
     }

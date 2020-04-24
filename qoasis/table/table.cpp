@@ -11,43 +11,33 @@ namespace qoasis::table {
     const QLatin1String Table::kPrintRangeAttribute = QLatin1String("table:print-ranges");
 
     // Constructors
-    Table::Table(QString name) : INameable(name)
+    Table::Table(QString name, QString style) : Tag(), IStyleable(style), INameable(name)
     {
-        Initialize();
-        rows_->append(QSharedPointer<Tablerow>(new Tablerow));
-        columns_->append(QSharedPointer<Tablecolumn>(new Tablecolumn));
     }
 
-    Table::Table(QXmlStreamReader& reader) : Table("")
+    Table::Table(QXmlStreamReader& reader) 
     {
         Q_ASSERT(reader.qualifiedName() == Table::kTag);
-        Read(reader);
+        Table::read(reader);
     }
 
-    Table::Table(const Table &obj): IStyleable(obj), INameable(obj)
+    Table::Table(const Table &obj): Tag(obj), IStyleable(obj), INameable(obj)
     {
-        Initialize();
         // deep copy on rows
-        for (int i = 0; i < rows_->length(); i++) {
-            QSharedPointer<Tablerow> row = obj.rows_->at(i);
+        for (int i = 0; i < rows_.length(); i++) {
+            QSharedPointer<Tablerow> row = obj.rows_.at(i);
             if (!row.isNull()) {
-                rows_->replace(i, QSharedPointer<Tablerow>(new Tablerow(*row)));
+                rows_.replace(i, QSharedPointer<Tablerow>(new Tablerow(*row)));
             }
         }
         // deep copy on columns
-        for (int i = 0; i < columns_->length(); i++) {
-            QSharedPointer<Tablecolumn> column = obj.columns_->at(i);
+        for (int i = 0; i < columns_.length(); i++) {
+            QSharedPointer<Tablecolumn> column = obj.columns_.at(i);
             if (!column.isNull()) {
-                columns_->replace(i, QSharedPointer<Tablecolumn>(new Tablecolumn(*column)));
+                columns_.replace(i, QSharedPointer<Tablecolumn>(new Tablecolumn(*column)));
             }
         }
         printranges_ = obj.printranges_;
-    }
-
-    Table::~Table()
-    {
-        delete rows_;
-        delete columns_;
     }
 
     // Static methods
@@ -58,86 +48,79 @@ namespace qoasis::table {
     }
 
     // Methods
-    void Table::Initialize()
+    int Table::scanForwardForBaseOfRepeatedRows(int index) const
     {
-        rows_ = new QVector<QSharedPointer<Tablerow>>(256, QSharedPointer<Tablerow>(nullptr));
-        columns_ = new QVector<QSharedPointer<Tablecolumn>>(256, QSharedPointer<Tablecolumn>(nullptr));
-        printranges_ = "";
+        return IRepeatable::scanForwardForNotNull<Tablerow>(index, rows_);
     }
 
-    int Table::ScanForwardForBaseOfRepeatedRows(int index)
+    int Table::scanBackwardForBaseOfRepeatedRows(int index) const
     {
-        return IRepeatable::ScanForwardForNotNull<Tablerow>(index, *rows_);
+        return IRepeatable::scanBackwardForNotNull<Tablerow>(index, rows_);
     }
 
-    int Table::ScanBackwardForBaseOfRepeatedRows(int index)
+    int Table::scanForwardForBaseOfRepeatedColumns(int index)
     {
-        return IRepeatable::ScanBackwardForNotNull<Tablerow>(index, *rows_);
+        return IRepeatable::scanForwardForNotNull<Tablecolumn>(index, columns_);
     }
 
-    int Table::ScanForwardForBaseOfRepeatedColumns(int index)
+    int Table::scanBackwardForBaseOfRepeatedColumns(int index)
     {
-        return IRepeatable::ScanForwardForNotNull<Tablecolumn>(index, *columns_);
-    }
-
-    int Table::ScanBackwardForBaseOfRepeatedColumns(int index)
-    {
-        return IRepeatable::ScanBackwardForNotNull<Tablecolumn>(index, *columns_);
+        return IRepeatable::scanBackwardForNotNull<Tablecolumn>(index, columns_);
     }
 
 
     QSharedPointer<Tablecolumn> Table::GetColumn(int index)
     {
         Q_ASSERT(index >= 0);
-        if((index>=(columns_)->length())) {
+        if((index>=columns_.length())) {
             return QSharedPointer<Tablecolumn>(nullptr);
         }
-        return (*columns_)[index];
+        return columns_.at(index);
     }
 
     QSharedPointer<Tablerow> Table::GetRow(int index)
     {
         Q_ASSERT(index >= 0);
-        if((index>=(rows_)->length())) {
+        if((index>=rows_.length())) {
             return QSharedPointer<Tablerow>(nullptr);
         }
-        return (*rows_)[index];
+        return rows_.at(index);
     }
 
 
     void Table::AddRow(QSharedPointer<Tablerow> row)
     {
-        (*rows_).append(row);
+        rows_.append(row);
         processedrows_++;
     }
 
-    // implements NameableAbstract
-    QLatin1String Table::NameTag()
+    // implements INameable
+    QLatin1String Table::nameTag()
     {
         return kNameAttribute;
     }
 
-    // implements ODSSerializable
-    QLatin1String Table::InstanceTag()
+    // implements Tag
+    QLatin1String Table::instanceTag()
     {
         return Table::kTag;
     }
 
-    void Table::Read(QXmlStreamReader& reader)
+    void Table::read(QXmlStreamReader& reader)
     {
         processedcolumns_ = 0;
         processedrows_ = 0;
-        Tag::Read(reader);
+        Tag::read(reader);
     }
 
-    void Table::ReadAttribute(QStringRef attributename, QStringRef attributevalue)
+    void Table::readAttribute(QStringRef attributename, QStringRef attributevalue)
     {
-        if (attributename == NameTag()) {
-            INameable::DeserializeProperty(attributevalue);
+        if (attributename == nameTag()) {
+            INameable::readName(attributevalue);
             return;
         }
-        if (attributename == StyleTag()) {
-            IStyleable::DeserializeProperty(attributevalue);
+        if (attributename == styleTag()) {
+            IStyleable::readStyle(attributevalue);
             return;
         }
         if (attributename == kPrintRangeAttribute) {
@@ -145,50 +128,50 @@ namespace qoasis::table {
             return;
         }
         // Deserialize present but unsupported attributes
-        Tag::ReadAttribute(attributename, attributevalue);
+        Tag::readAttribute(attributename, attributevalue);
     }
 
-    void Table::ReadSubtag(QXmlStreamReader& reader)
+    void Table::readSubtag(QXmlStreamReader& reader)
     {
-        if (IsStartElementNamed(reader, Tablecolumn::kTag)) {
+        if (isStartElementNamed(reader, Tablecolumn::kTag)) {
             Tablecolumn* column = new Tablecolumn(reader);
-            (*columns_)[processedcolumns_] = QSharedPointer<Tablecolumn>(column);
-            processedcolumns_ += column->GetRepeat();
+            columns_[processedcolumns_] = QSharedPointer<Tablecolumn>(column);
+            processedcolumns_ += column->getRepeat();
         }
-        if (IsStartElementNamed(reader, Tablerow::kTag)) {
+        if (isStartElementNamed(reader, Tablerow::kTag)) {
             Tablerow* row = new Tablerow(reader);
-            (*rows_)[processedrows_] = QSharedPointer<Tablerow>(row);
-            processedrows_ += row->GetRepeat();
+            rows_[processedrows_] = QSharedPointer<Tablerow>(row);
+            processedrows_ += row->getRepeat();
         }
         // Deserialize present but unsupported subtags
-        Tag::ReadSubtag(reader);
+        Tag::readSubtag(reader);
     }
 
-    void Table::WriteAttributes(QXmlStreamWriter* writer)
+    void Table::writeAttributes(QXmlStreamWriter* writer)
     {
-        INameable::SerializeProperties(writer);
-        IStyleable::SerializeProperties(writer);
+        INameable::writeName(writer);
+        IStyleable::writeStyle(writer);
 
         if (printranges_ != "") {
             writer->writeAttribute(Table::kPrintRangeAttribute, printranges_);
         }
         // Serialize present but unsupported attributes
-        Tag::WriteAttributes(writer);
+        Tag::writeAttributes(writer);
     }
 
-    void Table::WriteSubtags(QXmlStreamWriter* writer)
+    void Table::writeSubtags(QXmlStreamWriter* writer)
     {
-        for (auto& column : *columns_) {
+        for (auto& column : columns_) {
             if (!column.isNull()) {
-                column->Write(writer);
+                column->write(writer);
             }
         }
-        for (auto& row : *rows_) {
+        for (auto& row : rows_) {
             if (!row.isNull()) {
-                row->Write(writer);
+                row->write(writer);
             }
         }
         // Serialize present but unsupported subtags
-        Tag::WriteSubtags(writer);
+        Tag::writeSubtags(writer);
     }
 }

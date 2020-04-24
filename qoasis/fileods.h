@@ -4,7 +4,6 @@
 #ifndef FILEODS_H
 #define FILEODS_H
 
-#include <QObject>
 #include <QTemporaryDir>
 
 #include "filecontent.h"
@@ -15,13 +14,13 @@ namespace qoasis {
     class FileOds : public IFileable
     {
     public:
-        FileOds(const QString& full_path);
+	    explicit FileOds(const QString& full_path);
 
-        virtual bool Create();
-        virtual bool Load();
-        virtual bool Save(const QString& full_path, bool overwriteprotected = true);
+        virtual bool create();
+        bool load() override;
+        bool save(const QString& full_path, bool overwrite_protected = true) override;
 
-        QSharedPointer<DocumentContent> GetContent();
+        QSharedPointer<DocumentContent> getContent() const;
 
     private:
         bool temp_dir_valid_ = false;
@@ -30,7 +29,7 @@ namespace qoasis {
         QTemporaryDir temp_dir_;
         QString temp_dir_path_;
 
-        FileContent* contentfile;
+        FileContent* content_file_;
     };
 
 }

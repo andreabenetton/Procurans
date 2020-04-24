@@ -4,7 +4,6 @@
 #ifndef INAMEABLE_H
 #define INAMEABLE_H
 
-#include <QObject>
 #include <QXmlStreamWriter>
 #include <QMap>
 
@@ -16,20 +15,20 @@ namespace qoasis {
         INameable(QString name = "");
         INameable(const INameable &obj);
 
-        virtual QLatin1String NameTag() = 0;
-        virtual QLatin1String DefaultName();
+        virtual QLatin1String nameTag() = 0;
+        virtual QLatin1String defaultName();
 
-        QString GetName();
-        void SetName(QString name);
+        QString getName() const;
+        void setName(QString name);
 
     protected:
         QString name_;
 
-        void DeserializeProperty(QStringRef attributevalue);
-        void SerializeProperties(QXmlStreamWriter* writer);
+        void readName(QStringRef value);
+        void writeName(QXmlStreamWriter* writer);
 
     private:
-        static QMap<QLatin1String, int> itemstypecounter_;
+        static QMap<QLatin1String, int> items_type_counter_;
     };
 
 };

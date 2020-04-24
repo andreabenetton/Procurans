@@ -4,10 +4,6 @@
 #ifndef TABLECELLCURRENCY_H
 #define TABLECELLCURRENCY_H
 
-#include <QObject>
-#include <QMap>
-#include <QXmlStreamWriter>
-
 #include "../currency.h"
 
 #include "tablecell.h"
@@ -17,11 +13,9 @@ namespace qoasis::table {
     class TablecellCurrency : public Tablecell
     {
     public:
-        TablecellCurrency(Currency currency, double amoount, int repeat = 1);
+        TablecellCurrency(Currency currency, double amount, int repeat = 1);
         TablecellCurrency(QXmlStreamReader& reader);
         TablecellCurrency(const TablecellCurrency &obj);
-
-        ~TablecellCurrency();
 
         static const QLatin1String kCellTypeValue;
 
@@ -29,20 +23,20 @@ namespace qoasis::table {
         Currency getCurrency();
 
         // implements Tablecell
-        virtual QLatin1String InstanceCellType();
+        QLatin1String instanceCellType() override;
 
     protected:
         // implements Tag
-        virtual void ReadAttribute(QStringRef attributename, QStringRef attributevalue);
-        virtual void WriteAttributes(QXmlStreamWriter* writer);
-        virtual void WriteSubtags(QXmlStreamWriter* writer);
+        void readAttribute(QStringRef name, QStringRef value) override;
+        void writeAttributes(QXmlStreamWriter* writer) override;
+        void writeSubtags(QXmlStreamWriter* writer) override;
 
     private:
         static const QLatin1String kCellTypeAttribute;
         static const QLatin1String kCellCurrencyAttribute;
 
-        double _valueAmount;
-        Currency* _valueCurrency;
+        double value_amount_;
+        Currency value_currency_;
     };
 }
 #endif // TABLECELLCURRENCY_H

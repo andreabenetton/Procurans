@@ -4,7 +4,6 @@
 #ifndef IREPEATABLE_H
 #define IREPEATABLE_H
 
-#include <QObject>
 #include <QXmlStreamWriter>
 
 namespace qoasis {
@@ -15,23 +14,23 @@ namespace qoasis {
         IRepeatable(int repeat = 1);
         IRepeatable(const IRepeatable &obj);
 
-        virtual QLatin1String RepeatTag() = 0;
+        virtual QLatin1String repeatTag() = 0;
 
-		int GetRepeat();
+		int getRepeat() const;
 
-        template<typename T> static int ScanForwardForNotNull(int index, QVector<QSharedPointer<T>> v);
-        template<typename T> static int ScanBackwardForNotNull(int index, QVector<QSharedPointer<T>> v);
+        template<typename T> static int scanForwardForNotNull(int index, QVector<QSharedPointer<T>> v);
+        template<typename T> static int scanBackwardForNotNull(int index, QVector<QSharedPointer<T>> v);
 
 	protected:
         int repeat_;
 
-        void DeserializeProperty(QStringRef attributevalue);
-        void SerializeProperties(QXmlStreamWriter* writer);
+        void readRepeat(QStringRef value);
+        void writeRepeat(QXmlStreamWriter* writer);
 	};
 
     // Static methods - they raise error if placed in cpp file
     template<typename T>
-    int IRepeatable::ScanForwardForNotNull(int index, QVector<QSharedPointer<T>> v)
+    int IRepeatable::scanForwardForNotNull(int index, QVector<QSharedPointer<T>> v)
     {
         Q_ASSERT(index >= 0);
         do {
@@ -44,13 +43,13 @@ namespace qoasis {
     }
 
     template<typename T>
-    int IRepeatable::ScanBackwardForNotNull(int index, QVector<QSharedPointer<T>> v)
+    int IRepeatable::scanBackwardForNotNull(int index, QVector<QSharedPointer<T>> v)
     {
         Q_ASSERT(index >= 0);
-        int lastinthecontainer = v.length()-1;
+        int last_in_container = v.length()-1;
         // the index can be legally larger than container lenght because of repeating items;
         // in that case start from last position in the container
-        index = (index > lastinthecontainer) ? lastinthecontainer : index;
+        index = (index > last_in_container) ? last_in_container : index;
 
         int countdown = index+1;
         do {

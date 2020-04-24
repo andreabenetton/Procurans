@@ -4,8 +4,7 @@
 #ifndef TABLECELLDATE_H
 #define TABLECELLDATE_H
 
-#include <QObject>
-#include <QXmlStreamWriter>
+#include <QDateTime>
 
 #include "tablecell.h"
 
@@ -20,20 +19,20 @@ namespace qoasis::table {
 
         static const QLatin1String kCellTypeValue;
 
-        QDate getDate();
+        QDate getDate() const;
 
         // implements Tablecell
-        virtual QLatin1String InstanceCellType();
+        QLatin1String instanceCellType() override;
 
     private:
         static const QLatin1String kCellTypeAttribute;
 
-        QDate _valueDate;
+        QDate value_date_;
 
         // implements Tags
-        virtual void ReadAttribute(QStringRef attributename, QStringRef attributevalue);
-        virtual void WriteAttributes(QXmlStreamWriter* writer);
-        virtual void WriteSubtags(QXmlStreamWriter* writer);
+        void readAttribute(QStringRef name, QStringRef value) override;
+        void writeAttributes(QXmlStreamWriter* writer) override;
+        void writeSubtags(QXmlStreamWriter* writer) override;
     };
 }
 #endif // TABLECELLDATE_H

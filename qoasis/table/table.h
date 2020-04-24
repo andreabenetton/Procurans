@@ -22,51 +22,48 @@ namespace qoasis::table {
     class Table : public Tag, public IStyleable, public INameable
 	{
 	public:
-        Table(QString name = "");
+        Table(QString name = "", QString style = "");
         Table(QXmlStreamReader& reader);
         Table(const Table &obj);
-        ~Table();
 
         static QSharedPointer<Tag> Builder(QXmlStreamReader& reader);
         static const QLatin1String kTag;
 
-        QString GetPrintRange();
-        void SetPrintRange(QString name);
+        QString getPrintRange();
+        void setPrintRange(QString name);
 
         QSharedPointer<Tablecolumn> GetColumn(int index);
         QSharedPointer<Tablerow> GetRow(int index);
 
-        int ScanForwardForBaseOfRepeatedRows(int index);
-        int ScanBackwardForBaseOfRepeatedRows(int index);
-        int ScanForwardForBaseOfRepeatedColumns(int index);
-        int ScanBackwardForBaseOfRepeatedColumns(int index);
+        auto scanForwardForBaseOfRepeatedRows(int index) const -> int;
+        auto scanBackwardForBaseOfRepeatedRows(int index) const -> int;
+        int scanForwardForBaseOfRepeatedColumns(int index);
+        int scanBackwardForBaseOfRepeatedColumns(int index);
 
         void AddRow(QSharedPointer<Tablerow> row);
 
         // implements INameable
-        virtual QLatin1String NameTag();
+        virtual QLatin1String nameTag();
 
         // implements Tag
-        virtual QLatin1String InstanceTag();
+        virtual QLatin1String instanceTag();
 
     protected:
         // implements Tag
-        virtual void Read(QXmlStreamReader& reader);
-        virtual void ReadSubtag(QXmlStreamReader& reader);
-        virtual void WriteAttributes(QXmlStreamWriter* writer);
-        virtual void WriteSubtags(QXmlStreamWriter* writer);
-        virtual void ReadAttribute(QStringRef attributename, QStringRef attributevalue);
+        virtual void read(QXmlStreamReader& reader);
+        virtual void readSubtag(QXmlStreamReader& reader);
+        virtual void writeAttributes(QXmlStreamWriter* writer);
+        virtual void writeSubtags(QXmlStreamWriter* writer);
+        virtual void readAttribute(QStringRef attributename, QStringRef attributevalue);
 
 	private:
-        void Initialize();
-
         static const QLatin1String kNameAttribute;
         static const QLatin1String kPrintRangeAttribute;
 
-        QString printranges_;
-        QVector<QSharedPointer<Tablecolumn>>* columns_;
+        QString printranges_ = "";
+        QVector<QSharedPointer<Tablecolumn>> columns_ = QVector<QSharedPointer<Tablecolumn>>(256, QSharedPointer<Tablecolumn>(nullptr));
         int processedcolumns_ = 0;
-        QVector<QSharedPointer<Tablerow>>* rows_;
+        QVector<QSharedPointer<Tablerow>> rows_ = QVector<QSharedPointer<Tablerow>>(256, QSharedPointer<Tablerow>(nullptr));
         int processedrows_ = 0;
 	};
 }

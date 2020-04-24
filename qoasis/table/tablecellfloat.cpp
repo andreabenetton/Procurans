@@ -10,50 +10,50 @@ namespace qoasis::table {
 
     TablecellFloat::TablecellFloat(double number, int repeat) : Tablecell(repeat)
     {
-        valueNumber_ = number;
+        value_number_ = number;
     }
 
     TablecellFloat::TablecellFloat(QXmlStreamReader& reader) : Tablecell(reader)
     {
-        valueNumber_ = 0.0;
+        value_number_ = 0.0;
 
-        Read(reader);
+        read(reader);
     }
 
     TablecellFloat::TablecellFloat(const TablecellFloat &obj): Tablecell(obj)
     {
-        valueNumber_ = obj.valueNumber_;
+        value_number_ = obj.value_number_;
     }
 
-    double TablecellFloat::getDouble()
+    double TablecellFloat::getDouble() const
     {
-        return valueNumber_;
+        return value_number_;
     }
 
     // implements Tablecell
-    QLatin1String TablecellFloat::InstanceCellType()
+    QLatin1String TablecellFloat::instanceCellType()
     {
         return kCellTypeValue;
     }
 
     // implements Tag
-    void TablecellFloat::ReadAttribute(QStringRef attributename, QStringRef attributevalue)
+    void TablecellFloat::readAttribute(QStringRef name, QStringRef value)
     {
-        if (attributename == kCellTypeAttribute) {
-            valueNumber_ = attributevalue.toFloat();
+        if (name == kCellTypeAttribute) {
+            value_number_ = value.toFloat();
             return;
         }
-        Tablecell::ReadAttribute(attributename, attributevalue);
+        Tablecell::readAttribute(name, value);
     }
 
-    void TablecellFloat::WriteAttributes(QXmlStreamWriter* writer)
+    void TablecellFloat::writeAttributes(QXmlStreamWriter* writer)
     {
-        Tablecell::WriteAttributes(writer);
-        writer->writeAttribute(kCellTypeAttribute, QString::number(valueNumber_, 'f', 2));
+        Tablecell::writeAttributes(writer);
+        writer->writeAttribute(kCellTypeAttribute, QString::number(value_number_, 'f', 2));
     }
 
-    void TablecellFloat::WriteSubtags(QXmlStreamWriter* writer)
+    void TablecellFloat::writeSubtags(QXmlStreamWriter* writer)
     {
-        writer->writeTextElement(Tablecell::kTextPTag, QString::number(valueNumber_, 'f', 2).replace(".", ","));
+        writer->writeTextElement(Tablecell::kTextPTag, QString::number(value_number_, 'f', 2).replace(".", ","));
     }
 }

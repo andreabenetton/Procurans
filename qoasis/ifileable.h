@@ -4,9 +4,6 @@
 #ifndef IFILEABLE_H
 #define IFILEABLE_H
 
-#include <QObject>
-#include <QFile>
-
 namespace qoasis {
 
     class IFileable
@@ -14,10 +11,10 @@ namespace qoasis {
     public:
         IFileable(const QString& full_path);
 
-        virtual bool Exist();
-        virtual bool Load() = 0;
-        virtual bool Save(const QString& full_path, bool overwriteprotected = true) = 0;
-        virtual bool Save();
+        virtual bool exist();
+        virtual bool load() = 0;
+        virtual bool save(const QString& full_path, bool overwrite_protected = true) = 0;
+        virtual bool save();
 
     protected:
         QString full_path_;

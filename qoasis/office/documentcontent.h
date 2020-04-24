@@ -4,8 +4,6 @@
 #ifndef DOCUMENTCONTENT_H
 #define DOCUMENTCONTENT_H
 
-#include <QMap>
-
 #include "../tag.h"
 
 #include "body.h"
@@ -19,7 +17,7 @@ namespace qoasis::office {
         DocumentContent(QXmlStreamReader& reader);
         DocumentContent(const DocumentContent &obj);
 
-        static QSharedPointer<Tag> Builder(QXmlStreamReader& reader);
+        static QSharedPointer<Tag> builder(QXmlStreamReader& reader);
 
         static const QLatin1String kTag;
 
@@ -37,18 +35,18 @@ namespace qoasis::office {
 
         static const QLatin1String kVersionAttribute;
 
-        QString GetVersion();
-        QSharedPointer<Body> GetBody();
+        QString getVersion() const;
+        QSharedPointer<Body> getBody() const;
 
         // implements Tag
-        virtual QLatin1String InstanceTag();
+        QLatin1String instanceTag() override;
 
     protected:
         // implements Tag
-        virtual void ReadSubtag(QXmlStreamReader& reader);
-        virtual void ReadAttribute(QStringRef attributename, QStringRef attributevalue);
-        virtual void WriteAttributes(QXmlStreamWriter* writer);
-        virtual void WriteSubtags(QXmlStreamWriter* writer);
+        void readSubtag(QXmlStreamReader& reader) override;
+        void readAttribute(QStringRef name, QStringRef value) override;
+        void writeAttributes(QXmlStreamWriter* writer) override;
+        void writeSubtags(QXmlStreamWriter* writer) override;
 
     private:
         QSharedPointer<Body> body_;

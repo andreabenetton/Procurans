@@ -15,30 +15,30 @@ namespace qoasis {
         style_ = obj.style_;
     }
 
-    QString IStyleable::GetStyle()
+    QString IStyleable::getStyle() const
     {
         return style_;
     }
 
-    void IStyleable::SetStyle(QString style)
+    void IStyleable::setStyle(const QString style)
     {
         style_ = style;
     }
 
-    QLatin1String IStyleable::StyleTag()
+    QLatin1String IStyleable::styleTag()
     {
         return QLatin1String("table:style-name");
     }
 
-    void IStyleable::DeserializeProperty(QStringRef attributevalue)
+    void IStyleable::readStyle(QStringRef value)
     {
-        style_ = attributevalue.toString();
+        style_ = value.toString();
     }
 
-    void IStyleable::SerializeProperties(QXmlStreamWriter* writer)
+    void IStyleable::writeStyle(QXmlStreamWriter* writer)
     {
         if (style_ != "") {
-            writer->writeAttribute(StyleTag(), style_);
+            writer->writeAttribute(styleTag(), style_);
         }
     }
 }

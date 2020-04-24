@@ -17,7 +17,7 @@ namespace qoasis::office {
     Body::Body(QXmlStreamReader& reader)
     {
         Q_ASSERT(reader.qualifiedName() == Body::kTag);
-        Read(reader);
+        read(reader);
     }
 
     Body::Body(const Body &obj)
@@ -26,40 +26,40 @@ namespace qoasis::office {
     }
 
     // Static methods
-    QSharedPointer<Tag> Body::Builder(QXmlStreamReader& reader)
+    QSharedPointer<Tag> Body::builder(QXmlStreamReader& reader)
     {
         Q_ASSERT(reader.qualifiedName() == Body::kTag);
         return QSharedPointer<Tag>(new Body(reader));
     }
 
     // Methods  
-    QSharedPointer<Spreadsheet> Body::GetSpreadsheet()
+    QSharedPointer<Spreadsheet> Body::getSpreadsheet()
     {
         return spreadsheet_;
     }
 
     // implements Tag
-    QLatin1String Body::InstanceTag()
+    QLatin1String Body::instanceTag()
     {
         return Body::kTag;
     }
 
-    void Body::ReadSubtag(QXmlStreamReader& reader)
+    void Body::readSubtag(QXmlStreamReader& reader)
     {
-        if (IsStartElementNamed(reader, Spreadsheet::kTag)) {
+        if (isStartElementNamed(reader, Spreadsheet::kTag)) {
             spreadsheet_ = QSharedPointer<Spreadsheet>(new Spreadsheet(reader));
             return;
         }
         // Deserialize present but unsupported subtags
-        Tag::ReadSubtag(reader);
+        Tag::readSubtag(reader);
     }
 
-    void Body::WriteSubtags(QXmlStreamWriter* writer)
+    void Body::writeSubtags(QXmlStreamWriter* writer)
     {
         if (spreadsheet_ != nullptr) {
-            spreadsheet_->Write(writer);
+            spreadsheet_->write(writer);
         }
         // Serialize present but unsupported subtags
-        Tag::WriteSubtags(writer);
+        Tag::writeSubtags(writer);
     }
 }

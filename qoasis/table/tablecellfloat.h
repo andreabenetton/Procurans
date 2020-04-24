@@ -4,10 +4,6 @@
 #ifndef TABLECELLFLOAT_H
 #define TABLECELLFLOAT_H
 
-#include <QObject>
-#include <QMap>
-#include <QXmlStreamWriter>
-
 #include "tablecell.h"
 
 namespace qoasis::table {
@@ -21,21 +17,21 @@ namespace qoasis::table {
 
         static const QLatin1String kCellTypeValue;
 
-        double getDouble();
+        double getDouble() const;
 
         // implements Tablecell
-        virtual QLatin1String InstanceCellType();
+        QLatin1String instanceCellType() override;
 
     protected:
         // implements Tag
-        virtual void ReadAttribute(QStringRef attributename, QStringRef attributevalue);
-        virtual void WriteAttributes(QXmlStreamWriter* writer);
-        virtual void WriteSubtags(QXmlStreamWriter* writer);
+        void readAttribute(QStringRef name, QStringRef value) override;
+        void writeAttributes(QXmlStreamWriter* writer) override;
+        void writeSubtags(QXmlStreamWriter* writer) override;
 
     private:
         static const QLatin1String kCellTypeAttribute;
 
-        double valueNumber_;
+        double value_number_;
     };
 }
 #endif // TABLECELLFLOAT_H

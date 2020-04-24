@@ -4,12 +4,6 @@
 #ifndef TABLEROW_H
 #define TABLEROW_H
 
-#include <QObject>
-#include <QString>
-#include <QVector>
-#include <QXmlStreamWriter>
-#include <QSharedPointer>
-
 #include "../tag.h"
 #include "../istyleable.h"
 #include "../irepeatable.h"
@@ -24,41 +18,39 @@ namespace qoasis::table {
         Tablerow(int repeat = 1, QString style = "");
         Tablerow(QXmlStreamReader& reader);
         Tablerow(const Tablerow &obj);
-        ~Tablerow();
 
-        static QSharedPointer<Tag> Builder(QXmlStreamReader& reader);
+        static QSharedPointer<Tag> builder(QXmlStreamReader& reader);
 
         static const QLatin1String kTag;
 
-        QSharedPointer<Tablecell> GetCell(int index);
-        int ScanForwardForBaseOfRepeatedCells(int index);
-        int ScanBackwardForBaseOfRepeatedCells(int index);
+        QSharedPointer<Tablecell> getCell(int index) const;
+        int scanForwardForBaseOfRepeatedCells(int index) const;
+        int scanBackwardForBaseOfRepeatedCells(int index) const;
 
 
-		int GetLastDefined();
-		int GetLastNonEmpty();
+		int getLastDefined() const;
+		int getLastNonEmpty() const;
 
         // implements IRepeatable
-        virtual QLatin1String RepeatTag();
+        QLatin1String repeatTag() override;
 
         // implements Tag
-        virtual QLatin1String InstanceTag();
+        QLatin1String instanceTag() override;
 
     protected:
         // implements Tag
-        virtual void ReadSubtag(QXmlStreamReader& reader);
-        virtual void WriteAttributes(QXmlStreamWriter* writer);
-        virtual void WriteSubtags(QXmlStreamWriter* writer);
-        virtual void ReadAttribute(QStringRef attributename, QStringRef attributevalue);
+        void readSubtag(QXmlStreamReader& reader) override;
+        void writeAttributes(QXmlStreamWriter* writer) override;
+        void writeSubtags(QXmlStreamWriter* writer) override;
+        void readAttribute(QStringRef name, QStringRef value) override;
 
 	private:
         static const QLatin1String kRepeatAttribute;
 
-        void Initialize();
-
-        int lastdefined_;
-        int lastnonempty_;
-        QVector<QSharedPointer<Tablecell>>* cells_;
+        int last_defined_ = 0;
+        int last_not_empty_ = 0;
+        QVector<QSharedPointer<Tablecell>> cells_ = 
+            QVector<QSharedPointer<Tablecell>>(256, QSharedPointer<Tablecell>(nullptr));
 
 	};
 }

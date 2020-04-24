@@ -9,18 +9,18 @@
 
 namespace qoasis {
 
-    FileXML::FileXML(const QString& full_path) : IFileable(full_path)
+    FileXml::FileXml(const QString& full_path) : IFileable(full_path)
     {
     }
 
-    bool FileXML::Load()
+    bool FileXml::load()
     {
-        if (!Exist()) {
+        if (!exist()) {
             qCritical() << "File not exists: " << qPrintable(full_path_);
             return false;
         }
 
-        if (!full_path_.endsWith(InstanceFileName())){
+        if (!full_path_.endsWith(instanceFileName())){
             qCritical() << "File name not match specification: " << qPrintable(full_path_);
             return false;
         }
@@ -37,36 +37,36 @@ namespace qoasis {
 
         do {
             reader.readNext();
-            if (IsStartElementNamed(reader, GetRootTag())) {
-                Read(reader);
+            if (isStartElementNamed(reader, getRootTag())) {
+                read(reader);
             }
         } while (!reader.atEnd() && !reader.hasError());
         file.close();
 
         if (reader.hasError()) {
             qCritical() <<  "Error: Failed to parse XML in file "
-                         << qPrintable(InstanceFileName()) << ": "
+                         << qPrintable(instanceFileName()) << ": "
                          << qPrintable(reader.errorString());
             return false;
         }
-        else if (file.error() != QFile::NoError) {
-            qCritical() << "Cannot read file " << qPrintable(InstanceFileName())
-                        << ": " << qPrintable(file.errorString());
-            return false;
+        if (file.error() != QFile::NoError) {
+	        qCritical() << "Cannot read file " << qPrintable(instanceFileName())
+		        << ": " << qPrintable(file.errorString());
+	        return false;
         }
 
-        qInfo() << qPrintable(InstanceFileName()) << " file loaded.";
+        qInfo() << qPrintable(instanceFileName()) << " file loaded.";
         return true;
     }
 
-    bool FileXML::Save(const QString& full_path, bool overwriteprotected)
+    bool FileXml::save(const QString& full_path, const bool overwrite_protected)
     {
-        if (overwriteprotected && Exist()) {
+        if (overwrite_protected && exist()) {
             qCritical() << "File already exists: " << qPrintable(full_path_);
             return false;
         }
 
-        QString save_path = (full_path=="" ? full_path_ : full_path);
+        const QString save_path = (full_path=="" ? full_path_ : full_path);
 
         QFile file(save_path);
         file.open(QIODevice::WriteOnly);
@@ -76,33 +76,33 @@ namespace qoasis {
         writer.setAutoFormattingIndent(2);
         writer.writeStartDocument();
 
-        Write(&writer);
+        write(&writer);
 
         writer.writeEndDocument();
         file.close();
         if (file.error() != QFile::NoError) {
-          qCritical() << "Cannot write file " << qPrintable(InstanceFileName())
+          qCritical() << "Cannot write file " << qPrintable(instanceFileName())
                    << ": " << qPrintable(file.errorString());
           return false;
         }
 
-        qInfo() << qPrintable(InstanceFileName()) << " file saved.";
+        qInfo() << qPrintable(instanceFileName()) << " file saved.";
         return true;
     }
 
-    bool FileXML::Save()
+    bool FileXml::save()
     {
-        return FileXML::Save(full_path_);
+        return FileXml::save(full_path_);
     }
 
-    bool FileXML::IsStartElementNamed(QXmlStreamReader& xml, const QString& tokenName)
+    bool FileXml::isStartElementNamed(QXmlStreamReader& xml, const QString& token_name)
     {
-        return ((xml.tokenType() == QXmlStreamReader::StartElement) && (xml.name() == tokenName));
+        return ((xml.tokenType() == QXmlStreamReader::StartElement) && (xml.name() == token_name));
     }
 
-    bool FileXML::IsNotEndElementNamed(QXmlStreamReader& xml, const QString& tokenName)
+    bool FileXml::isNotEndElementNamed(QXmlStreamReader& xml, const QString& token_name)
     {
-        return !((xml.tokenType() == QXmlStreamReader::EndElement) && (xml.name() == tokenName));
+        return !((xml.tokenType() == QXmlStreamReader::EndElement) && (xml.name() == token_name));
     }
 
 }

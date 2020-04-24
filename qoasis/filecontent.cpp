@@ -10,40 +10,40 @@
 
 namespace qoasis {
 
-    const QLatin1String FileContent::FileName = QLatin1String("content.xml");
+    const QLatin1String FileContent::kFileName = QLatin1String("content.xml");
 
-    FileContent::FileContent(const QString& full_path) : FileXML(full_path)
+    FileContent::FileContent(const QString& full_path) : FileXml(full_path)
     {
 
     }
 
-    QLatin1String FileContent::InstanceFileName()
+    QLatin1String FileContent::instanceFileName()
     {
-        return FileContent::FileName;
+        return FileContent::kFileName;
     }
 
-    QLatin1String FileContent::GetRootTag()
+    QLatin1String FileContent::getRootTag()
     {
         return DocumentContent::kTag;
     }
 
-    bool FileContent::Create()
+    bool FileContent::create()
     {
         content_ = QSharedPointer<DocumentContent>(new DocumentContent());
         return true;
     }
 
-    void FileContent::Read(QXmlStreamReader& reader)
+    void FileContent::read(QXmlStreamReader& reader)
     {
         content_ = QSharedPointer<DocumentContent>(new DocumentContent(reader));
     }
 
-    void FileContent::Write(QXmlStreamWriter* writer)
+    void FileContent::write(QXmlStreamWriter* writer)
     {
-        content_->Write(writer);
+        content_->write(writer);
     }
 
-    QSharedPointer<DocumentContent> FileContent::GetContent()
+    QSharedPointer<DocumentContent> FileContent::getContent()
     {
         return content_;
     }

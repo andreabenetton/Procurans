@@ -4,12 +4,6 @@
 #ifndef TABLECOLUMN_H
 #define TABLECOLUMN_H
 
-#include <QObject>
-#include <QString>
-#include <QVector>
-#include <QXmlStreamWriter>
-#include <QXmlStreamReader>
-
 #include "../tag.h"
 #include "../istyleable.h"
 #include "../irepeatable.h"
@@ -19,34 +13,34 @@ namespace qoasis::table {
     class Tablecolumn : public Tag, public IStyleable, public IRepeatable
 	{
 	public:
-        Tablecolumn(int repeat = 1, QString columnstyle = "", QString defaultcellstyle = "");
+        Tablecolumn(int repeat = 1, QString style = "", QString default_cell_style = "");
         Tablecolumn(QXmlStreamReader& reader);
         Tablecolumn(const Tablecolumn &obj);
 
-        static QSharedPointer<Tablecolumn> Builder(QXmlStreamReader& reader);
+        static QSharedPointer<Tablecolumn> builder(QXmlStreamReader& reader);
 
         static const QLatin1String kTag;
         static const QLatin1String kRepeatAttribute;
         static const QLatin1String kDefaultCellStyleAttribute;
 
-		int GetLastDefined();
-		QString GetDefaultCellStyle();
-		void SetDefaultCellStyle(QString defaultstyle);
+		int getLastDefined() const;
+		QString getDefaultCellStyle() const;
+		void setDefaultCellStyle(QString default_cell_style);
 
         // implements IRepeatable
-        virtual QLatin1String RepeatTag();
+        QLatin1String repeatTag() override;
 
         // implements Tag
-        virtual QLatin1String InstanceTag();
+        QLatin1String instanceTag() override;
 
     protected:
         // implements Tag
-        virtual void WriteAttributes(QXmlStreamWriter* writer);
-        virtual void ReadAttribute(QStringRef attributename, QStringRef attributevalue);
+        void writeAttributes(QXmlStreamWriter* writer) override;
+        void readAttribute(QStringRef name, QStringRef value) override;
 
 	private:
-        int lastdefined_;
-        QString defaultcellstyle_;
+        int last_defined_{};
+        QString default_cell_style_;
 
 	};
 }

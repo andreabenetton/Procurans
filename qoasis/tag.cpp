@@ -8,69 +8,56 @@ namespace qoasis {
     // Constructors
     Tag::Tag()
     {
-        Initialize();
     }
 
-    Tag::Tag(QXmlStreamReader& reader) : Tag()
+    Tag::Tag(QXmlStreamReader& reader)
     {
-        Read(reader);
+        read(reader);
     }
 
     Tag::Tag(const Tag &obj)
     {
-        Initialize();
         // deep copy on attributes
         QMapIterator<QString, QString> i(obj.attributes_);
         while (i.hasNext()) {
             i.next();
             attributes_.insert(i.key(), i.value());
         }
-
         // deep copy on subitems
-        for (int i = 0; i < subtags_->length(); i++) {
-            QSharedPointer<Tag> sub = obj.subtags_->at(i);
+        for (int i = 0; i < subtags_.length(); i++) {
+            QSharedPointer<Tag> sub = obj.subtags_.at(i);
             if (!sub.isNull()) {
-                subtags_->replace(i, QSharedPointer<Tag>(new Tag(*sub)));
+                subtags_.replace(i, QSharedPointer<Tag>(new Tag(*sub)));
             }
         }
     }
 
-    Tag::~Tag()
-    {
-        delete subtags_;
-    }
-
     // Methods
-    void Tag::Initialize()
-    {
-        subtags_ = new QVector<QSharedPointer<Tag>>();
-    }
-
-    QLatin1String Tag::InstanceTag()
+    QLatin1String Tag::instanceTag()
     {
         return QLatin1String("");
     }
 
-    void Tag::Read(QXmlStreamReader& reader)
+    void Tag::read(QXmlStreamReader& reader)
     {
-        LoopToReadAttributes(reader);
-        LoopToReadSubtag(reader);
+        loopToReadAttributes(reader);
+        loopToReadSubtag(reader);
     }
 
-    void Tag::Write(QXmlStreamWriter* writer)
+    void Tag::write(QXmlStreamWriter* writer)
     {
-        WriteStart(writer);
-        WriteAttributes(writer);
-        WriteSubtags(writer);
-        WriteEnd(writer);
+        writeStart(writer);
+        writeAttributes(writer);
+        writeSubtags(writer);
+        writeEnd(writer);
     }
 
-    void Tag::WriteStart(QXmlStreamWriter* writer)
+    void Tag::writeStart(QXmlStreamWriter* writer)
     {
-        writer->writeStartElement(InstanceTag());
+        writer->writeStartElement(instanceTag());
     }
 
-    void Tag::WriteAttributes(QXmlStreamWriter* writer)
+    void Tag::writeAttributes(QXmlStreamWriter* writer)
     {
         QMapIterator<QString, QString> i(attributes_);
         while (i.hasNext()) {
@@ -79,53 +66,52 @@ namespace qoasis {
         }
     }
 
-    void Tag::WriteSubtags(QXmlStreamWriter* writer)
+    void Tag::writeSubtags(QXmlStreamWriter* writer)
     {
-        for (int i = 0; i < subtags_->length(); i++) {
-            Tag* subtag = (*subtags_)[i].get();
-            if (subtag != nullptr) {
-                subtag->Write(writer);
+        for (int i = 0; i < subtags_.length(); i++) {
+            if (!subtags_[i].isNull()) {
+                subtags_[i]->write(writer);
             }
         }
     }
 
-    void Tag::WriteEnd(QXmlStreamWriter* writer)
+    void Tag::writeEnd(QXmlStreamWriter* writer)
     {
         writer->writeEndElement();
     }
 
-    void Tag::LoopToReadAttributes(QXmlStreamReader& reader)
+    void Tag::loopToReadAttributes(QXmlStreamReader& reader)
     {
         for (auto& it : reader.attributes()) {
-            ReadAttribute(it.qualifiedName(), it.value());
+            readAttribute(it.qualifiedName(), it.value());
         }
     }
 
-    void Tag::ReadAttribute(QStringRef attributename, QStringRef attributevalue)
+    void Tag::readAttribute(const QStringRef name, const QStringRef value)
     {
-        attributes_.insert(attributename.toString(), attributevalue.toString());
+        attributes_.insert(name.toString(), value.toString());
     }
 
-    void Tag::LoopToReadSubtag(QXmlStreamReader& reader)
+    void Tag::loopToReadSubtag(QXmlStreamReader& reader)
     {
         do {
             reader.readNext();
-            ReadSubtag(reader);
-        } while (IsNotEndElementNamed(reader, InstanceTag()));
+            readSubtag(reader);
+        } while (isNotEndElementNamed(reader, instanceTag()));
     }
 
-    void Tag::ReadSubtag(QXmlStreamReader& reader)
+    void Tag::readSubtag(QXmlStreamReader& reader)
     {
-        subtags_->append(QSharedPointer<Tag>(new Tag(reader)));
+        subtags_.append(QSharedPointer<Tag>(new Tag(reader)));
     }
 
-    bool Tag::IsStartElementNamed(QXmlStreamReader& xml, const QString& tokenName)
+    bool Tag::isStartElementNamed(QXmlStreamReader& xml, const QString& token_name)
     {
-        return ((xml.tokenType() == QXmlStreamReader::StartElement) && (xml.qualifiedName() == tokenName));
+        return xml.tokenType() == QXmlStreamReader::StartElement && xml.qualifiedName() == token_name;
     }
 
-    bool Tag::IsNotEndElementNamed(QXmlStreamReader& xml, const QString& tokenName)
+    bool Tag::isNotEndElementNamed(QXmlStreamReader& xml, const QString& token_name)
     {
-        return !((xml.tokenType() == QXmlStreamReader::EndElement) && (xml.qualifiedName() == tokenName));
+        return !(xml.tokenType() == QXmlStreamReader::EndElement && xml.qualifiedName() == token_name);
     }
 }

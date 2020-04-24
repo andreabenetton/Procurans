@@ -12,52 +12,39 @@ namespace qoasis::office {
     // Constructors
     Spreadsheet::Spreadsheet() : Tag()
     {
-        Initialize();
-        tables_->append(QSharedPointer<Table>(new Table));
+        tables_.append(QSharedPointer<Table>(new Table));
     }
 
     Spreadsheet::Spreadsheet(QXmlStreamReader& reader): Tag()
     {
         Q_ASSERT(reader.qualifiedName() == Spreadsheet::kTag);
-        Initialize();
-        Tag::Read(reader);
+        Tag::read(reader);
     }
 
     Spreadsheet::Spreadsheet(const Spreadsheet &obj)
     {
-        Initialize();
         // deep copy on tables
-        for (int i = 0; i < tables_->length(); i++) {
-            QSharedPointer<Table> table = obj.tables_->at(i);
+        for (int i = 0; i < tables_.length(); i++) {
+            QSharedPointer<Table> table = obj.tables_.at(i);
             if (!table.isNull()) {
-                tables_->replace(i, QSharedPointer<Table>(new Table(*table)));
+                tables_.replace(i, QSharedPointer<Table>(new Table(*table)));
             }
         }
     }
 
-    Spreadsheet::~Spreadsheet()
-    {
-        delete tables_;
-    }
-
     // Static methods
-    QSharedPointer<Tag> Spreadsheet::Builder(QXmlStreamReader& reader)
+    QSharedPointer<Tag> Spreadsheet::builder(QXmlStreamReader& reader)
     {
         Q_ASSERT(reader.qualifiedName() == Spreadsheet::kTag);
         return QSharedPointer<Tag>(new Spreadsheet(reader));
     }
 
     // Methods
-    void Spreadsheet::Initialize()
+    QSharedPointer<Table> Spreadsheet::getTable(QString& name)
     {
-        tables_ = new QVector<QSharedPointer<Table>>();
-    }
-
-    QSharedPointer<Table> Spreadsheet::GetTable(QString& name)
-    {
-        for (auto& table : *tables_) {
+        for (auto& table : tables_) {
             if (!table.isNull()) {
-                if (name==(table->GetName())) {
+                if (name==(table->getName())) {
                     return table;
                 }
             }
@@ -65,39 +52,39 @@ namespace qoasis::office {
         return QSharedPointer<Table>(nullptr);
     }
 
-    QSharedPointer<Table> Spreadsheet::GetTable(int index)
+    QSharedPointer<Table> Spreadsheet::getTable(int index)
     {
         Q_ASSERT(index >= 0);
-        if((index>= (*tables_).length())) {
+        if((index>= tables_.length())) {
             return QSharedPointer<Table>(nullptr);
         }
-        return (*tables_)[index];
+        return tables_[index];
     }
 
     // implements Tag
-    QLatin1String Spreadsheet::InstanceTag()
+    QLatin1String Spreadsheet::instanceTag()
     {
         return Spreadsheet::kTag;
     }
 
-    void Spreadsheet::ReadSubtag(QXmlStreamReader& reader)
+    void Spreadsheet::readSubtag(QXmlStreamReader& reader)
     {
-        if (IsStartElementNamed(reader, Table::kTag)) {
-            tables_->append(QSharedPointer<Table>(new Table(reader)));
+        if (isStartElementNamed(reader, Table::kTag)) {
+            tables_.append(QSharedPointer<Table>(new Table(reader)));
             return;
         }
         // Deserialize present but unsupported subtags
-        Tag::ReadSubtag(reader);
+        Tag::readSubtag(reader);
     }
 
-    void Spreadsheet::WriteSubtags(QXmlStreamWriter* writer)
+    void Spreadsheet::writeSubtags(QXmlStreamWriter* writer)
     {
-        for (auto& table : *tables_) {
+        for (auto& table : tables_) {
             if (!table.isNull()) {
-                table->Write(writer);
+                table->write(writer);
             }
         }
         // Serialize present but unsupported subtags
-        Tag::WriteSubtags(writer);
+        Tag::writeSubtags(writer);
     }
 }

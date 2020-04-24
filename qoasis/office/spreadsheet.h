@@ -17,26 +17,24 @@ namespace qoasis::office {
         Spreadsheet();
         Spreadsheet(QXmlStreamReader& reader);
         Spreadsheet(const Spreadsheet &obj);
-        ~Spreadsheet();
 
-        static QSharedPointer<Tag> Builder(QXmlStreamReader& reader);
+        static QSharedPointer<Tag> builder(QXmlStreamReader& reader);
         static const QLatin1String kTag;
 
-        QSharedPointer<Table> GetTable(QString& name);
-        QSharedPointer<Table> GetTable(int index);
+        QSharedPointer<Table> getTable(QString& name);
+        QSharedPointer<Table> getTable(int index);
 
         // implements Tag
-        virtual QLatin1String InstanceTag();
+        QLatin1String instanceTag() override;
 
     protected:
-        // implements ODSSerializable
-        virtual void ReadSubtag(QXmlStreamReader& reader);
-        virtual void WriteSubtags(QXmlStreamWriter* writer);
+        // implements Tag
+        void readSubtag(QXmlStreamReader& reader) override;
+        void writeSubtags(QXmlStreamWriter* writer) override;
 
     private:
-        QVector<QSharedPointer<Table>>* tables_;
+        QVector<QSharedPointer<Table>> tables_;
 
-        void Initialize();
     };
 }
 #endif // SPREADSHEET_H

@@ -5,85 +5,85 @@
 
 namespace qoasis {
 
-    bool Currency::_typeinitialized = false;
-    QMap<int, QString> Currency::_symbols;
-    QMap<int, QString> Currency::_iso;
-    QMap<int, int> Currency::_decimals;
+    bool Currency::type_initialized_ = false;
+    QMap<int, QString> Currency::symbols_;
+    QMap<int, QString> Currency::iso_;
+    QMap<int, int> Currency::decimals_;
 
-    Currency::Currency(int currencyconstant)
+    Currency::Currency(int constant)
     {
-        if(_typeinitialized == false) {
-            AddCurrency(EUR, "€", "EUR", 2);
-            _typeinitialized = true;
+        if(type_initialized_ == false) {
+            addCurrency(EUR, "€", "EUR", 2);
+            type_initialized_ = true;
         }
-        if (_symbols.contains(currencyconstant)) {
-            _currency = currencyconstant;
-            _isvalid = true;
+        if (symbols_.contains(constant)) {
+            currency_ = constant;
+            is_valid_ = true;
         }
     }
 
-    Currency::Currency(QString currencyISO)
+    Currency::Currency(QString iso)
     {
-        if(_typeinitialized == false) {
-            AddCurrency(EUR, "€", "EUR", 2);
-            _typeinitialized = true;
+        if(type_initialized_ == false) {
+            addCurrency(EUR, "€", "EUR", 2);
+            type_initialized_ = true;
         }
-        _currency = _iso.key(currencyISO, 0);
-        if (_currency != 0) {
-            _isvalid = true;
+        currency_ = iso_.key(iso, 0);
+        if (currency_ != 0) {
+            is_valid_ = true;
         }
     }
 
     Currency::Currency(const Currency &obj)
     {
-        _isvalid = obj._isvalid;
-        _currency = obj._currency;
+        is_valid_ = obj.is_valid_;
+        currency_ = obj.currency_;
     }
 
-    void Currency::AddCurrency(int currencyconstant, QString symbol, QString ISO, int decimals)
+    void Currency::addCurrency(int constant, const QString symbol, const QString iso, const int decimals)
     {
-        _symbols.insert(currencyconstant, symbol);
-        _iso.insert(currencyconstant, ISO);
-        _decimals.insert(currencyconstant, decimals);
+        symbols_.insert(constant, symbol);
+        iso_.insert(constant, iso);
+        decimals_.insert(constant, decimals);
     }
 
-    bool Currency::GetIsValid()
+    bool Currency::getIsValid() const
     {
-        return _isvalid;
+        return is_valid_;
     }
 
-    QString Currency::GetSymbol()
+    QString Currency::getSymbol() const
     {
-        return _symbols.value(_currency);
+        return symbols_.value(currency_);
     }
 
-    QString Currency::GetISO()
+    QString Currency::getIso() const
     {
-        return _iso.value(_currency);
+        return iso_.value(currency_);
     }
 
-    QString Currency::GetSymbol(int currencyconstant)
+    QString Currency::getSymbol(const int constant)
     {
-        return _symbols.value(currencyconstant);
+        return symbols_.value(constant);
     }
 
-    QString Currency::GetSymbolFromISO(QString ISO)
+    auto Currency::getSymbolFromIso(const QString iso) -> QString
     {
-        int currencyconstant = _iso.key(ISO);
-        return _symbols.value(currencyconstant);
+	    const auto constant = iso_.key(iso);
+        return symbols_.value(constant);
     }
 
-    QString Currency::GetISO(int currencyconstant)
+    QString Currency::getIso(int constant)
     {
-        return _iso.value(currencyconstant);
+        return iso_.value(constant);
     }
 
-    QString Currency::FormatAmount(double amount)
+    QString Currency::formatAmount(double amount) const
     {
-        QString pattern = "%'." + QString::number(_decimals.value(_currency)) + "f";
+	    const QString pattern = "%'." + QString::number(decimals_.value(currency_)) + "f";
         QString out = "";
         if (amount < 0) out = "-";
-        out += _symbols.value(_currency);
+        out += symbols_.value(currency_);
         if (amount < 0)
             out += QString::asprintf(qPrintable(pattern), -amount);
         else

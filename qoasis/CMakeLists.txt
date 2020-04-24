@@ -1,8 +1,8 @@
 message(STATUS ${CMAKE_CURRENT_LIST_FILE})
 
-if (NOT MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-endif (NOT MSVC)
+#if (NOT MSVC)
+  #  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+#endif (NOT MSVC)
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -71,4 +71,5 @@ else (DEFINED QOASIS_STATIC)
 endif (DEFINED QOASIS_STATIC)
 
 add_library(qoasis ${lib_type} ${lib_files})
+target_compile_features(qoasis PUBLIC cxx_std_17)
 target_link_libraries(qoasis quazip Qt5::Core)

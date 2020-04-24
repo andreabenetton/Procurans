@@ -17,20 +17,20 @@ namespace qoasis::office {
         Body(QXmlStreamReader& reader);
         Body(const Body &obj);
 
-        static QSharedPointer<Tag> Builder(QXmlStreamReader& reader);
+        static QSharedPointer<Tag> builder(QXmlStreamReader& reader);
         static const QLatin1String kTag;
 
-        QSharedPointer<Spreadsheet> GetSpreadsheet();
+        QSharedPointer<Spreadsheet> getSpreadsheet();
 
         // implements Tag
-        virtual QLatin1String InstanceTag();
+        QLatin1String instanceTag() override;
 
     private:
         QSharedPointer<Spreadsheet> spreadsheet_;
 
         // implements Tag
-        virtual void ReadSubtag(QXmlStreamReader& reader);
-        virtual void WriteSubtags(QXmlStreamWriter* writer);
+        void readSubtag(QXmlStreamReader& reader) override;
+        void writeSubtags(QXmlStreamWriter* writer) override;
 
     };
 

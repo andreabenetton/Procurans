@@ -31,35 +31,35 @@ namespace qoasis::table {
     }
 
     // Static methods
-    QSharedPointer<Tablecell> Tablecell::Clone(QSharedPointer<Tablecell> obj)
+    QSharedPointer<Tablecell> Tablecell::clone(QSharedPointer<Tablecell> obj)
     {
-        Q_ASSERT(obj->InstanceTag() == Tablecell::kTag);
+        Q_ASSERT(obj->instanceTag() == Tablecell::kTag);
 
-        if (obj->InstanceCellType() == TablecellString::kCellTypeValue)
+        if (obj->instanceCellType() == TablecellString::kCellTypeValue)
         {
-            QSharedPointer<TablecellString> cell= qSharedPointerCast<TablecellString>(obj);
+	        const QSharedPointer<TablecellString> cell= qSharedPointerCast<TablecellString>(obj);
             return QSharedPointer<Tablecell>(new TablecellString(*cell));
         }
-        if (obj->InstanceCellType() == TablecellDate::kCellTypeValue)
+        if (obj->instanceCellType() == TablecellDate::kCellTypeValue)
         {
-            QSharedPointer<TablecellDate> cell= qSharedPointerCast<TablecellDate>(obj);
+	        const QSharedPointer<TablecellDate> cell= qSharedPointerCast<TablecellDate>(obj);
             return QSharedPointer<Tablecell>(new TablecellDate(*cell));
         }
-        if (obj->InstanceCellType() == TablecellFloat::kCellTypeValue)
+        if (obj->instanceCellType() == TablecellFloat::kCellTypeValue)
         {
-            QSharedPointer<TablecellFloat> cell= qSharedPointerCast<TablecellFloat>(obj);
+	        const QSharedPointer<TablecellFloat> cell= qSharedPointerCast<TablecellFloat>(obj);
             return QSharedPointer<Tablecell>(new TablecellFloat(*cell));
         }
-        if (obj->InstanceCellType() == TablecellCurrency::kCellTypeValue)
+        if (obj->instanceCellType() == TablecellCurrency::kCellTypeValue)
         {
-            QSharedPointer<TablecellCurrency> cell= qSharedPointerCast<TablecellCurrency>(obj);
+	        const QSharedPointer<TablecellCurrency> cell= qSharedPointerCast<TablecellCurrency>(obj);
             return QSharedPointer<Tablecell>(new TablecellCurrency(*cell));
         }
-        QSharedPointer<TablecellEmpty> cell= qSharedPointerCast<TablecellEmpty>(obj);
+        const QSharedPointer<TablecellEmpty> cell= qSharedPointerCast<TablecellEmpty>(obj);
         return QSharedPointer<Tablecell>(new TablecellEmpty(*cell));
     }
 
-    QSharedPointer<Tablecell> Tablecell::Builder(QXmlStreamReader& reader)
+    QSharedPointer<Tablecell> Tablecell::builder(QXmlStreamReader& reader)
     {
         Q_ASSERT(reader.qualifiedName() == Tablecell::kTag);
 
@@ -90,65 +90,65 @@ namespace qoasis::table {
             return QSharedPointer<Tablecell>(new TablecellCurrency(reader));
         }
         Q_ASSERT(false);
-        //return nullptr;
+        return {};
     }
 
     // Methods
-    QString Tablecell::getText()
+    QString Tablecell::getText() const
     {
         return _valueText;
     }
 
     // implements IRepeatable
-    QLatin1String Tablecell::RepeatTag()
+    QLatin1String Tablecell::repeatTag()
     {
-        return Tablecell::kRepeatAttribute;
+        return kRepeatAttribute;
     }
 
     // implements Tag
-    QLatin1String Tablecell::InstanceTag()
+    QLatin1String Tablecell::instanceTag()
     {
-        return Tablecell::kTag;
+        return kTag;
     }
 
-    void Tablecell::ReadAttribute(QStringRef attributename, QStringRef attributevalue)
+    void Tablecell::readAttribute(QStringRef name, QStringRef value)
     {
-        if (attributename == StyleTag()) {
-            IStyleable::DeserializeProperty(attributevalue);
+        if (name == styleTag()) {
+            IStyleable::readStyle(value);
             return;
         }
-        if (attributename == RepeatTag()) {
-            IRepeatable::DeserializeProperty(attributevalue);
+        if (name == repeatTag()) {
+            IRepeatable::readRepeat(value);
             return;
         }
         // Deserialize present but unsupported attributes
-        Tag::ReadAttribute(attributename, attributevalue);
+        Tag::readAttribute(name, value);
     }
 
-    void Tablecell::ReadSubtag(QXmlStreamReader& reader)
+    void Tablecell::readSubtag(QXmlStreamReader& reader)
     {
         if (reader.qualifiedName() == kTextPTag) {
             _valueText = reader.readElementText(QXmlStreamReader::IncludeChildElements);
             return;
         }
         // Deserialize present but unsupported subtags
-        Tag::ReadSubtag(reader);
+        Tag::readSubtag(reader);
     }
 
-    void Tablecell::WriteAttributes(QXmlStreamWriter* writer)
+    void Tablecell::writeAttributes(QXmlStreamWriter* writer)
     {
-        writer->writeAttribute(Tablecell::kCellTypeAttribute, InstanceCellType());
-        writer->writeAttribute(Tablecell::kCalcextValueType, InstanceCellType());
+        writer->writeAttribute(Tablecell::kCellTypeAttribute, instanceCellType());
+        writer->writeAttribute(Tablecell::kCalcextValueType, instanceCellType());
         // Serialize present but unsupported attributes
-        Tag::WriteAttributes(writer);
+        Tag::writeAttributes(writer);
     }
 
-    void Tablecell::WriteSubtags(QXmlStreamWriter* writer)
+    void Tablecell::writeSubtags(QXmlStreamWriter* writer)
     {
         if (!(_valueText.isNull() || _valueText.isEmpty())) {
             writer->writeTextElement(Tablecell::kTextPTag, _valueText);
         }
         // Serialize present but unsupported subtags
-        Tag::WriteSubtags(writer);
+        Tag::writeSubtags(writer);
     }
 }

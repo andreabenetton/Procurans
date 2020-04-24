@@ -11,138 +11,124 @@ namespace qoasis::table {
     const QLatin1String Tablerow::kRepeatAttribute = QLatin1String("table:number-rows-repeated");
 
     // Constructors
-    Tablerow::Tablerow(int repeat, QString style) : IStyleable(style), IRepeatable(repeat)
+    Tablerow::Tablerow(int repeat, QString style) : Tag(), IStyleable(style), IRepeatable(repeat)
     {
-        Initialize();
     }
 
-    Tablerow::Tablerow(QXmlStreamReader& reader) : Tablerow(1, "")
+    Tablerow::Tablerow(QXmlStreamReader& reader) 
     {
         Q_ASSERT(reader.qualifiedName() == Tablerow::kTag);
-        Tag::Read(reader);
+        Tag::read(reader);
     }
 
-    Tablerow::Tablerow(const Tablerow &obj) : IStyleable(obj), IRepeatable(obj)
+    Tablerow::Tablerow(const Tablerow &obj) : Tag(), IStyleable(obj), IRepeatable(obj)
     {
-        Initialize();
-        for (int i = 0; i < cells_->length(); i++) {
-            QSharedPointer<Tablecell> cell = obj.cells_->at(i);
+        for (int i = 0; i < cells_.length(); i++) {
+            QSharedPointer<Tablecell> cell = obj.cells_.at(i);
             if (!cell.isNull()) {
-                cells_->replace(i, Tablecell::Clone(cell));
+                cells_.replace(i, Tablecell::clone(cell));
             }
         }
-        lastdefined_ = obj.lastdefined_;
-        lastnonempty_ = obj.lastnonempty_;
-    }
-
-    Tablerow::~Tablerow()
-    {
-        delete cells_;
+        last_defined_ = obj.last_defined_;
+        last_not_empty_ = obj.last_not_empty_;
     }
 
     // Static methods
-    QSharedPointer<Tag>Tablerow::Builder(QXmlStreamReader& reader)
+    QSharedPointer<Tag>Tablerow::builder(QXmlStreamReader& reader)
     {
         Q_ASSERT(reader.qualifiedName() == Tablerow::kTag);
         return QSharedPointer<Tag>(new Tablerow(reader));
     }
 
     // Methods
-    void Tablerow::Initialize()
-    {
-        lastdefined_ = 0;
-        lastnonempty_ = 0;
-        cells_ = new QVector<QSharedPointer<Tablecell>>(256, QSharedPointer<Tablecell>(nullptr));
-    }
-
-    QSharedPointer<Tablecell> Tablerow::GetCell(int index)
+    QSharedPointer<Tablecell> Tablerow::getCell(int index) const
     {
         Q_ASSERT(index >= 0);
-        if(index > (cells_->length()-1)) {
+        if(index > (cells_.length()-1)) {
             return QSharedPointer<Tablecell>(nullptr);
         }
-        return (*cells_)[index];
+        return cells_.at(index);
     }
 
-    int Tablerow::ScanBackwardForBaseOfRepeatedCells(int index)
+    int Tablerow::scanBackwardForBaseOfRepeatedCells(int index) const
     {
-        return IRepeatable::ScanBackwardForNotNull<Tablecell>(index, *cells_);
+        return IRepeatable::scanBackwardForNotNull<Tablecell>(index, cells_);
     }
 
-    int Tablerow::ScanForwardForBaseOfRepeatedCells(int index)
+    int Tablerow::scanForwardForBaseOfRepeatedCells(int index) const
     {
-        return IRepeatable::ScanForwardForNotNull<Tablecell>(index, *cells_);
+        return IRepeatable::scanForwardForNotNull<Tablecell>(index, cells_);
     }
 
-    int Tablerow::GetLastDefined()
+    int Tablerow::getLastDefined() const
     {
-        return lastdefined_;
+        return last_defined_;
     }
 
-    int Tablerow::GetLastNonEmpty()
+    int Tablerow::getLastNonEmpty() const
     {
-        return lastnonempty_;
+        return last_not_empty_;
     }
 
     // implements IRepeatable
-    QLatin1String Tablerow::RepeatTag()
+    QLatin1String Tablerow::repeatTag()
     {
         return kRepeatAttribute;
     }
 
     // implements Tag
-    QLatin1String Tablerow::InstanceTag()
+    QLatin1String Tablerow::instanceTag()
     {
         return Tablerow::kTag;
     }
 
-    void Tablerow::ReadAttribute(QStringRef attributename, QStringRef attributevalue)
+    void Tablerow::readAttribute(QStringRef name, QStringRef value)
     {
-        if (attributename == RepeatTag()) {
-            IRepeatable::DeserializeProperty(attributevalue);
+        if (name == repeatTag()) {
+            IRepeatable::readRepeat(value);
             return;
         }
-        if (attributename == StyleTag()) {
-            IStyleable::DeserializeProperty(attributevalue);
+        if (name == styleTag()) {
+            IStyleable::readStyle(value);
             return;
         }
         // Deserialize present but unsupported attributes
-        Tag::ReadAttribute(attributename, attributevalue);
+        Tag::readAttribute(name, value);
     }
 
-    void Tablerow::ReadSubtag(QXmlStreamReader& reader)
+    void Tablerow::readSubtag(QXmlStreamReader& reader)
     {
-        if (IsStartElementNamed(reader, Tablecell::kTag)) {
-            QSharedPointer<Tablecell> cell = Tablecell::Builder(reader);
-            (*cells_)[lastdefined_] = cell;
-            lastdefined_ += cell->GetRepeat();
+        if (isStartElementNamed(reader, Tablecell::kTag)) {
+            QSharedPointer<Tablecell> cell = Tablecell::builder(reader);
+            cells_[last_defined_] = cell;
+            last_defined_ += cell->getRepeat();
 
-            if (cell->InstanceCellType() != TablecellEmpty::kCellTypeValue) {
-                lastnonempty_ = lastdefined_;
+            if (cell->instanceCellType() != TablecellEmpty::kCellTypeValue) {
+                last_not_empty_ = last_defined_;
             }
             return;
         }
         // Deserialize present but unsupported subtags
-        Tag::ReadSubtag(reader);
+        Tag::readSubtag(reader);
     }
 
-    void Tablerow::WriteAttributes(QXmlStreamWriter* writer)
+    void Tablerow::writeAttributes(QXmlStreamWriter* writer)
     {
-        IRepeatable::SerializeProperties(writer);
-        IStyleable::SerializeProperties(writer);
+        IRepeatable::writeRepeat(writer);
+        IStyleable::writeStyle(writer);
 
         // Serialize present but unsupported attributes
-        Tag::WriteAttributes(writer);
+        Tag::writeAttributes(writer);
     }
 
-    void Tablerow::WriteSubtags(QXmlStreamWriter* writer)
+    void Tablerow::writeSubtags(QXmlStreamWriter* writer)
     {
-        for (auto& cell : *cells_) {
+        for (auto& cell :cells_) {
             if (!cell.isNull()) {
-                cell->Write(writer);
+                cell->write(writer);
             }
         }
         // Serialize present but unsupported subtags
-        Tag::WriteSubtags(writer);
+        Tag::writeSubtags(writer);
     }
 }

@@ -4,52 +4,31 @@
 #ifndef TABLECELL_H
 #define TABLECELL_H
 
-#include <QObject>
-#include <QDate>
-#include <QXmlStreamWriter>
-
 #include "../tag.h"
-#include "../istyleable.h"
-#include "../irepeatable.h"
 
-namespace qoasis::table {
+namespace qoasis::style {
     // Abstract class base for all cell types
-    class Tablecell : public Tag, public IStyleable, public IRepeatable
+    class Style : public Tag
     {
     public:
-        Tablecell(int repeat = 1, QString style = "");
-        Tablecell(const Tablecell &obj);
-
-        static QSharedPointer<Tablecell> Clone(QSharedPointer<Tablecell> obj);
-        static QSharedPointer<Tablecell> Builder(QXmlStreamReader& reader);
+        Style();
+        Style(const Style&obj);
 
         static const QLatin1String kTag;
-        static const QLatin1String kCellTypeAttribute;
 
-        virtual QLatin1String InstanceCellType() = 0;
-
-        QString getText();
-
-        // implements IRepeatable
-        virtual QLatin1String RepeatTag();
 
         // implements Tag
         virtual QLatin1String InstanceTag();
 
     protected:
-        Tablecell(QXmlStreamReader& reader);
-
-        static const QLatin1String kRepeatAttribute;
-        static const QLatin1String kTextPTag;
-        static const QLatin1String kCalcextValueType;
+        Style(QXmlStreamReader& reader);
 
         // implements Tag
-        virtual void WriteAttributes(QXmlStreamWriter* writer);
-        virtual void WriteSubtags(QXmlStreamWriter* writer);
-        virtual void ReadAttribute(QStringRef attributename, QStringRef attributevalue);
-        virtual void ReadSubtag(QXmlStreamReader& reader);
+        void writeAttributes(QXmlStreamWriter* writer) override;
+        void writeSubtags(QXmlStreamWriter* writer) override;
+        void readAttribute(QStringRef name, QStringRef value) override;
+        void readSubtag(QXmlStreamReader& reader) override;
 
-        QString _valueText;
     };
 }
 #endif // TABLECELL_H
