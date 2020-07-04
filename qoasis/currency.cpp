@@ -14,7 +14,7 @@ namespace qoasis
 	{
 		if (type_initialized_ == false)
 		{
-			addCurrency(EUR, "€", "EUR", 2);
+			addCurrency(EUR, QChar(0x20AC), "EUR", 2);
 			type_initialized_ = true;
 		}
 		if (symbols_.contains(constant))

@@ -50,8 +50,11 @@ int main(int argc, char *argv[])
         mainWin.parseXMLFile(arg);
     }
     mainWin.setWindowIcon(QIcon(":/images/split.png"));
+    mainWin.setWindowTitle(QString(PRODUCT_NAME) + " " + APP_VERSION);
     mainWin.show();
-    return app.exec();
+    int ret = app.exec();
+    qInfo(logInfo()) << PRODUCT_NAME << " terminated. Exit code:" << ret;
+    return ret;
 }
 
 

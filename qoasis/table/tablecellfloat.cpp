@@ -5,33 +5,37 @@
 
 namespace qoasis::table
 {
-	const QLatin1String TablecellFloat::kCellTypeValue = QLatin1String("float");
-	const QLatin1String TablecellFloat::kCellTypeAttribute = QLatin1String("office:value");
+	const QString TablecellFloat::kCellTypeValue = QString("float");
+	const QString TablecellFloat::kCellTypeAttribute = QString("office:value");
 
-	TablecellFloat::TablecellFloat(double number, int repeat) : Tablecell(repeat)
+	TablecellFloat::TablecellFloat(double number, int repeat, QString style) : Tablecell(repeat, style)
 	{
 		value_number_ = number;
 	}
 
-	TablecellFloat::TablecellFloat(QXmlStreamReader& reader) : Tablecell(reader)
+	TablecellFloat::TablecellFloat(double number, QString style) : TablecellFloat(number, 1, style) {}
+
+	TablecellFloat::TablecellFloat(QXmlStreamReader& reader) 
 	{
+		Q_ASSERT(reader.qualifiedName() == TablecellFloat::kTag);
 		value_number_ = 0.0;
-
-		read(reader);
+		Tag::read(reader);
 	}
 
-	TablecellFloat::TablecellFloat(const TablecellFloat& obj): Tablecell(obj)
-	{
-		value_number_ = obj.value_number_;
-	}
 
 	double TablecellFloat::getDouble() const
 	{
 		return value_number_;
 	}
 
+	// implements IRepeatable
+	bool TablecellFloat::isEmpty()
+	{
+		return false;
+	}
+
 	// implements Tablecell
-	QLatin1String TablecellFloat::instanceCellType()
+	QString TablecellFloat::instanceCellType()
 	{
 		return kCellTypeValue;
 	}
@@ -39,8 +43,7 @@ namespace qoasis::table
 	// implements Tag
 	void TablecellFloat::readAttribute(QStringRef name, QStringRef value)
 	{
-		if (name == kCellTypeAttribute)
-		{
+		if (name.toString() == kCellTypeAttribute) {
 			value_number_ = value.toFloat();
 			return;
 		}

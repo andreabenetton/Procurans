@@ -18,12 +18,12 @@ namespace qoasis
 
 		virtual bool create();
 		QSharedPointer<DocumentContent> getContent();
-		QLatin1String instanceFileName() override;
+		QString instanceFileName() override;
 
-		static const QLatin1String kFileName;
+		static const QString kFileName;
 
 	protected:
-		QLatin1String getRootTag() override;
+		QString getRootTag() override;
 		void read(QXmlStreamReader& xml) override;
 		void write(QXmlStreamWriter* xml) override;
 

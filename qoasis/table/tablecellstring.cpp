@@ -5,25 +5,24 @@
 
 namespace qoasis::table
 {
-	const QLatin1String TablecellString::kCellTypeValue = QLatin1String("string");
+	const QString TablecellString::kCellTypeValue = QString("string");
 
-	TablecellString::TablecellString(QString text, int repeat) : Tablecell(repeat)
+	TablecellString::TablecellString(QString text, int repeat, QString style) : Tablecell(repeat, style)
 	{
 		_valueText = text;
 	}
 
-	TablecellString::TablecellString(QXmlStreamReader& reader) : Tablecell(reader)
-	{
-		read(reader);
-	}
+	TablecellString::TablecellString(QString text, QString style) : TablecellString(text, 1, style){}
 
-	TablecellString::TablecellString(const TablecellString& obj): Tablecell(obj)
+	TablecellString::TablecellString(QXmlStreamReader& reader) 
 	{
-		_valueText = obj._valueText;
+		Q_ASSERT(reader.qualifiedName() == TablecellString::kTag);
+		_valueText = "";
+		Tag::read(reader);
 	}
 
 	// implements Tablecell
-	QLatin1String TablecellString::instanceCellType()
+	QString TablecellString::instanceCellType()
 	{
 		return kCellTypeValue;
 	}

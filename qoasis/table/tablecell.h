@@ -10,35 +10,44 @@
 
 namespace qoasis::table
 {
-	// Abstract class base for all cell types
+	/**
+	 * \brief The <table:table-cell> element represents a table cell. It is contained in a table row element.
+	 *  A table cell can contain paragraphs and other text content as well as sub tables.
+	 *  Table cells may span multiple columns and rows. Table cells may be empty.
+	 *  https://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#__RefHeading__1415590_253892949
+	 */
 	class Tablecell : public Tag, public IStyleable, public IRepeatable
 	{
 	public:
-		Tablecell(int repeat = 1, QString style = "");
-		Tablecell(const Tablecell& obj);
+		Tablecell(QString style = "");
+		Tablecell(int repeat, QString style = "");
 
 		static QSharedPointer<Tablecell> clone(QSharedPointer<Tablecell> obj);
 		static QSharedPointer<Tablecell> builder(QXmlStreamReader& reader);
+		static QSharedPointer<Tablecell> placeholder(int repeat = 1);
 
-		static const QLatin1String kTag;
-		static const QLatin1String kCellTypeAttribute;
+		static const QString kTag;
+		static const QString kCellTypeAttribute;
+		static const QString kCellTypeValue;
 
-		virtual QLatin1String instanceCellType() = 0;
+		virtual QString instanceCellType();
 
 		QString getText() const;
 
 		// implements IRepeatable
-		QLatin1String repeatTag() override;
+		QString repeatTag() override;
+		
 
 		// implements Tag
-		QLatin1String instanceTag() override;
+		QString instanceTag() override;
+		bool isEmpty() override;
 
 	protected:
 		Tablecell(QXmlStreamReader& reader);
 
-		static const QLatin1String kRepeatAttribute;
-		static const QLatin1String kTextPTag;
-		static const QLatin1String kCalcextValueType;
+		static const QString kRepeatAttribute;
+		static const QString kTextPTag;
+		static const QString kCalcextValueType;
 
 		// implements Tag
 		void writeAttributes(QXmlStreamWriter* writer) override;

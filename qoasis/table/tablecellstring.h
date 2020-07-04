@@ -11,14 +11,14 @@ namespace qoasis::table
 	class TablecellString : public Tablecell
 	{
 	public:
-		TablecellString(QString text, int repeat = 1);
+		TablecellString(QString text, int repeat, QString style = "");
+		TablecellString(QString text, QString style = "");
 		TablecellString(QXmlStreamReader& reader);
-		TablecellString(const TablecellString& obj);
 
-		static const QLatin1String kCellTypeValue;
+		static const QString kCellTypeValue;
 
 		// implements Tablecell
-		QLatin1String instanceCellType() override;
+		QString instanceCellType() override;
 	};
 }
 #endif // TABLECELLSTRING_H

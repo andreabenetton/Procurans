@@ -10,18 +10,18 @@
 
 namespace qoasis
 {
-	const QLatin1String FileContent::kFileName = QLatin1String("content.xml");
+	const QString FileContent::kFileName = QString("content.xml");
 
 	FileContent::FileContent(const QString& full_path) : FileXml(full_path)
 	{
 	}
 
-	QLatin1String FileContent::instanceFileName()
+	QString FileContent::instanceFileName()
 	{
 		return FileContent::kFileName;
 	}
 
-	QLatin1String FileContent::getRootTag()
+	QString FileContent::getRootTag()
 	{
 		return DocumentContent::kTag;
 	}

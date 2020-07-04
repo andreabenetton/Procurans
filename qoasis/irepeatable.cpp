@@ -1,6 +1,8 @@
 // Copyright 2019 - 2020, the QOasis contributors
 // SPDX-License-Identifier: AGPL-3.0-only
 
+#include <QDebug>
+
 #include "irepeatable.h"
 
 namespace qoasis
@@ -11,20 +13,27 @@ namespace qoasis
 		repeat_ = repeat;
 	}
 
-	IRepeatable::IRepeatable(const IRepeatable& obj)
-	{
-		repeat_ = obj.repeat_;
-	}
-
 	// Methods
 	int IRepeatable::getRepeat() const
 	{
 		return repeat_;
 	}
 
-	void IRepeatable::readRepeat(QStringRef value)
+	void IRepeatable::setRepeat(int repeat)
 	{
-		repeat_ = value.toInt();
+		Q_ASSERT(repeat >= 0);
+		repeat_ = repeat;
+	}
+	
+	void IRepeatable::offsetRepeatBy(int offset)
+	{
+		repeat_ = repeat_ + offset >= 1? repeat_ + offset : 1;
+	}
+
+	void IRepeatable::readRepeat(const QStringRef value)
+	{
+		repeat_ = value.toInt(); 
+		qDebug() << "Repeat attribute - name:" << repeatTag() << " value:" << value.toString();
 	}
 
 	void IRepeatable::writeRepeat(QXmlStreamWriter* writer)

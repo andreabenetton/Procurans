@@ -19,10 +19,10 @@ namespace qoasis
 		bool load() override;
 		bool save(const QString& full_path, bool overwrite_protected = true) override;
 		bool save() override;
-		virtual QLatin1String instanceFileName() = 0;
+		virtual QString instanceFileName() = 0;
 
 	protected:
-		virtual QLatin1String getRootTag() = 0;
+		virtual QString getRootTag() = 0;
 		virtual void read(QXmlStreamReader& xml) = 0;
 		virtual void write(QXmlStreamWriter* xml) = 0;
 		bool isStartElementNamed(QXmlStreamReader& xml, const QString& token_name);

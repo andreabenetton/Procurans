@@ -1,6 +1,8 @@
 // Copyright 2019 - 2020, the QOasis contributors
 // SPDX-License-Identifier: AGPL-3.0-only
 
+#include <QDebug>
+
 #include "istyleable.h"
 
 namespace qoasis
@@ -25,20 +27,20 @@ namespace qoasis
 		style_ = style;
 	}
 
-	QLatin1String IStyleable::styleTag()
+	QString IStyleable::styleTag()
 	{
-		return QLatin1String("table:style-name");
+		return QString("table:style-name");
 	}
 
 	void IStyleable::readStyle(QStringRef value)
 	{
 		style_ = value.toString();
+		qDebug() << "Style attribute - name:" << styleTag() << " value:" << value.toString();
 	}
 
 	void IStyleable::writeStyle(QXmlStreamWriter* writer)
 	{
-		if (style_ != "")
-		{
+		if (style_ != "") {
 			writer->writeAttribute(styleTag(), style_);
 		}
 	}

@@ -11,27 +11,28 @@ namespace qoasis::table
 	class TablecellFloat : public Tablecell
 	{
 	public:
-		TablecellFloat(double number, int repeat = 1);
+		TablecellFloat(double number, int repeat, QString style = "");
+		TablecellFloat(double number, QString style = "");
 		TablecellFloat(QXmlStreamReader& reader);
-		TablecellFloat(const TablecellFloat& obj);
 
-		static const QLatin1String kCellTypeValue;
+		static const QString kCellTypeValue;
+
+		bool isEmpty() override;
 
 		double getDouble() const;
 
 		// implements Tablecell
-		QLatin1String instanceCellType() override;
+		QString instanceCellType() override;
 
-	protected:
+	private:
+		static const QString kCellTypeAttribute;
+
+		double value_number_;
+
 		// implements Tag
 		void readAttribute(QStringRef name, QStringRef value) override;
 		void writeAttributes(QXmlStreamWriter* writer) override;
 		void writeSubtags(QXmlStreamWriter* writer) override;
-
-	private:
-		static const QLatin1String kCellTypeAttribute;
-
-		double value_number_;
 	};
 }
 #endif // TABLECELLFLOAT_H

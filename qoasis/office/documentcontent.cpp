@@ -6,21 +6,21 @@
 namespace qoasis::office
 {
 	// Constants
-	const QLatin1String DocumentContent::kTag = QLatin1String("office:document-content");
+	const QString DocumentContent::kTag = QString("office:document-content");
 
-	const QLatin1String DocumentContent::kNsOfficeAttribute = QLatin1String("xmlns:office");
-	const QLatin1String DocumentContent::kNsDcAttribute = QLatin1String("xmlns:dc");
-	const QLatin1String DocumentContent::kNsDrawAttribute = QLatin1String("xmlns:draw");
-	const QLatin1String DocumentContent::kNsFoAttribute = QLatin1String("xmlns:fo");
-	const QLatin1String DocumentContent::kNsNumberAttribute = QLatin1String("xmlns:number");
-	const QLatin1String DocumentContent::kNsOfAttribute = QLatin1String("xmlns:of");
-	const QLatin1String DocumentContent::kNsStyleAttribute = QLatin1String("xmlns:style");
-	const QLatin1String DocumentContent::kNsSvgAttribute = QLatin1String("xmlns:svg");
-	const QLatin1String DocumentContent::kNsTableAttribute = QLatin1String("xmlns:table");
-	const QLatin1String DocumentContent::kNsTextAttribute = QLatin1String("xmlns:text");
-	const QLatin1String DocumentContent::kNsXlinkAttribute = QLatin1String("xmlns:xlink");
+	const QString DocumentContent::kNsOfficeAttribute = QString("xmlns:office");
+	const QString DocumentContent::kNsDcAttribute = QString("xmlns:dc");
+	const QString DocumentContent::kNsDrawAttribute = QString("xmlns:draw");
+	const QString DocumentContent::kNsFoAttribute = QString("xmlns:fo");
+	const QString DocumentContent::kNsNumberAttribute = QString("xmlns:number");
+	const QString DocumentContent::kNsOfAttribute = QString("xmlns:of");
+	const QString DocumentContent::kNsStyleAttribute = QString("xmlns:style");
+	const QString DocumentContent::kNsSvgAttribute = QString("xmlns:svg");
+	const QString DocumentContent::kNsTableAttribute = QString("xmlns:table");
+	const QString DocumentContent::kNsTextAttribute = QString("xmlns:text");
+	const QString DocumentContent::kNsXlinkAttribute = QString("xmlns:xlink");
 
-	const QLatin1String DocumentContent::kVersionAttribute = QLatin1String("office:version");
+	const QString DocumentContent::kVersionAttribute = QString("office:version");
 
 	// Constructors
 	DocumentContent::DocumentContent() : Tag()
@@ -48,11 +48,6 @@ namespace qoasis::office
 		read(reader);
 	}
 
-	DocumentContent::DocumentContent(const DocumentContent& obj)
-	{
-		body_ = QSharedPointer<Body>(new Body(*obj.body_));
-	}
-
 	// Static methods
 	QSharedPointer<Tag> DocumentContent::builder(QXmlStreamReader& reader)
 	{
@@ -72,46 +67,41 @@ namespace qoasis::office
 	}
 
 	// implements Tag
-	QLatin1String DocumentContent::instanceTag()
+	QString DocumentContent::instanceTag()
 	{
 		return DocumentContent::kTag;
 	}
 
 	void DocumentContent::readAttribute(QStringRef name, QStringRef value)
 	{
-		if (name.split(':').first() == "xmlns")
-		{
-			namespaces_.insert(name.toString(), value.toString());
-			return;
-		}
-		if (name == kVersionAttribute)
+		// office:version 19.386 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#attribute-office_version
+		if (name.toString() == kVersionAttribute)
 		{
 			version_ = value.toString();
 			return;
 		}
 		// Deserialize present but unsupported attributes
+		// grddl:transformation 19.320 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#attribute-grddl_transformation
 		Tag::readAttribute(name, value);
 	}
 
 	void DocumentContent::readSubtag(QXmlStreamReader& reader)
 	{
+		// <office:body> 3.3 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#element-office_body
 		if (isStartElementNamed(reader, Body::kTag))
 		{
 			body_ = QSharedPointer<Body>(new Body(reader));
 			return;
 		}
 		// Deserialize present but unsupported subtags
+		// <office:automatic-styles> 3.15.3 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#element-office_automatic-styles
+		// <office:font-face-decls> 3.14 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#element-office_font-face-decls
+		// <office:scripts> 3.12 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#element-office_scripts
 		Tag::readSubtag(reader);
 	}
 
 	void DocumentContent::writeAttributes(QXmlStreamWriter* writer)
 	{
-		QMapIterator<QString, QString> i(namespaces_);
-		while (i.hasNext())
-		{
-			i.next();
-			writer->writeAttribute(i.key(), i.value());
-		}
 		writer->writeAttribute(kVersionAttribute, version_);
 
 		// Serialize present but unsupported attributes
@@ -120,11 +110,11 @@ namespace qoasis::office
 
 	void DocumentContent::writeSubtags(QXmlStreamWriter* writer)
 	{
+		// Serialize present but unsupported subtags
+		Tag::writeSubtags(writer);
 		if (body_ != nullptr)
 		{
 			body_->write(writer);
 		}
-		// Serialize present but unsupported subtags
-		Tag::writeSubtags(writer);
 	}
 }

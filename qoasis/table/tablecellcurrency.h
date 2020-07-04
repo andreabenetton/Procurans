@@ -13,30 +13,31 @@ namespace qoasis::table
 	class TablecellCurrency : public Tablecell
 	{
 	public:
-		TablecellCurrency(Currency currency, double amount, int repeat = 1);
+		TablecellCurrency(Currency currency, double amount, int repeat, QString style = "");
+		TablecellCurrency(Currency currency, double amount, QString style = "");
 		TablecellCurrency(QXmlStreamReader& reader);
-		TablecellCurrency(const TablecellCurrency& obj);
 
-		static const QLatin1String kCellTypeValue;
+		static const QString kCellTypeValue;
 
-		double getAmount();
-		Currency getCurrency();
+		double getAmount() const;
+		Currency getCurrency() const;
+
+		bool isEmpty() override;
 
 		// implements Tablecell
-		QLatin1String instanceCellType() override;
+		QString instanceCellType() override;
 
-	protected:
+	private:
+		static const QString kCellTypeAttribute;
+		static const QString kCellCurrencyAttribute;
+
+		double value_amount_;
+		Currency value_currency_;
+
 		// implements Tag
 		void readAttribute(QStringRef name, QStringRef value) override;
 		void writeAttributes(QXmlStreamWriter* writer) override;
 		void writeSubtags(QXmlStreamWriter* writer) override;
-
-	private:
-		static const QLatin1String kCellTypeAttribute;
-		static const QLatin1String kCellCurrencyAttribute;
-
-		double value_amount_;
-		Currency value_currency_;
 	};
 }
 #endif // TABLECELLCURRENCY_H

@@ -16,20 +16,21 @@ namespace qoasis::office
 	public:
 		Spreadsheet();
 		Spreadsheet(QXmlStreamReader& reader);
-		Spreadsheet(const Spreadsheet& obj);
 
 		static QSharedPointer<Tag> builder(QXmlStreamReader& reader);
-		static const QLatin1String kTag;
+		static const QString kTag;
 
 		QSharedPointer<Table> getTable(QString& name);
 		QSharedPointer<Table> getTable(int index);
 
 		// implements Tag
-		QLatin1String instanceTag() override;
+		QString instanceTag() override;
 
 	protected:
 		// implements Tag
+		void readAttribute(QStringRef name, QStringRef value) override;
 		void readSubtag(QXmlStreamReader& reader) override;
+		void writeAttributes(QXmlStreamWriter* writer) override;
 		void writeSubtags(QXmlStreamWriter* writer) override;
 
 	private:

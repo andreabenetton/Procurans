@@ -6,15 +6,14 @@
 namespace qoasis::table
 {
 	// Constants
-	const QLatin1String Tablecolumn::kTag = QLatin1String("table:table-column");
-	const QLatin1String Tablecolumn::kRepeatAttribute = QLatin1String("table:number-columns-repeated");
-	const QLatin1String Tablecolumn::kDefaultCellStyleAttribute = QLatin1String("table:default-cell-style-name");
+	const QString Tablecolumn::kTag = QString("table:table-column");
+	const QString Tablecolumn::kRepeatAttribute = QString("table:number-columns-repeated");
+	const QString Tablecolumn::kDefaultCellStyleAttribute = QString("table:default-cell-style-name");
 
 	// Constructors
 	Tablecolumn::Tablecolumn(int repeat, QString style, QString default_cell_style) : Tag(), IStyleable(style),
 	                                                                                  IRepeatable(repeat)
 	{
-		last_defined_ = 0;
 		default_cell_style_ = default_cell_style;
 	}
 
@@ -24,12 +23,6 @@ namespace qoasis::table
 		Tag::read(reader);
 	}
 
-	Tablecolumn::Tablecolumn(const Tablecolumn& obj): Tag(), IStyleable(obj), IRepeatable(obj)
-	{
-		last_defined_ = obj.last_defined_;
-		default_cell_style_ = obj.default_cell_style_;
-	}
-
 	// Static methods
 	QSharedPointer<Tablecolumn> Tablecolumn::builder(QXmlStreamReader& reader)
 	{
@@ -37,12 +30,12 @@ namespace qoasis::table
 		return QSharedPointer<Tablecolumn>(new Tablecolumn(reader));
 	}
 
-	// Methods
-	int Tablecolumn::getLastDefined() const
+	QSharedPointer<Tablecolumn> Tablecolumn::placeholder(int repeat)
 	{
-		return last_defined_;
+		return QSharedPointer<Tablecolumn>(new Tablecolumn(repeat));
 	}
 
+	// Methods
 	QString Tablecolumn::getDefaultCellStyle() const
 	{
 		return default_cell_style_;
@@ -54,44 +47,50 @@ namespace qoasis::table
 	}
 
 	// implements IRepeatable
-	QLatin1String Tablecolumn::repeatTag()
+	QString Tablecolumn::repeatTag()
 	{
 		return kRepeatAttribute;
 	}
 
+	bool Tablecolumn::isEmpty()
+	{
+		return true;
+	}
+
 	// implements Tag
-	QLatin1String Tablecolumn::instanceTag()
+	QString Tablecolumn::instanceTag()
 	{
 		return kTag;
 	}
 
 	void Tablecolumn::readAttribute(QStringRef name, QStringRef value)
 	{
-		if (name == repeatTag())
-		{
-			IRepeatable::readRepeat(value);
+		// table:number-columns-repeated 19.675.4 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#attribute-table_number-columns-repeated_element-table_table-column
+		if (name == repeatTag()) {
+			readRepeat(value);
 			return;
 		}
-		if (name == styleTag())
-		{
-			IStyleable::readStyle(value);
+		// table:style-name 19.726.14 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#attribute-table_style-name_element-table_table-column
+		if (name == styleTag()) {
+			readStyle(value);
 			return;
 		}
-		if (name == kDefaultCellStyleAttribute)
-		{
+		// table:default-cell-style-name 19.615 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#attribute-table_default-cell-style-name
+		if (name == kDefaultCellStyleAttribute) {
 			default_cell_style_ = value.toString();
 			return;
 		}
 		// Deserialize present but unsupported attributes
+		// table:visibility 19.749 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#attribute-table_visibility
+		// xml:id 19.914 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#attribute-xml_id
 		Tag::readAttribute(name, value);
 	}
 
 	void Tablecolumn::writeAttributes(QXmlStreamWriter* writer)
 	{
-		IRepeatable::writeRepeat(writer);
-		IStyleable::writeStyle(writer);
-		if (default_cell_style_ != "")
-		{
+		writeRepeat(writer);
+		writeStyle(writer);
+		if (default_cell_style_ != "") {
 			writer->writeAttribute(Tablecolumn::kDefaultCellStyleAttribute, default_cell_style_);
 		}
 		// Serialize present but unsupported attributes

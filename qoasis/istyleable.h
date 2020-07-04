@@ -14,7 +14,7 @@ namespace qoasis
 		IStyleable(QString style = "");
 		IStyleable(const IStyleable& obj);
 
-		virtual QLatin1String styleTag();
+		virtual QString styleTag();
 
 		QString getStyle() const;
 		void setStyle(QString style);

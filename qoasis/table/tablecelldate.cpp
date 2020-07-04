@@ -5,22 +5,20 @@
 
 namespace qoasis::table
 {
-	const QLatin1String TablecellDate::kCellTypeValue = QLatin1String("date");
-	const QLatin1String TablecellDate::kCellTypeAttribute = QLatin1String("office:date-value");
+	const QString TablecellDate::kCellTypeValue = QString("date");
+	const QString TablecellDate::kCellTypeAttribute = QString("office:date-value");
 
-	TablecellDate::TablecellDate(QDate date, int repeat) : Tablecell(repeat)
+	TablecellDate::TablecellDate(QDate date, int repeat, QString style) : Tablecell(repeat, style)
 	{
 		value_date_ = date;
 	}
 
-	TablecellDate::TablecellDate(QXmlStreamReader& reader) : Tablecell(reader)
-	{
-		read(reader);
-	}
+	TablecellDate::TablecellDate(QDate date, QString style) : TablecellDate(date, 1, style) {}
 
-	TablecellDate::TablecellDate(const TablecellDate& obj): Tablecell(obj)
+	TablecellDate::TablecellDate(QXmlStreamReader& reader) 
 	{
-		value_date_ = obj.value_date_;
+		Q_ASSERT(reader.qualifiedName() == TablecellDate::kTag);
+		Tag::read(reader);
 	}
 
 	QDate TablecellDate::getDate() const
@@ -28,8 +26,14 @@ namespace qoasis::table
 		return value_date_;
 	}
 
+	// implements IRepeatable
+	bool TablecellDate::isEmpty()
+	{
+		return false;
+	}
+
 	// implements Tablecell
-	QLatin1String TablecellDate::instanceCellType()
+	QString TablecellDate::instanceCellType()
 	{
 		return kCellTypeValue;
 	}
@@ -37,8 +41,7 @@ namespace qoasis::table
 	// implements Tag
 	void TablecellDate::readAttribute(QStringRef name, QStringRef value)
 	{
-		if (name == kCellTypeAttribute)
-		{
+		if (name.toString() == kCellTypeAttribute) {
 			value_date_ = QDate::fromString(value.toString(), "yyyy-MM-dd");
 			return;
 		}
@@ -47,17 +50,15 @@ namespace qoasis::table
 
 	void TablecellDate::writeAttributes(QXmlStreamWriter* writer)
 	{
-		if (!value_date_.isNull() && value_date_.isValid())
-		{
+		if (!value_date_.isNull() && value_date_.isValid()) {
 			writer->writeAttribute(kCellTypeAttribute, value_date_.toString("yyyy-MM-dd"));
 		}
-		Tag::writeAttributes(writer);
+		Tablecell::writeAttributes(writer);
 	}
 
 	void TablecellDate::writeSubtags(QXmlStreamWriter* writer)
 	{
-		if (!value_date_.isNull() && value_date_.isValid())
-		{
+		if (!value_date_.isNull() && value_date_.isValid()) {
 			writer->writeTextElement(Tablecell::kTextPTag, value_date_.toString("dd/MM/yyyy"));
 		}
 	}

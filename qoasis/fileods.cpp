@@ -99,4 +99,9 @@ namespace qoasis
 		qInfo() << "Zipped: " << qPrintable(save_path);
 		return true;
 	}
+
+	bool FileOds::save()
+	{
+		return save(full_path_, false);
+	}
 }

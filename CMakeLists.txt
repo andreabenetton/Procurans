@@ -3,6 +3,8 @@ Project(Procurans)
 
 message("Source dir: " ${Procurans_SOURCE_DIR})
 
+set(CMAKE_DEBUG_POSTFIX d)
+
 #only build zlib on windows because unix has it by default
 IF(WIN32)
 	include_directories(${Procurans_SOURCE_DIR}/zlib)
@@ -17,7 +19,7 @@ ELSE (WIN32)
 ENDIF (WIN32)
 
 if(WIN32)
-    set (CMAKE_PREFIX_PATH "C:\\Qt\\5.14.1\\msvc2017_64\\")
+    set (CMAKE_PREFIX_PATH "C:\\Qt\\5.15.0\\msvc2019_64\\")
 endif()
 
 set(LIBRARY_OUTPUT_PATH "${Procurans_BINARY_DIR}/lib")

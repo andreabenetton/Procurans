@@ -5,7 +5,7 @@ set(LEGAL_COPYRIGHT "Copyright (c) 2019 BlueTeam")
 set(LEGAL_TRADEMARK1 "GNU Affero General Public License ver. 3")
 set(LEGAL_TRADEMARK2 "https://www.gnu.org/licenses/agpl-3.0.en.html")
 set(MODULE_DESCRIPTION "Procurans")
-set(VERSION_MAJOR "1")
+set(VERSION_MAJOR "2")
 set(VERSION_MINOR "0")
 set(VERSION_PATCH "0")
 set(VERSION_REVISION "0")
@@ -37,9 +37,9 @@ find_package(Qt5Xml REQUIRED)
 set(src_files	
 	license.h
 	main.cpp
+	mainwindow.ui
 	mainwindow.cpp
 	mainwindow.h
-	mainwindow.ui
 	comboboxitemdelegate.cpp
 	comboboxitemdelegate.h
 	gridschemafield.h
@@ -89,5 +89,5 @@ target_link_libraries(${exe_name}
     Qt5::Widgets
     Qt5::XmlPatterns)
 
-
+target_compile_features(${exe_name} PUBLIC cxx_std_17)
 

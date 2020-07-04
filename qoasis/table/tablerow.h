@@ -4,6 +4,7 @@
 #ifndef TABLEROW_H
 #define TABLEROW_H
 
+#include "../repeatvector.h"
 #include "../tag.h"
 #include "../istyleable.h"
 #include "../irepeatable.h"
@@ -15,27 +16,33 @@ namespace qoasis::table
 	class Tablerow : public Tag, public IStyleable, public IRepeatable
 	{
 	public:
-		Tablerow(int repeat = 1, QString style = "");
+		Tablerow(int repeat = 1, QString style = "", int array_size = 0, QSharedPointer<Tablecell> cells[] = nullptr);
 		Tablerow(QXmlStreamReader& reader);
-		Tablerow(const Tablerow& obj);
 
-		static QSharedPointer<Tag> builder(QXmlStreamReader& reader);
+		static QSharedPointer<Tablerow> builder(QXmlStreamReader& reader);
+		static QSharedPointer<Tablerow> placeholder(int repeat = 1);
 
-		static const QLatin1String kTag;
+		static const QString kTag;
 
 		QSharedPointer<Tablecell> getCell(int index) const;
-		int scanForwardForBaseOfRepeatedCells(int index) const;
-		int scanBackwardForBaseOfRepeatedCells(int index) const;
 
+		void removeCell(int index);
+		void insertCell(int index, QSharedPointer<Tablecell> cell);
+		void appendCell(QSharedPointer<Tablecell> cell);
+		void replaceCell(int index, QSharedPointer<Tablecell> cell);
 
-		int getLastDefined() const;
-		int getLastNonEmpty() const;
+		void replaceCells(int start, int end, QSharedPointer<Tablecell> cells[]);
+
+		void restyleFromRow(QSharedPointer<Tablerow> fromRow);
+
+		int getLastNonEmptyCell() const;
 
 		// implements IRepeatable
-		QLatin1String repeatTag() override;
+		QString repeatTag() override;
 
 		// implements Tag
-		QLatin1String instanceTag() override;
+		QString instanceTag() override;
+		bool isEmpty() override;
 
 	protected:
 		// implements Tag
@@ -45,12 +52,9 @@ namespace qoasis::table
 		void readAttribute(QStringRef name, QStringRef value) override;
 
 	private:
-		static const QLatin1String kRepeatAttribute;
+		static const QString kRepeatAttribute;
 
-		int last_defined_ = 0;
-		int last_not_empty_ = 0;
-		QVector<QSharedPointer<Tablecell>> cells_ =
-			QVector<QSharedPointer<Tablecell>>(256, QSharedPointer<Tablecell>(nullptr));
+		RepeatVector<Tablecell> cells_;
 	};
 }
 #endif // TABLEROW_H

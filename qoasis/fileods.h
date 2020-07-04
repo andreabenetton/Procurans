@@ -19,6 +19,7 @@ namespace qoasis
 		virtual bool create();
 		bool load() override;
 		bool save(const QString& full_path, bool overwrite_protected = true) override;
+		bool save() override;
 
 		QSharedPointer<DocumentContent> getContent() const;
 

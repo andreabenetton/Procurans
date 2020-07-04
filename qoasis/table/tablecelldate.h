@@ -13,19 +13,21 @@ namespace qoasis::table
 	class TablecellDate : public Tablecell
 	{
 	public:
-		TablecellDate(QDate date, int repeat = 1);
+		TablecellDate(QDate date, int repeat, QString style = "");
+		TablecellDate(QDate date, QString style = "");
 		TablecellDate(QXmlStreamReader& reader);
-		TablecellDate(const TablecellDate& obj);
 
-		static const QLatin1String kCellTypeValue;
+		static const QString kCellTypeValue;
 
 		QDate getDate() const;
 
+		bool isEmpty() override;
+
 		// implements Tablecell
-		QLatin1String instanceCellType() override;
+		QString instanceCellType() override;
 
 	private:
-		static const QLatin1String kCellTypeAttribute;
+		static const QString kCellTypeAttribute;
 
 		QDate value_date_;
 

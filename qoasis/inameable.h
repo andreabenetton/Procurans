@@ -12,11 +12,12 @@ namespace qoasis
 	class INameable
 	{
 	public:
-		INameable(QString name = "");
+		INameable();
+		INameable(QString name);
 		INameable(const INameable& obj);
 
-		virtual QLatin1String nameTag() = 0;
-		virtual QLatin1String defaultName();
+		virtual QString nameTag() = 0;
+		virtual QString defaultName();
 
 		QString getName() const;
 		void setName(QString name);
@@ -28,7 +29,7 @@ namespace qoasis
 		void writeName(QXmlStreamWriter* writer);
 
 	private:
-		static QMap<QLatin1String, int> items_type_counter_;
+		static QMap<QString, int> items_type_counter_;
 	};
 };
 #endif // INAMEABLE_H

@@ -15,36 +15,35 @@ namespace qoasis::office
 	public:
 		DocumentContent();
 		DocumentContent(QXmlStreamReader& reader);
-		DocumentContent(const DocumentContent& obj);
 
 		static QSharedPointer<Tag> builder(QXmlStreamReader& reader);
 
-		static const QLatin1String kTag;
+		static const QString kTag;
 
-		static const QLatin1String kNsOfficeAttribute;
-		static const QLatin1String kNsDcAttribute;
-		static const QLatin1String kNsDrawAttribute;
-		static const QLatin1String kNsFoAttribute;
-		static const QLatin1String kNsNumberAttribute;
-		static const QLatin1String kNsOfAttribute;
-		static const QLatin1String kNsStyleAttribute;
-		static const QLatin1String kNsSvgAttribute;
-		static const QLatin1String kNsTableAttribute;
-		static const QLatin1String kNsTextAttribute;
-		static const QLatin1String kNsXlinkAttribute;
+		static const QString kNsOfficeAttribute;
+		static const QString kNsDcAttribute;
+		static const QString kNsDrawAttribute;
+		static const QString kNsFoAttribute;
+		static const QString kNsNumberAttribute;
+		static const QString kNsOfAttribute;
+		static const QString kNsStyleAttribute;
+		static const QString kNsSvgAttribute;
+		static const QString kNsTableAttribute;
+		static const QString kNsTextAttribute;
+		static const QString kNsXlinkAttribute;
 
-		static const QLatin1String kVersionAttribute;
+		static const QString kVersionAttribute;
 
 		QString getVersion() const;
 		QSharedPointer<Body> getBody() const;
 
 		// implements Tag
-		QLatin1String instanceTag() override;
+		QString instanceTag() override;
 
 	protected:
 		// implements Tag
-		void readSubtag(QXmlStreamReader& reader) override;
 		void readAttribute(QStringRef name, QStringRef value) override;
+		void readSubtag(QXmlStreamReader& reader) override;
 		void writeAttributes(QXmlStreamWriter* writer) override;
 		void writeSubtags(QXmlStreamWriter* writer) override;
 

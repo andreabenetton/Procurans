@@ -28,6 +28,7 @@ set(lib_files
     inameable.cpp
     irepeatable.h
     irepeatable.cpp
+    repeatvector.h
     istyleable.h
     istyleable.cpp
     tag.h
@@ -44,8 +45,6 @@ set(lib_files
     table/tablecellcurrency.cpp
     table/tablecelldate.h
     table/tablecelldate.cpp
-    table/tablecellempty.h
-    table/tablecellempty.cpp
     table/tablecellfloat.h
     table/tablecellfloat.cpp
     table/tablecellstring.h
@@ -71,5 +70,6 @@ else (DEFINED QOASIS_STATIC)
 endif (DEFINED QOASIS_STATIC)
 
 add_library(qoasis ${lib_type} ${lib_files})
+set_target_properties(qoasis PROPERTIES DEBUG_POSTFIX "d")
 target_compile_features(qoasis PUBLIC cxx_std_17)
 target_link_libraries(qoasis quazip Qt5::Core)

@@ -5,56 +5,56 @@
 
 namespace qoasis::table
 {
-	const QLatin1String TablecellCurrency::kCellTypeValue = QLatin1String("currency");
-	const QLatin1String TablecellCurrency::kCellTypeAttribute = QLatin1String("office:value");
-	const QLatin1String TablecellCurrency::kCellCurrencyAttribute = QLatin1String("office:currency");
+	const QString TablecellCurrency::kCellTypeValue = QString("currency");
+	const QString TablecellCurrency::kCellTypeAttribute = QString("office:value");
+	const QString TablecellCurrency::kCellCurrencyAttribute = QString("office:currency");
 
-	TablecellCurrency::TablecellCurrency(Currency currency, double number, int repeat) : Tablecell(repeat)
+	TablecellCurrency::TablecellCurrency(Currency currency, double number, int repeat, QString style) : Tablecell(repeat, style)
 	{
 		value_amount_ = number;
 		value_currency_ = currency;
 	}
 
-	TablecellCurrency::TablecellCurrency(QXmlStreamReader& reader) : Tablecell(reader)
+	TablecellCurrency::TablecellCurrency(Currency currency, double number, QString style) : TablecellCurrency(currency, number, 1 , style) {}
+
+	TablecellCurrency::TablecellCurrency(QXmlStreamReader& reader) 
 	{
+		Q_ASSERT(reader.qualifiedName() == TablecellCurrency::kTag);
 		value_amount_ = 0.0;
 		value_currency_ = Currency(Currency::EUR);
-
 		Tag::read(reader);
 	}
 
-	TablecellCurrency::TablecellCurrency(const TablecellCurrency& obj): Tablecell(obj)
-	{
-		value_amount_ = obj.value_amount_;
-		value_currency_ = Currency(obj.value_currency_);
-	}
 
-
-	double TablecellCurrency::getAmount()
+	double TablecellCurrency::getAmount() const
 	{
 		return value_amount_;
 	}
 
-	Currency TablecellCurrency::getCurrency()
+	Currency TablecellCurrency::getCurrency() const
 	{
 		return value_currency_;
 	}
 
-	QLatin1String TablecellCurrency::instanceCellType()
+	QString TablecellCurrency::instanceCellType()
 	{
 		return kCellTypeValue;
+	}
+
+	// implements IRepeatable
+	bool TablecellCurrency::isEmpty()
+	{
+		return false;
 	}
 
 	// implements Tag
 	void TablecellCurrency::readAttribute(QStringRef name, QStringRef value)
 	{
-		if (name == kCellTypeAttribute)
-		{
+		if (name.toString() == kCellTypeAttribute) {
 			value_amount_ = value.toFloat();
 			return;
 		}
-		if (name == kCellCurrencyAttribute)
-		{
+		if (name.toString() == kCellCurrencyAttribute) {
 			value_currency_ = Currency(value.toString());
 			return;
 		}
@@ -63,9 +63,9 @@ namespace qoasis::table
 
 	void TablecellCurrency::writeAttributes(QXmlStreamWriter* writer)
 	{
-		Tablecell::writeAttributes(writer);
-		writer->writeAttribute(kCellTypeAttribute, QString::number(value_amount_, 'f'));
+		writer->writeAttribute(kCellTypeAttribute, QString::number(value_amount_, 'f', 2));
 		writer->writeAttribute(kCellCurrencyAttribute, value_currency_.getIso());
+		Tablecell::writeAttributes(writer);
 	}
 
 	void TablecellCurrency::writeSubtags(QXmlStreamWriter* writer)

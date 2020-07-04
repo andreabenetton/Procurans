@@ -1,4 +1,4 @@
-// Copyright 2019 - 2019, Andrea Benetton and the Procurans contributors
+// Copyright 2019 - 2020, Andrea Benetton and the Procurans contributors
 // SPDX-License-Identifier: AGPL-3.0-only
 
 #include <QtWidgets>
@@ -6,7 +6,6 @@
 #include <QTableView>
 #include <QDir>
 #include <QDebug>
-#include <QStringList>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -15,12 +14,9 @@
 #include "comboboxitemdelegate.h"
 #include "gridschemafield.h"
 
-#include "qoasis/tag.h"
 #include "qoasis/currency.h"
 #include "qoasis/table/tablecell.h"
-#include "qoasis/table/tablecellempty.h"
 #include "qoasis/table/tablecellstring.h"
-#include "qoasis/table/tablecellfloat.h"
 #include "qoasis/table/tablecelldate.h"
 #include "qoasis/table/tablecellcurrency.h"
 
@@ -139,7 +135,6 @@ void MainWindow::about()
            "<p>You should have received a copy of the license along with this "
            "program. If not, see https://www.gnu.org/licenses/.</p>"
            "<p>It use parts from ODS2 library Copyright © 2014 f35f22fan@gmail.com</p>"
-
            ));
 }
 
@@ -258,89 +253,78 @@ void MainWindow::execute()
 
 QString MainWindow::executeElencoFatture()
 {
-    QString filenametemplate = "Fatt. %1 %2%3.ods";
-    QString filename;
+	const QString filenametemplate = "Fatt. %1 %2%3.ods";
 
-    QDateEdit* qde = this->findChild<QDateEdit*>("dataemissioneEdit");
+	QDateEdit* qde = this->findChild<QDateEdit*>("dataemissioneEdit");
 
     QString entity = this->findChild<QLineEdit*>("entitaEdit")->text();
     QString numero = this->findChild<QLineEdit*>("numeroEdit")->text();
 
     QTableView *grid = ui->summaryTable;
 
-    QList<QList<QSharedPointer<Tablecell>>> rows;
-
-    int crow = 0;
-
-    for (crow = 0; crow < grid->model()->rowCount(); crow++) {
-
-        QList<QSharedPointer<Tablecell>> columns;
-
-        {
-            QSharedPointer<Tablecell> pt(new TablecellString(entity));
-            columns.append(pt);
-        }
-        {
-            QString riferimento = grid->model()->data(grid->model()->index(crow,0)).toString();
-            QSharedPointer<Tablecell> pt(new TablecellString(riferimento));
-            columns.append(pt);
-        }
-        {
-            QSharedPointer<Tablecell> pt(new TablecellString(numero));
-            columns.append(pt);
-        }
-        {
-            double imponibile = grid->model()->data(grid->model()->index(crow,1)).toFloat();
-            QSharedPointer<Tablecell> pt(new TablecellCurrency(Currency::EUR, imponibile));
-            columns.append(pt);
-
-            double imposta = grid->model()->data(grid->model()->index(crow,3)).toFloat();
-            QSharedPointer<Tablecell> pt1(new TablecellCurrency(Currency::EUR, imposta));
-            columns.append(pt1);
-
-            QSharedPointer<Tablecell> pt2(new TablecellCurrency(Currency::EUR, imponibile + imposta));
-            columns.append(pt2);
-        }
-
-        rows.append(columns);
-    }
-
-    filename = filenametemplate.arg(months[qde->date().month()-1], QString::number(qde->date().year()), "");
+    QString filename = filenametemplate.arg(months[qde->date().month() - 1], QString::number(qde->date().year()), "");
     QString pathandfilename = QDir(m_setting->getPath(Settings::Execute::elencofatture)).filePath(filename);
 
-    if(!QFileInfo::exists(pathandfilename)) {
-        qInfo(logInfo())  << "Elenco Fatture not exists: " << pathandfilename;
+    QString check_pathandfilename = pathandfilename;
+    check_pathandfilename.replace("/", "//");
+
+    if (!QFileInfo::exists(check_pathandfilename)) {
+        qInfo(logInfo()) << "Elenco Fatture not exists: " << check_pathandfilename;
         QString templatepathandfilename = QDir(m_setting->getPath(Settings::Execute::elencofatture)).filePath("Fatt. MODELLO.ods");
         QFile::copy(templatepathandfilename, pathandfilename);
     }
 
-    if(!QFileInfo(pathandfilename).isFile()){
-        qWarning(logWarning())  << "A folder exists with same name: " << pathandfilename;
+    if (!QFileInfo(check_pathandfilename).isFile()) {
+        qWarning(logWarning()) << "A folder exists with same name: " << check_pathandfilename;
         return "Errore cartella con lo stesso nome del file ods";
     }
 
-    qInfo(logInfo())  << "Adding to elenco fatture: " << pathandfilename;
-
+    //backupit
+    if (m_setting->isExecute(Settings::Execute::backupfiles)) {
+        QString backupfilename = filenametemplate.arg(months[qde->date().month() - 1], QString::number(qde->date().year()), QString::number(QDateTime::currentSecsSinceEpoch()));
+        QString backuppath = QDir(m_setting->getPath(Settings::Execute::elencofatture)).filePath("old");
+        QDir dir;
+        if (dir.mkpath(backuppath)) {
+            QFile::copy(pathandfilename, QDir(backuppath).filePath(backupfilename));
+        }
+    }
+	
     FileOds book(pathandfilename);
     book.load();
 
-    QSharedPointer<DocumentContent> content = book.getContent();
-    QSharedPointer<Table> table = content->getBody()->getSpreadsheet()->getTable(0);
+    const auto table = book.getContent()->getBody()->getSpreadsheet()->getTable(0);
 
-    //backupit
-    if(m_setting->isExecute(Settings::Execute::backupfiles)){
-        QString backupfilename = filenametemplate.arg(months[qde->date().month()-1], QString::number(qde->date().year()), QString::number(QDateTime::currentSecsSinceEpoch()));
-        QString backuppath = QDir(m_setting->getPath(Settings::Execute::elencofatture)).filePath("old");
-        QDir dir;
-        if (dir.mkpath(backuppath))
-            dir.rename(pathandfilename, QDir(backuppath).filePath(backupfilename));
+    table->removeEndingEmptyRows();
+
+    const auto lastrow = table->getRow(table->getLastNonEmptyRow());
+
+    int crow;
+
+    for (crow = 0; crow < grid->model()->rowCount(); crow++) {
+	    const QString riferimento = grid->model()->data(grid->model()->index(crow, 0)).toString();
+	    const double imponibile = grid->model()->data(grid->model()->index(crow, 1)).toFloat();
+	    const double imposta = grid->model()->data(grid->model()->index(crow, 3)).toFloat();
+
+        auto row = QSharedPointer<Tablerow>(new Tablerow);
+
+        row->appendCell(QSharedPointer<Tablecell>(new TablecellString(entity)));
+        row->appendCell(QSharedPointer<Tablecell>(new TablecellString(riferimento)));
+        row->appendCell(QSharedPointer<Tablecell>(new TablecellString(numero)));
+        row->appendCell(QSharedPointer<Tablecell>(new TablecellCurrency(Currency::EUR, imponibile)));
+        row->appendCell(QSharedPointer<Tablecell>(new TablecellCurrency(Currency::EUR, imposta)));
+        row->appendCell(QSharedPointer<Tablecell>(new TablecellCurrency(Currency::EUR, imponibile + imposta)));
+
+        row->restyleFromRow(lastrow);
+
+        table->appendRow(row);
     }
-    //book.AddRowToContent(&rows);
-    if(book.save(pathandfilename))
-        return "N. " + QString::number(crow) + " righe aggiunte al file fatture";
-    else
-        return "Errore nel salvataggio file fatture";
 
+    qInfo(logInfo()) << "Adding to elenco fatture: " << pathandfilename;
+
+    if (!book.save()) {
+        return "Errore nel salvataggio file fatture";
+    }
+    return "N. " + QString::number(crow) + " righe aggiunte al file fatture";
 }
 
 QString MainWindow::executeMastriniFornitori()
@@ -358,139 +342,89 @@ QString MainWindow::executeMastriniFornitori()
 
     QTableView *grid = ui->paymentsTable;
 
-    QList<QList<QSharedPointer<Tablecell>>> rows;
-
-    int crow = 0;
-
-    for (crow = 0; crow < grid->model()->rowCount(); crow++) {
-
-        QDate datascadenza = QDate::fromString(grid->model()->data(grid->model()->index(crow,1)).toString(),"dd/MM/yyyy");
-        if (!datascadenza.isValid())
-            datascadenza = dataemissione.addMonths(1);
-
-        double importo = grid->model()->data(grid->model()->index(crow,2)).toFloat();
-        QString cassa = grid->model()->data(grid->model()->index(crow,3)).toString();
-
-        QList<QSharedPointer<Tablecell>> columns;
-
-        if (crow == 0) {
-            QSharedPointer<Tablecell> pt(new TablecellDate(dataemissione));
-            columns.append(pt);
-        }
-        else {
-            QSharedPointer<Tablecell> pt(new TablecellEmpty);
-            columns.append(pt);
-        }
-
-        {
-            QSharedPointer<Tablecell> pt(new TablecellEmpty);
-            columns.append(pt);
-        }
-
-        if (crow == 0) {
-            QSharedPointer<Tablecell> pt(new TablecellString(numero));
-            columns.append(pt);
-        }
-        else {
-            QSharedPointer<Tablecell> pt(new TablecellEmpty);
-            columns.append(pt);
-        }
-
-        {
-            QSharedPointer<Tablecell> pt(new TablecellEmpty);
-            columns.append(pt);
-        }
-
-        if (crow == 0) {
-            QSharedPointer<Tablecell> pt(new TablecellCurrency(Currency::EUR, totale));
-            columns.append(pt);
-        }
-        else {
-            QSharedPointer<Tablecell> pt(new TablecellEmpty);
-            columns.append(pt);
-        }
-
-        {
-            QSharedPointer<Tablecell> pt(new TablecellEmpty);
-            columns.append(pt);
-        }
-
-        QString modalita = grid->model()->data(grid->model()->index(crow, 0)).toString();
-
-        if ((modalita == "") ||
-            (modalita == paymentMethodType["MP01"]) ||
-            (modalita == paymentMethodType["MP02"]) ||
-            (modalita == paymentMethodType["MP03"]) ||
-            (modalita == paymentMethodType["MP08"])) {
-
-            QSharedPointer<Tablecell> pt(new TablecellString("RD"));
-            columns.append(pt);
-        }
-        else {
-            QSharedPointer<Tablecell> pt(new TablecellDate(datascadenza));
-            columns.append(pt);
-        }
-
-        {
-            QSharedPointer<Tablecell> pt(new TablecellEmpty);
-            columns.append(pt);
-        }
-
-        {
-            QSharedPointer<Tablecell> pt(new TablecellCurrency(Currency::EUR, importo));
-            columns.append(pt);
-        }
-
-        {
-            QSharedPointer<Tablecell> pt(new TablecellEmpty);
-            columns.append(pt);
-        }
-
-        {
-            QSharedPointer<Tablecell> pt(new TablecellString(""));
-            columns.append(pt);
-        }
-
-        {
-            QSharedPointer<Tablecell> pt(new TablecellString(cassa));
-            columns.append(pt);
-        }
-
-        rows.append(columns);
-    }
-
     filename = filenametemplate.arg(entity.replace(".", ""), "");
     QString pathandfilename = QDir(m_setting->getPath(Settings::Execute::mastrinifornitori)).filePath(filename);
 
-    if(!QFileInfo::exists(pathandfilename)) {
-        qInfo(logInfo())  << "Mastrino Fornitore not exists: " << pathandfilename;
+    QString check_pathandfilename = pathandfilename;
+    check_pathandfilename.replace("/", "//");
+
+    if (!QFileInfo::exists(check_pathandfilename)) {
+        qInfo(logInfo()) << "Mastrino Fornitore not exists: " << check_pathandfilename;
         QString templatepathandfilename = QDir(m_setting->getPath(Settings::Execute::mastrinifornitori)).filePath("Mastrino MODELLO.ods");
         QFile::copy(templatepathandfilename, pathandfilename);
     }
 
-    if(!QFileInfo(pathandfilename).isFile()){
-        qWarning(logWarning())  << "A folder exists with same name: " << pathandfilename;
+    if (!QFileInfo(check_pathandfilename).isFile()) {
+        qWarning(logWarning()) << "A folder exists with same name: " << check_pathandfilename;
         return "Errore cartella con lo stesso nome del file ods";
     }
 
-    qInfo(logInfo())  << "Adding to mastrino fornitore: " << pathandfilename;
+    //backupit
+    QString backupfilename = filenametemplate.arg(entity.replace(".", ""), QString::number(QDateTime::currentSecsSinceEpoch()));
+    if (m_setting->isExecute(Settings::Execute::backupfiles)) {
+        QString backuppath = QDir(m_setting->getPath(Settings::Execute::mastrinifornitori)).filePath("old");
+        QDir dir;
+        if (dir.mkpath(backuppath)) {
+            QFile::copy(pathandfilename, QDir(backuppath).filePath(backupfilename));
+        }
+    }
 
     FileOds book(pathandfilename);
     book.load();
 
-    //backupit
-    QString backupfilename = filenametemplate.arg(entity.replace(".", ""), QString::number(QDateTime::currentSecsSinceEpoch()));
-    if(m_setting->isExecute(Settings::Execute::backupfiles)){
-        QString backuppath = QDir(m_setting->getPath(Settings::Execute::mastrinifornitori)).filePath("old");
-        QDir dir;
-        if (dir.mkpath(backuppath))
-            dir.rename(pathandfilename, QDir(backuppath).filePath(backupfilename));
+    const auto table = book.getContent()->getBody()->getSpreadsheet()->getTable(0);
+
+    table->removeEndingEmptyRows();
+
+    const auto lastrow = table->getRow(table->getLastNonEmptyRow());
+	
+    int crow = 0;
+
+    for (crow = 0; crow < grid->model()->rowCount(); crow++) {
+	    auto modalita = grid->model()->data(grid->model()->index(crow, 0)).toString();
+        QDate datascadenza = QDate::fromString(grid->model()->data(grid->model()->index(crow,1)).toString(),"dd/MM/yyyy");
+        datascadenza = (datascadenza.isValid() ? datascadenza : dataemissione.addMonths(1));
+	    const double importo = grid->model()->data(grid->model()->index(crow,2)).toFloat();
+        const QString cassa = grid->model()->data(grid->model()->index(crow,3)).toString();
+
+        auto row = QSharedPointer<Tablerow>(new Tablerow);
+
+        row->appendCell(QSharedPointer<Tablecell>(crow == 0 ?
+            QSharedPointer<Tablecell>(new TablecellDate(dataemissione)) :
+            QSharedPointer<Tablecell>(new Tablecell)));
+        row->appendCell(QSharedPointer<Tablecell>(new Tablecell));
+        row->appendCell(crow == 0 ?
+            QSharedPointer<Tablecell>(new TablecellString(numero)) :
+            QSharedPointer<Tablecell>(new Tablecell));
+        row->appendCell(QSharedPointer<Tablecell>(new Tablecell));
+        row->appendCell(crow == 0 ?
+            QSharedPointer<Tablecell>(new TablecellCurrency(Currency::EUR, totale)) :
+            QSharedPointer<Tablecell>(new Tablecell));
+        row->appendCell(QSharedPointer<Tablecell>(new Tablecell));
+        row->appendCell(modalita == "" ||
+            modalita == paymentMethodType["MP01"] ||
+            modalita == paymentMethodType["MP02"] ||
+            modalita == paymentMethodType["MP03"] ||
+            modalita == paymentMethodType["MP08"] ?
+            QSharedPointer<Tablecell>(new TablecellString("RD")) :
+            QSharedPointer<Tablecell>(new TablecellDate(datascadenza)));
+        row->appendCell(QSharedPointer<Tablecell>(new Tablecell));
+        row->appendCell(QSharedPointer<Tablecell>(new TablecellCurrency(Currency::EUR, importo)));
+        row->appendCell(QSharedPointer<Tablecell>(new Tablecell));
+        row->appendCell(QSharedPointer<Tablecell>(new TablecellString("")));
+        row->appendCell(QSharedPointer<Tablecell>(new TablecellString(cassa)));
+
+        row->restyleFromRow(lastrow);
+
+        table->appendRow(row);
     }
-    //book.AddRowToContent(&rows);
-    if (book.save(pathandfilename))
-        return "N. " + QString::number(crow) + " righe aggiunte al file mastrino fornitore";
-    else
+
+    qInfo(logInfo())  << "Adding to mastrino fornitore: " << pathandfilename;
+
+    if (!book.save())
         return "Errore nel salvataggio file mastrino fornitore";
+	
+    return "N. " + QString::number(crow) + " righe aggiunte al file mastrino fornitore";
 }
 
 QString MainWindow::executePrimaNota()
@@ -508,7 +442,7 @@ QString MainWindow::executePrimaNota()
 
     QTableView *grid = ui->paymentsTable;
 
-    QMap<QString, QList<QList<QSharedPointer<Tablecell>>>*> filelist;
+    QMap<QString, QList<QSharedPointer<Tablerow>>*> filelist;
 
     int numberofrows = grid->model()->rowCount();
 
@@ -517,64 +451,51 @@ QString MainWindow::executePrimaNota()
     for (crow = 0; crow < numberofrows; crow++) {
 
         QString modalita = grid->model()->data(grid->model()->index(crow, 0)).toString();
+        QString cassa = grid->model()->data(grid->model()->index(crow, 3)).toString();
 
-        if ((modalita == paymentMethodType["MP12"]) ||
+        if (!((modalita == paymentMethodType["MP12"]) ||
             (modalita == paymentMethodType["MP09"]) ||
             (modalita == paymentMethodType["MP10"]) ||
-            (modalita == paymentMethodType["MP11"]) ){
-
-            execrow++;
-
-            QDate datascadenza = QDate::fromString(grid->model()->data(grid->model()->index(crow,1)).toString(),"dd/MM/yyyy");
-            if ((!datascadenza.isValid())||datascadenza.isNull())
-                datascadenza = dataemissione;
-
-            QString cassa = grid->model()->data(grid->model()->index(crow,3)).toString();
-            double importo = grid->model()->data(grid->model()->index(crow,2)).toFloat();
-
-
-            QString filename = filenametemplate.arg(cassa, months[datascadenza.month()-1], QString::number(datascadenza.year()), "");
-
-            QList<QList<QSharedPointer<Tablecell>>>* rows;
-            if (!filelist.contains(filename)) {
-                rows = new QList<QList<QSharedPointer<Tablecell>>>();
-                filelist.insert(filename,  rows);
-            }
-            else {
-                rows = filelist.value(filename);
-            }
-
-            QString rowcomment = rowcommenttemplate.arg(entity, numero , dataemissione.toString("dd/MM/yyyy"),totale, QString::number(crow+1), QString::number(numberofrows));
-
-            QList<QSharedPointer<Tablecell>> columns;
-
-            {
-                QSharedPointer<Tablecell> pt(new TablecellDate(datascadenza));
-                columns.append(pt);
-            }
-
-            {
-                QSharedPointer<Tablecell> pt(new TablecellEmpty);
-                columns.append(pt);
-            }
-
-            {
-                QSharedPointer<Tablecell> pt(new TablecellString(rowcomment));
-                columns.append(pt);
-            }
-
-            {
-                QSharedPointer<Tablecell> pt(new TablecellEmpty(4));
-                columns.append(pt);
-            }
-
-            {
-                QSharedPointer<Tablecell> pt(new TablecellCurrency(Currency::EUR, importo));
-                columns.append(pt);
-            }
-
-            rows->append(columns);
+            (modalita == paymentMethodType["MP11"]))) {
+            qInfo(logInfo()) << "Payment " << crow << ": prima nota skipped, payment: " << modalita;
+            break;
         }
+
+        if (cassa == "") {
+            qInfo(logInfo()) << "Payment " << crow << ": prima nota skipped, bank not selected";
+            break;
+        }
+
+        execrow++;
+
+        QDate datascadenza = QDate::fromString(grid->model()->data(grid->model()->index(crow,1)).toString(),"dd/MM/yyyy");
+        if ((!datascadenza.isValid())||datascadenza.isNull())
+            datascadenza = dataemissione;
+
+            
+        double importo = grid->model()->data(grid->model()->index(crow,2)).toFloat();
+
+        QString filename = filenametemplate.arg(cassa, months[datascadenza.month()-1], QString::number(datascadenza.year()), "");
+
+        QList<QSharedPointer<Tablerow>>* rows;
+        if (!filelist.contains(filename)) {
+            rows = new QList<QSharedPointer<Tablerow>>();
+            filelist.insert(filename,  rows);
+        }
+        else {
+            rows = filelist.value(filename);
+        }
+
+        QString rowcomment = rowcommenttemplate.arg(entity, numero , dataemissione.toString("dd/MM/yyyy"),totale, QString::number(crow+1), QString::number(numberofrows));
+
+        auto row = QSharedPointer<Tablerow>(new Tablerow);
+        row->appendCell(QSharedPointer<Tablecell>(new TablecellDate(datascadenza)));
+        row->appendCell(QSharedPointer<Tablecell>(new Tablecell));
+        row->appendCell(QSharedPointer<Tablecell>(new TablecellString(rowcomment)));
+        row->appendCell(QSharedPointer<Tablecell>(new Tablecell(4)));
+        row->appendCell(QSharedPointer<Tablecell>(new TablecellCurrency(Currency::EUR, importo)));
+
+        rows->append(row);
     }
 
     bool ok = true;
@@ -589,35 +510,48 @@ QString MainWindow::executePrimaNota()
         }
 
         QString pathandfilename = QDir(yearpath).filePath(filename);
+        QString check_pathandfilename = pathandfilename;
+        check_pathandfilename.replace("/", "//");
 
-        if(!QFileInfo::exists(pathandfilename)) {
-            qInfo(logInfo())  << "Prima Nota not exists: " << pathandfilename;
+        if(!QFileInfo::exists(check_pathandfilename)) {
+            qInfo(logInfo())  << "Prima Nota not exists: " << check_pathandfilename;
             QString templatepathandfilename = QDir(m_setting->getPath(Settings::Execute::primanota)).filePath("PrimaNota MODELLO.ods");
             QFile::copy(templatepathandfilename, pathandfilename);
         }
 
-        if(!QFileInfo(pathandfilename).isFile()){
-            qWarning(logWarning())  << "A folder exists with same name: " << pathandfilename;
+        if(!QFileInfo(check_pathandfilename).isFile()){
+            qWarning(logWarning())  << "A folder exists with same name: " << check_pathandfilename;
             return "Errore cartella con lo stesso nome del file ods";
         }
 
-        qInfo(logInfo())  << "Adding to prima nota: " << pathandfilename;
+        //backupit
+        if (m_setting->isExecute(Settings::Execute::backupfiles)) {
+            QString backupfilename = filenametemplate.arg(QString::number(QDateTime::currentSecsSinceEpoch()), "", "");
+            QString backuppath = QDir(m_setting->getPath(Settings::Execute::primanota)).filePath("old");
+            QDir dir;
+            if (dir.mkpath(backuppath))
+                QFile::copy(pathandfilename, QDir(backuppath).filePath(backupfilename));
+        }
 
         FileOds book(pathandfilename);
         book.load();
 
-        //backupit
-        if(m_setting->isExecute(Settings::Execute::backupfiles)){
+        const auto table = book.getContent()->getBody()->getSpreadsheet()->getTable(0);
 
-            QString backupfilename = filenametemplate.arg(QString::number(QDateTime::currentSecsSinceEpoch()),"","");
-            QString backuppath = QDir(m_setting->getPath(Settings::Execute::primanota)).filePath("old");
-            QDir dir;
-            if (dir.mkpath(backuppath))
-                dir.rename(pathandfilename, QDir(backuppath).filePath(backupfilename));
+        table->removeEndingEmptyRows();
+
+        const auto lastrow = table->getRow(table->getLastNonEmptyRow());
+
+        auto p = filelist.value(filename);
+        for (int i = 0; i < p->size(); i++) {
+            auto row = p->at(i);
+            row->restyleFromRow(lastrow);
+            table->appendRow(row);
         }
 
-        //book.AddRowToContent(filelist.value(filename));
-        ok = (ok && book.save(pathandfilename));
+        qInfo(logInfo()) << "Adding to prima nota: " << pathandfilename;
+
+        ok = (ok && book.save());
     }
 
     if (ok)
@@ -638,7 +572,7 @@ QString MainWindow::executeScadenziario()
 
     QTableView *grid = ui->paymentsTable;
 
-    QMap<QString, QList<QList<QSharedPointer<Tablecell>>>*> filelist;
+    QMap<QString, QList<QSharedPointer<Tablerow>>*> filelist;
 
     int numberofrows = grid->model()->rowCount();
 
@@ -660,90 +594,55 @@ QString MainWindow::executeScadenziario()
         QString cassa = grid->model()->data(grid->model()->index(crow,3)).toString();
         double importo = grid->model()->data(grid->model()->index(crow,2)).toFloat();
 
-        if((modalita == paymentMethodType["MP12"])||(modalita == paymentMethodType["MP05"])) {
-
-            execrow++;
-
-            QString filename = filenametemplate.arg(months[datascadenza.month()-1], QString::number(datascadenza.year()));
-            QList<QList<QSharedPointer<Tablecell>>>* rows;
-            if (!filelist.contains(filename)) {
-                rows = new QList<QList<QSharedPointer<Tablecell>>>();
-                filelist.insert(filename,  rows);
-            }
-            else {
-                rows = filelist.value(filename);
-            }
-
-
-            QList<QSharedPointer<Tablecell>> columns;
-
-            {
-                QSharedPointer<Tablecell> pt(new TablecellString(numero));
-                columns.append(pt);
-            }
-
-            {
-                QSharedPointer<Tablecell> pt(new TablecellString(entity));
-                columns.append(pt);
-            }
-
-            {
-                QSharedPointer<Tablecell> pt(new TablecellEmpty(2));
-                columns.append(pt);
-            }
-
-            {
-                QSharedPointer<Tablecell> pt(new TablecellDate(datascadenza));
-                columns.append(pt);
-            }
-
-            {
-                QSharedPointer<Tablecell> pt(new TablecellEmpty());
-                columns.append(pt);
-            }
-
-            {
-                Tablecell* p;
-                if(cassa==bankAccount["IT33U0843051030000000180277"])
-                    p = new TablecellCurrency(Currency::EUR, importo);
-                else
-                    p = new TablecellEmpty();
-                QSharedPointer<Tablecell> pt(p);
-                columns.append(pt);
-            }
-
-            {
-                QSharedPointer<Tablecell> pt(new TablecellEmpty());
-                columns.append(pt);
-            }
-
-            {
-                Tablecell* p;
-                if(cassa==bankAccount["IT65Z0306951030615272528476"])
-                    p = new TablecellCurrency(Currency::EUR, importo);
-                else
-                    p = new TablecellEmpty();
-                QSharedPointer<Tablecell> pt(p);
-                columns.append(pt);
-            }
-
-            {
-                QSharedPointer<Tablecell> pt(new TablecellEmpty());
-                columns.append(pt);
-            }
-
-            {
-                Tablecell* p;
-                if(cassa==bankAccount["IT64U0503451861000000001728"])
-                    p = new TablecellCurrency(Currency::EUR, importo);
-                else
-                    p = new TablecellEmpty();
-                QSharedPointer<Tablecell> pt(p);
-                columns.append(pt);
-            }
-
-            rows->append(columns);
+        if (!((modalita == paymentMethodType["MP12"]) ||
+            (modalita == paymentMethodType["MP15"]))) {
+            qInfo(logInfo()) << "Payment " << crow << ": scadenziario skipped, payment: " << modalita;
+            break;
         }
+
+        execrow++;
+
+        QString filename = filenametemplate.arg(months[datascadenza.month()-1], QString::number(datascadenza.year()));
+        QList<QSharedPointer<Tablerow>>* rows;
+        if (!filelist.contains(filename)) {
+            rows = new QList<QSharedPointer<Tablerow>>();
+            filelist.insert(filename, rows);
+        }
+        else {
+            rows = filelist.value(filename);
+        }
+
+        auto row = QSharedPointer<Tablerow>(new Tablerow);
+        row->appendCell(QSharedPointer<Tablecell>(new TablecellString(numero)));
+        row->appendCell(QSharedPointer<Tablecell>(new TablecellString(entity)));
+        row->appendCell(QSharedPointer<Tablecell>(new Tablecell(2)));
+        row->appendCell(QSharedPointer<Tablecell>(new TablecellDate(datascadenza)));
+        row->appendCell(QSharedPointer<Tablecell>(new Tablecell()));
+
+        Tablecell* p1;
+        if (cassa == bankAccount["IT33U0843051030000000180277"])
+            p1 = new TablecellCurrency(Currency::EUR, importo);
+        else
+            p1 = new Tablecell();
+        row->appendCell(QSharedPointer<Tablecell>(p1));
+        row->appendCell(QSharedPointer<Tablecell>(new Tablecell()));
+
+        Tablecell* p2;
+        if (cassa == bankAccount["IT65Z0306951030615272528476"])
+            p2 = new TablecellCurrency(Currency::EUR, importo);
+        else
+            p2 = new Tablecell();
+        row->appendCell(QSharedPointer<Tablecell>(p2));
+        row->appendCell(QSharedPointer<Tablecell>(new Tablecell()));
+
+        Tablecell* p3;
+        if (cassa == bankAccount["IT64U0503451861000000001728"])
+            p3 = new TablecellCurrency(Currency::EUR, importo);
+        else
+            p3 = new Tablecell();
+        row->appendCell(QSharedPointer<Tablecell>(p3));
+        rows->append(row);
+
     }
 
     bool ok = true;
@@ -770,22 +669,34 @@ QString MainWindow::executeScadenziario()
             return "Errore cartella con lo stesso nome del file ods";
         }
 
-        qInfo(logInfo())  << "Adding to scadenziario " << pathandfilename;
+        //backupit
+        if (m_setting->isExecute(Settings::Execute::backupfiles)) {
+            QString backupfilename = filenametemplate.arg(QString::number(QDateTime::currentSecsSinceEpoch()), "");
+            QString backuppath = QDir(m_setting->getPath(Settings::Execute::scadenziario)).filePath("old");
+            QDir dir;
+            if (dir.mkpath(backuppath))
+                QFile::copy(pathandfilename, QDir(backuppath).filePath(backupfilename));
+        }
 
         FileOds book(pathandfilename);
         book.load();
 
-        //backupit
-        if(m_setting->isExecute(Settings::Execute::backupfiles)){
-            QString backupfilename = filenametemplate.arg(QString::number(QDateTime::currentSecsSinceEpoch()),"");
-            QString backuppath = QDir(m_setting->getPath(Settings::Execute::scadenziario)).filePath("old");
-            QDir dir;
-            if (dir.mkpath(backuppath))
-                dir.rename(pathandfilename, QDir(backuppath).filePath(backupfilename));
+        const auto table = book.getContent()->getBody()->getSpreadsheet()->getTable(0);
+
+        table->removeEndingEmptyRows();
+
+        const auto lastrow = table->getRow(table->getLastNonEmptyRow());
+
+        auto p = filelist.value(filename);
+        for (int i = 0; i < p->size(); i++) {
+            auto row = p->at(i);
+            row->restyleFromRow(lastrow);
+            table->appendRow(row);
         }
 
-        //book.AddRowToContent(filelist.value(filename));
-        ok = (ok && book.save(pathandfilename));
+        qInfo(logInfo()) << "Adding to scadenziario " << pathandfilename;
+
+        ok = (ok && book.save());
     }
 
     if (ok)
@@ -1274,7 +1185,16 @@ void MainWindow::addSummaryToUI(QList< QMap<QString,QString> >& summaryData, QLi
 {
     QTableView *grid = ui->summaryTable;
 
-    grid->setModel(createGridModel(summaryData, summarySchema));
+    QStandardItemModel* itemmodel = createGridModel(summaryData, summarySchema);
+    itemmodel->setObjectName("summaryModel");
+    grid->setModel(itemmodel);
+
+    bool ok = connect(
+        itemmodel, &QStandardItemModel::dataChanged,
+        this, &MainWindow::onSummaryChanged
+    );
+
+    Q_ASSERT(ok);
 
     //QStringList z(naturaType.values());
     //z.sort(Qt::CaseInsensitive);
@@ -1360,19 +1280,48 @@ void MainWindow::UpdateSummaryUI(const QModelIndex& topLeft, const QModelIndex& 
     }
 }
 
+void MainWindow::LogOnModelChanged(QAbstractItemModel* model, const QModelIndex& topLeft, const QModelIndex& bottomRight)
+{
+    for (int row = topLeft.row(); row <= bottomRight.row(); row++) {
+        for (int column = topLeft.column(); column <= bottomRight.column(); column++) {
+            qInfo() << model->objectName() << " item at row " << row << " col " << column << " has changed to:" << model->data(model->index(row, column)).toString();
+        }
+    }
+}
+
+void MainWindow::onDetailsChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight)
+{
+    QAbstractItemModel* model = ui->detailsTable->model();
+    LogOnModelChanged(model, topLeft, bottomRight);
+    UpdateSummaryUI(topLeft, bottomRight);
+}
+
+void MainWindow::onPaymentsChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight)
+{
+    QAbstractItemModel* model = ui->paymentsTable->model();
+    LogOnModelChanged(model, topLeft, bottomRight);
+}
+
+void MainWindow::onSummaryChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight)
+{
+    QAbstractItemModel*  model = ui->summaryTable->model();
+    LogOnModelChanged(model, topLeft, bottomRight);
+}
+
 void MainWindow::addDetailsToUI(QList< QMap<QString,QString> >& detailsData, QList<GridSchemaField*> detailsSchema)
 {
     QTableView *grid = ui->detailsTable;
 
     QStandardItemModel* itemmodel = createGridModel(detailsData, detailsSchema);
+    itemmodel->setObjectName("detailsModel");
     grid->setModel(itemmodel);
 
     bool ok = connect(
         itemmodel, &QStandardItemModel::dataChanged,
-        this, &MainWindow::UpdateSummaryUI
+        this, &MainWindow::onDetailsChanged
     );
 
-    Q_ASSERT( ok );
+    Q_ASSERT(ok);
 
     grid->resizeColumnsToContents();
     //grid->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -1384,7 +1333,16 @@ void MainWindow::addPaymentsToUI(QList< QMap<QString,QString> >& paymentData, QL
 {
     QTableView *grid = ui->paymentsTable;
 
-    grid->setModel(createGridModel(paymentData, paymentSchema));
+    QStandardItemModel* itemmodel = createGridModel(paymentData, paymentSchema);
+    itemmodel->setObjectName("paymentsModel");
+    grid->setModel(itemmodel);
+
+    bool ok = connect(
+        itemmodel, &QStandardItemModel::dataChanged,
+        this, &MainWindow::onPaymentsChanged
+    );
+
+    Q_ASSERT(ok);
 
     QStringList z(paymentMethodType.values());
     z.sort(Qt::CaseInsensitive);

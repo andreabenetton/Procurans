@@ -15,15 +15,14 @@ namespace qoasis::office
 	public:
 		Body();
 		Body(QXmlStreamReader& reader);
-		Body(const Body& obj);
 
 		static QSharedPointer<Tag> builder(QXmlStreamReader& reader);
-		static const QLatin1String kTag;
+		static const QString kTag;
 
 		QSharedPointer<Spreadsheet> getSpreadsheet();
 
 		// implements Tag
-		QLatin1String instanceTag() override;
+		QString instanceTag() override;
 
 	private:
 		QSharedPointer<Spreadsheet> spreadsheet_;

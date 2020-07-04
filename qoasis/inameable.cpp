@@ -1,15 +1,17 @@
 // Copyright 2019 - 2020, the QOasis contributors
 // SPDX-License-Identifier: AGPL-3.0-only
 
+#include <QDebug>
+
 #include "inameable.h"
 
 namespace qoasis
 {
-	QMap<QLatin1String, int> INameable::items_type_counter_;
+	QMap<QString, int> INameable::items_type_counter_;
 
-	INameable::INameable(QString name)
+	INameable::INameable()
 	{
-		const QLatin1String default_name = defaultName();
+		const QString default_name = defaultName();
 
 		int count = 1;
 		if (!items_type_counter_.contains(default_name))
@@ -19,17 +21,15 @@ namespace qoasis
 		else
 		{
 			count = items_type_counter_.value(default_name);
-		}
-
-		if (name != "")
-		{
-			name_ = name;
-		}
-		else
-		{
-			name_ = default_name + QString::number(count);
 			items_type_counter_.insert(default_name, ++count);
 		}
+		name_ = default_name + QString::number(count);
+
+	}
+
+	INameable::INameable(QString name)
+	{
+		name_ = name;
 	}
 
 	INameable::INameable(const INameable& obj)
@@ -37,9 +37,9 @@ namespace qoasis
 		name_ = "Copy of " + obj.name_;
 	}
 
-	QLatin1String INameable::defaultName()
+	QString INameable::defaultName()
 	{
-		return nameTag();
+		return QString("Sheet");
 	}
 
 	QString INameable::getName() const
@@ -55,6 +55,7 @@ namespace qoasis
 	void INameable::readName(QStringRef value)
 	{
 		name_ = value.toString();
+		qDebug() << "Name attribute - name:" << nameTag() << " value:" << value.toString();
 	}
 
 	void INameable::writeName(QXmlStreamWriter* writer)

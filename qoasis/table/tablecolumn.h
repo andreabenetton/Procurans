@@ -15,23 +15,23 @@ namespace qoasis::table
 	public:
 		Tablecolumn(int repeat = 1, QString style = "", QString default_cell_style = "");
 		Tablecolumn(QXmlStreamReader& reader);
-		Tablecolumn(const Tablecolumn& obj);
 
 		static QSharedPointer<Tablecolumn> builder(QXmlStreamReader& reader);
+		static QSharedPointer<Tablecolumn> placeholder(int repeat = 1);
 
-		static const QLatin1String kTag;
-		static const QLatin1String kRepeatAttribute;
-		static const QLatin1String kDefaultCellStyleAttribute;
+		static const QString kTag;
+		static const QString kRepeatAttribute;
+		static const QString kDefaultCellStyleAttribute;
 
-		int getLastDefined() const;
 		QString getDefaultCellStyle() const;
 		void setDefaultCellStyle(QString default_cell_style);
 
 		// implements IRepeatable
-		QLatin1String repeatTag() override;
+		QString repeatTag() override;
+		bool isEmpty() override;
 
 		// implements Tag
-		QLatin1String instanceTag() override;
+		QString instanceTag() override;
 
 	protected:
 		// implements Tag
@@ -39,7 +39,6 @@ namespace qoasis::table
 		void readAttribute(QStringRef name, QStringRef value) override;
 
 	private:
-		int last_defined_{};
 		QString default_cell_style_;
 	};
 }

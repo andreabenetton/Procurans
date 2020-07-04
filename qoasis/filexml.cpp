@@ -38,16 +38,26 @@ namespace qoasis
 
 		QXmlStreamReader reader(&file);
 
-		do
-		{
+		bool rootTokenFound = false;
+
+		while (!reader.atEnd()) {
 			reader.readNext();
-			if (isStartElementNamed(reader, getRootTag()))
-			{
-				read(reader);
+			if (reader.tokenType() == QXmlStreamReader::StartElement) {
+				if (reader.qualifiedName() == getRootTag()) {
+					rootTokenFound = true;
+					read(reader);
+				}
 			}
 		}
-		while (!reader.atEnd() && !reader.hasError());
+
 		file.close();
+
+		if (!rootTokenFound)
+		{
+			qCritical() << "Error: the XML file "
+				<< qPrintable(instanceFileName()) << " doesn't comply XML expected schema - root missed";
+			return false;
+		}
 
 		if (reader.hasError())
 		{
@@ -102,16 +112,16 @@ namespace qoasis
 
 	bool FileXml::save()
 	{
-		return FileXml::save(full_path_);
+		return FileXml::save(full_path_, false);
 	}
 
 	bool FileXml::isStartElementNamed(QXmlStreamReader& xml, const QString& token_name)
 	{
-		return ((xml.tokenType() == QXmlStreamReader::StartElement) && (xml.name() == token_name));
+		return ((xml.tokenType() == QXmlStreamReader::StartElement) && (xml.qualifiedName() == token_name));
 	}
 
 	bool FileXml::isNotEndElementNamed(QXmlStreamReader& xml, const QString& token_name)
 	{
-		return !((xml.tokenType() == QXmlStreamReader::EndElement) && (xml.name() == token_name));
+		return !((xml.tokenType() == QXmlStreamReader::EndElement) && (xml.qualifiedName() == token_name));
 	}
 }

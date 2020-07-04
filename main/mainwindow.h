@@ -5,6 +5,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QAbstractItemModel>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -84,6 +85,12 @@ private:
     QList<GridSchemaField*> createDetailsGridSchema();
     QList<GridSchemaField*> createPaymentsGridSchema();
     QList<GridSchemaField*> createSummaryGridSchema();
+
+    void onDetailsChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight);
+    void onPaymentsChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight);
+    void onSummaryChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight);
+
+    void LogOnModelChanged(QAbstractItemModel* detailsModel, const QModelIndex& topLeft, const QModelIndex& bottomRight);
 
     void addHeaderToUI(QMap<QString,QString>& headerData);
     void addDetailsToUI(QList< QMap<QString,QString> >& detailsData, QList<GridSchemaField*> detailsSchema);
