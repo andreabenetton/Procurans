@@ -88,6 +88,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     createActions();
+    setupMenuBar();
     createStatusBar();
 
     m_setting->load();
@@ -265,17 +266,17 @@ QString MainWindow::executeElencoFatture()
     QString filename = filenametemplate.arg(months[qde->date().month() - 1], QString::number(qde->date().year()), "");
     QString pathandfilename = QDir(m_setting->getPath(Settings::Execute::elencofatture)).filePath(filename);
 
-    QString check_pathandfilename = pathandfilename;
-    check_pathandfilename.replace("/", "//");
+    //QString check_pathandfilename = pathandfilename;
+    //check_pathandfilename.replace("/", "//");
 
-    if (!QFileInfo::exists(check_pathandfilename)) {
-        qInfo(logInfo()) << "Elenco Fatture not exists: " << check_pathandfilename;
+    if (!QFileInfo::exists(pathandfilename)) {
+        qInfo(logInfo()) << "Elenco Fatture not exists: " << pathandfilename;
         QString templatepathandfilename = QDir(m_setting->getPath(Settings::Execute::elencofatture)).filePath("Fatt. MODELLO.ods");
         QFile::copy(templatepathandfilename, pathandfilename);
     }
 
-    if (!QFileInfo(check_pathandfilename).isFile()) {
-        qWarning(logWarning()) << "A folder exists with same name: " << check_pathandfilename;
+    if (!QFileInfo(pathandfilename).isFile()) {
+        qWarning(logWarning()) << "A folder exists with same name: " << pathandfilename;
         return "Errore cartella con lo stesso nome del file ods";
     }
 
@@ -345,17 +346,17 @@ QString MainWindow::executeMastriniFornitori()
     filename = filenametemplate.arg(entity.replace(".", ""), "");
     QString pathandfilename = QDir(m_setting->getPath(Settings::Execute::mastrinifornitori)).filePath(filename);
 
-    QString check_pathandfilename = pathandfilename;
-    check_pathandfilename.replace("/", "//");
+    //QString check_pathandfilename = pathandfilename;
+    //check_pathandfilename.replace("/", "//");
 
-    if (!QFileInfo::exists(check_pathandfilename)) {
-        qInfo(logInfo()) << "Mastrino Fornitore not exists: " << check_pathandfilename;
+    if (!QFileInfo::exists(pathandfilename)) {
+        qInfo(logInfo()) << "Mastrino Fornitore not exists: " << pathandfilename;
         QString templatepathandfilename = QDir(m_setting->getPath(Settings::Execute::mastrinifornitori)).filePath("Mastrino MODELLO.ods");
         QFile::copy(templatepathandfilename, pathandfilename);
     }
 
-    if (!QFileInfo(check_pathandfilename).isFile()) {
-        qWarning(logWarning()) << "A folder exists with same name: " << check_pathandfilename;
+    if (!QFileInfo(pathandfilename).isFile()) {
+        qWarning(logWarning()) << "A folder exists with same name: " << pathandfilename;
         return "Errore cartella con lo stesso nome del file ods";
     }
 
@@ -453,16 +454,8 @@ QString MainWindow::executePrimaNota()
         QString modalita = grid->model()->data(grid->model()->index(crow, 0)).toString();
         QString cassa = grid->model()->data(grid->model()->index(crow, 3)).toString();
 
-        if (!((modalita == paymentMethodType["MP12"]) ||
-            (modalita == paymentMethodType["MP09"]) ||
-            (modalita == paymentMethodType["MP10"]) ||
-            (modalita == paymentMethodType["MP11"]))) {
-            qInfo(logInfo()) << "Payment " << crow << ": prima nota skipped, payment: " << modalita;
-            break;
-        }
-
         if (cassa == "") {
-            qInfo(logInfo()) << "Payment " << crow << ": prima nota skipped, bank not selected";
+            qInfo(logInfo()) << "Payment " << crow << ": prima nota skipped, bank not selected, payment " << modalita;
             break;
         }
 
@@ -510,17 +503,17 @@ QString MainWindow::executePrimaNota()
         }
 
         QString pathandfilename = QDir(yearpath).filePath(filename);
-        QString check_pathandfilename = pathandfilename;
-        check_pathandfilename.replace("/", "//");
+        //QString check_pathandfilename = pathandfilename;
+        //check_pathandfilename.replace("/", "//");
 
-        if(!QFileInfo::exists(check_pathandfilename)) {
-            qInfo(logInfo())  << "Prima Nota not exists: " << check_pathandfilename;
+        if(!QFileInfo::exists(pathandfilename)) {
+            qInfo(logInfo())  << "Prima Nota not exists: " << pathandfilename;
             QString templatepathandfilename = QDir(m_setting->getPath(Settings::Execute::primanota)).filePath("PrimaNota MODELLO.ods");
             QFile::copy(templatepathandfilename, pathandfilename);
         }
 
-        if(!QFileInfo(check_pathandfilename).isFile()){
-            qWarning(logWarning())  << "A folder exists with same name: " << check_pathandfilename;
+        if(!QFileInfo(pathandfilename).isFile()){
+            qWarning(logWarning())  << "A folder exists with same name: " << pathandfilename;
             return "Errore cartella con lo stesso nome del file ods";
         }
 
@@ -594,9 +587,8 @@ QString MainWindow::executeScadenziario()
         QString cassa = grid->model()->data(grid->model()->index(crow,3)).toString();
         double importo = grid->model()->data(grid->model()->index(crow,2)).toFloat();
 
-        if (!((modalita == paymentMethodType["MP12"]) ||
-            (modalita == paymentMethodType["MP15"]))) {
-            qInfo(logInfo()) << "Payment " << crow << ": scadenziario skipped, payment: " << modalita;
+        if (cassa == "") {
+            qInfo(logInfo()) << "Payment " << crow << ": scadenziario skipped, bank not selected, payment " << modalita;
             break;
         }
 
@@ -707,91 +699,118 @@ QString MainWindow::executeScadenziario()
 
 void MainWindow::createActions()
 {
-    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
-    //QToolBar *fileToolBar = addToolBar(tr("File"));
-
     const QIcon openIcon = QIcon::fromTheme("document-open", QIcon(":/images/open.png"));
-    QAction *openAct = new QAction(openIcon, tr("&Open..."), this);
+    openAct = new QAction(openIcon, tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
     openAct->setStatusTip(tr("Apri una fattura elettronica"));
     connect(openAct, &QAction::triggered, this, &MainWindow::open);
-    fileMenu->addAction(openAct);
-    //fileToolBar->addAction(openAct);
-
-    fileMenu->addSeparator();
 
     const QIcon exitIcon = QIcon::fromTheme("application-exit");
-    QAction *exitAct = fileMenu->addAction(exitIcon, tr("E&xit"), this, &QWidget::close);
+    exitAct = new QAction(exitIcon, tr("E&xit"), this);
     exitAct->setShortcuts(QKeySequence::Quit);
     exitAct->setStatusTip(tr("Esci dall'applicazione"));
+    connect(exitAct, &QAction::triggered, this, &QWidget::close);
 
-    menuBar()->addSeparator();
-
-    QMenu *processMenu = menuBar()->addMenu(tr("&Process"));
-
-    QAction *executeAct = processMenu->addAction(tr("&Esegui"), this, &MainWindow::execute);
+    executeAct = new QAction(tr("&Esegui"), this);
     executeAct->setStatusTip(tr("Esporta i dati nei fogli ods selezionati"));
+    connect(executeAct, &QAction::triggered, this, &MainWindow::execute);
+    executeAct->setEnabled(false);
 
-    processMenu->addSeparator();
-
-    QAction *elencoFattureAct = processMenu->addAction(tr("In Elenco Fatture"), this, &MainWindow::toggleElencoFatture);
+    elencoFattureAct = new QAction(tr("In Elenco Fatture"), this);
     elencoFattureAct->setCheckable(true);
     elencoFattureAct->setChecked(m_setting->isExecute(Settings::Execute::elencofatture));
+    connect(elencoFattureAct, &QAction::triggered, this, &MainWindow::toggleElencoFatture);
 
-    QAction *mastrinoFornitoriAct = processMenu->addAction(tr("In Mastrini Fornitori"), this, &MainWindow::toggleMastriniFornitori);
+    mastrinoFornitoriAct = new QAction(tr("In Mastrini Fornitori"), this);
     mastrinoFornitoriAct->setCheckable(true);
     mastrinoFornitoriAct->setChecked(m_setting->isExecute(Settings::Execute::mastrinifornitori));
+    connect(mastrinoFornitoriAct, &QAction::triggered, this, &MainWindow::toggleMastriniFornitori);
 
-    QAction *primaNotaAct = processMenu->addAction(tr("In Prima Nota"), this, &MainWindow::togglePrimaNota);
+    primaNotaAct = new QAction(tr("In Prima Nota"), this);
     primaNotaAct->setCheckable(true);
     primaNotaAct->setChecked(m_setting->isExecute(Settings::Execute::primanota));
+    connect(primaNotaAct, &QAction::triggered, this, &MainWindow::togglePrimaNota);
 
-    QAction *scadenziarioAct = processMenu->addAction(tr("In Scadenziario"), this, &MainWindow::toggleScadenziario);
+    scadenziarioAct = new QAction(tr("In Scadenziario"), this);
     scadenziarioAct->setCheckable(true);
     scadenziarioAct->setChecked(m_setting->isExecute(Settings::Execute::scadenziario));
+    connect(scadenziarioAct, &QAction::triggered, this, &MainWindow::toggleScadenziario);
 
-    QAction *backupAct = processMenu->addAction(tr("Backup dei file ods"), this, &MainWindow::toggleBackupFile);
+    backupAct = new QAction(tr("Backup dei file ods"), this);
     backupAct->setCheckable(true);
     backupAct->setChecked(m_setting->isExecute(Settings::Execute::backupfiles));
+    connect(backupAct, &QAction::triggered, this, &MainWindow::toggleBackupFile);
 
-    menuBar()->addSeparator();
-
-    QMenu *toolsMenu = menuBar()->addMenu(tr("&Impostazioni"));
-
-    QAction* pathFattureElettronicheAct = toolsMenu->addAction(tr("Cartella Fatture Elettroniche"), this, &MainWindow::setPathFattureElettroniche);
+    pathFattureElettronicheAct = new QAction(tr("Cartella Fatture Elettroniche"), this);
     pathFattureElettronicheAct->setStatusTip(tr("Imposta la cartella in cui si trovano le Fatture Elettroniche"));
+    connect(pathFattureElettronicheAct, &QAction::triggered, this, &MainWindow::setPathFattureElettroniche);
 
-    toolsMenu->addSeparator();
-
-    QAction *pathElencoFattureAct = toolsMenu->addAction(tr("Cartella Elenco Fatture"), this, &MainWindow::setPathElencoFatture);
+    pathElencoFattureAct = new QAction(tr("Cartella Elenco Fatture"), this);
     pathElencoFattureAct->setStatusTip(tr("Imposta la cartella del Elenco Fatture"));
+    connect(pathElencoFattureAct, &QAction::triggered, this, &MainWindow::setPathElencoFatture);
 
-    QAction *pathMastrinoFornitoriAct = toolsMenu->addAction(tr("Cartella Mastrini Fornitori"), this, &MainWindow::setPathMastriniFornitori);
+    pathMastrinoFornitoriAct = new QAction(tr("Cartella Mastrini Fornitori"), this);
     pathMastrinoFornitoriAct->setStatusTip(tr("Imposta la cartella dei Mastrini Fornitori"));
+    connect(pathMastrinoFornitoriAct, &QAction::triggered, this, &MainWindow::setPathMastriniFornitori);
 
-    QAction *pathPrimaNotaAct = toolsMenu->addAction(tr("Cartella Prima Nota"), this, &MainWindow::setPathPrimaNota);
+    pathPrimaNotaAct = new QAction(tr("Cartella Prima Nota"), this);
     pathPrimaNotaAct->setStatusTip(tr("Imposta la cartella della Prima Nota"));
+    connect(pathPrimaNotaAct, &QAction::triggered, this, &MainWindow::setPathPrimaNota);
 
-    QAction *pathScadenziarioAct= toolsMenu->addAction(tr("Cartella Scadenziario"), this, &MainWindow::setPathScadenziario);
+    pathScadenziarioAct= new QAction(tr("Cartella Scadenziario"), this);
     pathScadenziarioAct->setStatusTip(tr("Imposta la cartella dello Scadenziario"));
+    connect(pathScadenziarioAct, &QAction::triggered, this, &MainWindow::setPathScadenziario);
 
-    toolsMenu->addSeparator();
-
-    QAction *pathSaveSettingsAct = toolsMenu->addAction(tr("Salva Impostazioni Finestra"), this, &MainWindow::saveWindowSettings);
+    pathSaveSettingsAct = new QAction(tr("Salva Impostazioni Finestra"), this);
     pathSaveSettingsAct->setStatusTip(tr("Cambia lo stato della finestra dell'applicazione"));
+    connect(pathSaveSettingsAct, &QAction::triggered, this, &MainWindow::saveWindowSettings);
+    
+    aboutAct = new QAction(tr("&About"), this);
+    aboutAct->setStatusTip(tr("Show the application's About box"));
+    connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
+
+    aboutQtAct = new QAction(tr("About &Qt"), qApp);
+    aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
+    connect(aboutQtAct, &QAction::triggered, this, &QApplication::aboutQt);
+}
+
+void MainWindow::setupMenuBar()
+{
+    QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
+    fileMenu->addAction(openAct);
+    fileMenu->addSeparator();
+    fileMenu->addAction(exitAct);
     menuBar()->addSeparator();
 
-    QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
-    QAction *aboutAct = helpMenu->addAction(tr("&About"), this, &MainWindow::about);
-    aboutAct->setStatusTip(tr("Show the application's About box"));
+    QMenu* processMenu = menuBar()->addMenu(tr("&Process"));
+    processMenu->addAction(executeAct);
+    processMenu->addSeparator();
+    processMenu->addAction(elencoFattureAct);
+    processMenu->addAction(mastrinoFornitoriAct);
+    processMenu->addAction(primaNotaAct);
+    processMenu->addAction(scadenziarioAct);
+    processMenu->addAction(backupAct);
+    menuBar()->addSeparator();
 
-    QAction *aboutQtAct = helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
-    aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
+    QMenu* toolsMenu = menuBar()->addMenu(tr("&Impostazioni"));
+    toolsMenu->addAction(pathFattureElettronicheAct);
+    toolsMenu->addSeparator();
+    toolsMenu->addAction(pathElencoFattureAct);
+    toolsMenu->addAction(pathMastrinoFornitoriAct);
+    toolsMenu->addAction(pathPrimaNotaAct);
+    toolsMenu->addAction(pathScadenziarioAct);
+    toolsMenu->addSeparator();
+    toolsMenu->addAction(pathSaveSettingsAct);
+    menuBar()->addSeparator();
+
+    QMenu* helpMenu = menuBar()->addMenu(tr("&Help"));
+    helpMenu->addAction(aboutAct);
+    helpMenu->addAction(aboutQtAct);
 }
 
 void MainWindow::createStatusBar()
 {
-    statusBar()->showMessage(tr("Ready"), 0);
+    statusBar()->showMessage(tr("Pronto"), 0);
 }
 
 void MainWindow::parseXMLFile(const QString &fileName)
@@ -799,10 +818,10 @@ void MainWindow::parseXMLFile(const QString &fileName)
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
         QMessageBox::critical(this, tr("Procurans"),
-                             tr("Cannot read file %1")
+                             tr("Non posso leggere il file %1")
                              .arg(QDir::toNativeSeparators(fileName)),
                              QMessageBox::Ok);
-        qWarning(logWarning())  << QString("Cannot read file %1:\n%2.").arg(QDir::toNativeSeparators(fileName), file.errorString());
+        qWarning(logWarning())  << QString("Non posso leggere il file %1:\n%2.").arg(QDir::toNativeSeparators(fileName), file.errorString());
         return;
     }
 
@@ -886,17 +905,10 @@ void MainWindow::parseXMLFile(const QString &fileName)
 
     curFile = fileName;
 
-   /* if (!validateBill(fileContent.toUtf8())) {
-        QMessageBox::warning(this, tr("Procurans"),
-                             tr("Validation Fail %1:\n%2.")
-                             .arg(QDir::toNativeSeparators(fileName), file.errorString()));
-        return;
-    }
-    statusBar()->showMessage(tr("Fattura validata"), 2000);
-*/
     this->setWindowTitle(QString(QApplication::applicationName() + ": " + strippedName(curFile)));
 
     statusBar()->showMessage(tr("Fattura caricata"), 2000);
+    executeAct->setEnabled(true);
 }
 
 inline bool MainWindow::isStartElementNamed(QXmlStreamReader& xml, const QString &tokenName)

@@ -15,10 +15,13 @@
 #include <QLoggingCategory>
 #include <QDebug>
 
+bool doDebug = false;
+
 void messageHandler(QtMsgType type, const QMessageLogContext& ctx, const QString& msg)
 {
         Logger *globalLogger = Logger::getInstance();
-        globalLogger->messageHandler(type, ctx, msg);
+        if ((type!= QtMsgType::QtDebugMsg)|| doDebug)
+            globalLogger->messageHandler(type, ctx, msg);
 }
 
 int main(int argc, char *argv[])
@@ -41,7 +44,11 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
     parser.addVersionOption();
     parser.addPositionalArgument("file", "The file to open.");
+    QCommandLineOption debugOption(QStringList() << "d" << "debug",
+        QCoreApplication::translate("debug", "Activate debug messages in log file."));
+    parser.addOption(debugOption);
     parser.process(app);
+    doDebug = parser.isSet(debugOption);
 
     MainWindow mainWin;
     if (!parser.positionalArguments().isEmpty()){

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>966</width>
+    <width>1162</width>
     <height>600</height>
    </rect>
   </property>
@@ -379,9 +379,12 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>966</width>
-     <height>22</height>
+     <width>1162</width>
+     <height>21</height>
     </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::ClickFocus</enum>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>

@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>schemas/VFPR12.xsd</file>
         <file>images/login-icon.png</file>
         <file>images/copy.png</file>
         <file>images/cut.png</file>
@@ -8,7 +7,6 @@
         <file>images/open.png</file>
         <file>images/paste.png</file>
         <file>images/save.png</file>
-	<file>images/split.png</file>
-        <file>schemas/VFSM10.xsd</file>
+        <file>images/split.png</file>
     </qresource>
 </RCC>

@@ -58,9 +58,27 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
+    QAction* openAct;
+    QAction* exitAct;
+    QAction* executeAct;
+    QAction* elencoFattureAct;
+    QAction* mastrinoFornitoriAct;
+    QAction* primaNotaAct;
+    QAction* scadenziarioAct;
+    QAction* backupAct;
+    QAction* pathFattureElettronicheAct;
+    QAction* pathElencoFattureAct;
+    QAction* pathMastrinoFornitoriAct;
+    QAction* pathPrimaNotaAct;
+    QAction* pathScadenziarioAct;
+    QAction* pathSaveSettingsAct;
+    QAction* aboutAct;
+    QAction* aboutQtAct;
+
     bool billLoaded;
 
     void createActions();
+    void setupMenuBar();
     void createStatusBar();
 
     QString strippedName(const QString &fullFileName);
