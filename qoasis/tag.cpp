@@ -122,13 +122,11 @@ namespace qoasis
 	void Tag::readNamespace(const QStringRef name, const QStringRef value)
 	{
 		namespaces_.insert(name.toString(), value.toString());
-		qDebug() << "Namespace read in: " << instanceTag() << " - name:" << name.toString() << " value:" << value.toString();
 	}
 
 	void Tag::readAttribute(const QStringRef name, const QStringRef value)
 	{
 		attributes_.insert(name.toString(), value.toString());
-		qDebug() << "Attribute read in: " << instanceTag() << " - name:" << name.toString() << " value:" << value.toString();
 	}
 
 	void Tag::loopToReadSubtag(QXmlStreamReader& reader)
@@ -136,7 +134,6 @@ namespace qoasis
 		QStringRef currentTokenName = reader.qualifiedName();
 		while (!((reader.tokenType() == QXmlStreamReader::EndElement && (reader.qualifiedName() == currentTokenName)))) {
 			reader.readNext();
-			qDebug() << "Subtag read in: " << instanceTag() << " - XML Token read: " << TokenTypeToString(reader.tokenType()) << " - " << reader.name();
 			if (reader.tokenType() == QXmlStreamReader::StartElement) {
 				readSubtag(reader);
 			}
@@ -144,35 +141,6 @@ namespace qoasis
 				inline_text_ += reader.text();
 			}
 		}
-	}
-
-	QString Tag::TokenTypeToString(int type)
-	{
-		switch (type) {
-		case QXmlStreamReader::NoToken:
-			return QString("NoToken");
-		case QXmlStreamReader::Invalid:
-			return QString("Invalid");
-		case QXmlStreamReader::StartDocument:
-			return QString("StartDocument");
-		case QXmlStreamReader::EndDocument:
-			return QString("EndDocument");
-		case QXmlStreamReader::StartElement:
-			return QString("StartElement");
-		case QXmlStreamReader::EndElement:
-			return QString("EndElement");
-		case QXmlStreamReader::Characters:
-			return QString("Characters");
-		case QXmlStreamReader::Comment:
-			return QString("Comment");
-		case QXmlStreamReader::DTD:
-			return QString("DTD");
-		case QXmlStreamReader::EntityReference:
-			return QString("EntityReference");
-		case QXmlStreamReader::ProcessingInstruction:
-			return QString("ProcessingInstruction");
-		}
-		return QString("Undecoded Token type Error");
 	}
 
 	void Tag::readSubtag(QXmlStreamReader& reader)

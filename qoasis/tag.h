@@ -42,8 +42,6 @@ namespace qoasis
 		bool isStartElementNamed(QXmlStreamReader& xml, const QString& token_name);
 		//bool isNotEndElementNamed(QXmlStreamReader& xml, const QString& token_name);
 
-		QString TokenTypeToString(int type);
-
 	private:
 		void loopToReadAttributes(QXmlStreamReader& reader);
 		void loopToReadNamespaces(QXmlStreamReader& reader);

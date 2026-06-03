@@ -32,8 +32,7 @@ namespace qoasis
 
 	void IRepeatable::readRepeat(const QStringRef value)
 	{
-		repeat_ = value.toInt(); 
-		qDebug() << "Repeat attribute - name:" << repeatTag() << " value:" << value.toString();
+		repeat_ = value.toInt();
 	}
 
 	void IRepeatable::writeRepeat(QXmlStreamWriter* writer)

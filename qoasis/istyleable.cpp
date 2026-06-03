@@ -35,7 +35,6 @@ namespace qoasis
 	void IStyleable::readStyle(QStringRef value)
 	{
 		style_ = value.toString();
-		qDebug() << "Style attribute - name:" << styleTag() << " value:" << value.toString();
 	}
 
 	void IStyleable::writeStyle(QXmlStreamWriter* writer)

@@ -55,7 +55,6 @@ namespace qoasis
 	void INameable::readName(QStringRef value)
 	{
 		name_ = value.toString();
-		qDebug() << "Name attribute - name:" << nameTag() << " value:" << value.toString();
 	}
 
 	void INameable::writeName(QXmlStreamWriter* writer)
