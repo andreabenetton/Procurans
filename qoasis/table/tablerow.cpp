@@ -3,6 +3,7 @@
 
 #include "tablerow.h"
 #include "tablecell.h"
+#include "tablecellcovered.h"
 
 namespace qoasis::table
 {
@@ -167,8 +168,14 @@ namespace qoasis::table
 			cells_.append(Tablecell::builder(reader));
 			return;
 		}
+		// <table:covered-table-cell> 9.1.5 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#element-table_covered-table-cell
+		// Routed to cells_ so column-position math stays consistent with the
+		// row's input layout (covered cells participate in column counting).
+		if (isStartElementNamed(reader, TablecellCovered::kTag)) {
+			cells_.append(TablecellCovered::builder(reader));
+			return;
+		}
 		// Deserialize present but unsupported subtags
-		// <table:covered-table-cell> 9.1.5 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#element-table_covered-table-cell 
 		Tag::readSubtag(reader);
 	}
 

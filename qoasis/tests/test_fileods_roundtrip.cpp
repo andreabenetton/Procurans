@@ -39,7 +39,8 @@ private slots:
 	void initTestCase();
 	void mimetypeStoredFirst();                       // commit 09d817d
 	void unmodeledSpreadsheetSubtagsPreserved();      // commit cb551cc
-	void inlineTextPreservedInGenericTag();           // current commit
+	void inlineTextPreservedInGenericTag();           // commit 96c8c3c
+	void coveredTableCellKeepsRowOrder();             // current commit
 
 private:
 	QTemporaryDir work_;
@@ -194,6 +195,50 @@ void TestFileOdsRoundtrip::inlineTextPreservedInGenericTag()
 
 	const QByteArray content = readArchiveEntry(out, QStringLiteral("content.xml"));
 	QVERIFY2(content.contains("XYZmarker"), content.constData());
+}
+
+void TestFileOdsRoundtrip::coveredTableCellKeepsRowOrder()
+{
+	const QString in = work_.path() + QStringLiteral("/in.ods");
+	const QString out = work_.path() + QStringLiteral("/out_covered.ods");
+
+	// A row that mixes cell / spanning cell / covered / cell. Pre-fix,
+	// covered cells fell through to Tag::readSubtag and serialized AFTER
+	// all real cells, shifting the column layout.
+	writeOds(in, QByteArrayLiteral(
+		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+		"<office:document-content"
+		" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+		" xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\""
+		" office:version=\"1.2\">\n"
+		"  <office:body><office:spreadsheet><table:table table:name=\"S\">\n"
+		"    <table:table-row>\n"
+		"      <table:table-cell office:value-type=\"string\">"
+		"<text:p>FIRST</text:p></table:table-cell>\n"
+		"      <table:table-cell office:value-type=\"string\""
+		" table:number-columns-spanned=\"2\">"
+		"<text:p>SPAN</text:p></table:table-cell>\n"
+		"      <table:covered-table-cell/>\n"
+		"      <table:table-cell office:value-type=\"string\">"
+		"<text:p>LAST</text:p></table:table-cell>\n"
+		"    </table:table-row>\n"
+		"  </table:table></office:spreadsheet></office:body>\n"
+		"</office:document-content>\n"));
+
+	qoasis::FileOds f(in);
+	QVERIFY(f.load());
+	QVERIFY(f.save(out, false));
+
+	const QByteArray content = readArchiveEntry(out, QStringLiteral("content.xml"));
+	const int first   = content.indexOf("FIRST");
+	const int span    = content.indexOf("SPAN");
+	const int covered = content.indexOf("covered-table-cell");
+	const int last    = content.indexOf("LAST");
+	QVERIFY2(first   >= 0, content.constData());
+	QVERIFY2(span    >  first,   content.constData());
+	QVERIFY2(covered >  span,    content.constData());
+	QVERIFY2(last    >  covered, content.constData());
 }
 
 QTEST_MAIN(TestFileOdsRoundtrip)

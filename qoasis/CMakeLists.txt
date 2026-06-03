@@ -47,6 +47,8 @@ set(lib_files
     table/tablecelldate.cpp
     table/tablecellfloat.h
     table/tablecellfloat.cpp
+    table/tablecellcovered.h
+    table/tablecellcovered.cpp
     table/tablecellstring.h
     table/tablecellstring.cpp
     table/tablecolumn.h
