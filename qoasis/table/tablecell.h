@@ -56,6 +56,7 @@ namespace qoasis::table
 		void readSubtag(QXmlStreamReader& reader) override;
 
 		QString _valueText;
+		QStringList _extraParagraphs;
 	};
 }
 #endif // TABLECELL_H

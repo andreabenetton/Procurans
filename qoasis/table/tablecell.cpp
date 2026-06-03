@@ -146,13 +146,20 @@ namespace qoasis::table
 	void Tablecell::readSubtag(QXmlStreamReader& reader)
 	{
 		// <text:p> 5.1.3 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#element-text_p
-		// only one p tag is supported, the last one if more than one present
+		// First <text:p> populates _valueText (which the typed subclasses,
+		// getText() and isEmpty() depend on). Subsequent paragraphs are kept
+		// in _extraParagraphs so a multi-paragraph cell round-trips intact.
 		if (reader.qualifiedName() == kTextPTag) {
-			_valueText = reader.readElementText(QXmlStreamReader::IncludeChildElements);
+			const QString para = reader.readElementText(QXmlStreamReader::IncludeChildElements);
+			if (_valueText.isEmpty()) {
+				_valueText = para;
+			} else {
+				_extraParagraphs.append(para);
+			}
 			return;
 		}
-		// Deserialize present but unsupported subtags
-		//Tag::readSubtag(reader);
+		// Other cell children (e.g. <office:annotation>) preserved generically.
+		Tag::readSubtag(reader);
 	}
 
 	void Tablecell::writeAttributes(QXmlStreamWriter* writer)
@@ -173,7 +180,10 @@ namespace qoasis::table
 		if (!(_valueText.isNull() || _valueText.isEmpty())) {
 			writer->writeTextElement(Tablecell::kTextPTag, _valueText);
 		}
-		// Serialize present but unsupported subtags
-		//Tag::writeSubtags(writer);
+		for (const QString& para : _extraParagraphs) {
+			writer->writeTextElement(Tablecell::kTextPTag, para);
+		}
+		// Other cell children preserved via base class.
+		Tag::writeSubtags(writer);
 	}
 }

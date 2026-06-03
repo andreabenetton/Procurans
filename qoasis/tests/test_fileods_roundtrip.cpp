@@ -40,7 +40,8 @@ private slots:
 	void mimetypeStoredFirst();                       // commit 09d817d
 	void unmodeledSpreadsheetSubtagsPreserved();      // commit cb551cc
 	void inlineTextPreservedInGenericTag();           // commit 96c8c3c
-	void coveredTableCellKeepsRowOrder();             // current commit
+	void coveredTableCellKeepsRowOrder();             // commit e8424a9
+	void cellMultipleParagraphsAndSubtagsPreserved(); // current commit
 
 private:
 	QTemporaryDir work_;
@@ -239,6 +240,41 @@ void TestFileOdsRoundtrip::coveredTableCellKeepsRowOrder()
 	QVERIFY2(span    >  first,   content.constData());
 	QVERIFY2(covered >  span,    content.constData());
 	QVERIFY2(last    >  covered, content.constData());
+}
+
+void TestFileOdsRoundtrip::cellMultipleParagraphsAndSubtagsPreserved()
+{
+	const QString in = work_.path() + QStringLiteral("/in.ods");
+	const QString out = work_.path() + QStringLiteral("/out_cell.ods");
+
+	// A cell with no office:value-type (so it stays as base Tablecell) holding
+	// two paragraphs and an office:annotation child. Pre-fix, only the LAST
+	// <text:p> survived and any other child subtag was silently dropped.
+	writeOds(in, QByteArrayLiteral(
+		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+		"<office:document-content"
+		" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+		" xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\""
+		" office:version=\"1.2\">\n"
+		"  <office:body><office:spreadsheet><table:table table:name=\"S\">\n"
+		"    <table:table-row><table:table-cell>"
+		"<text:p>PARA_ONE</text:p>"
+		"<text:p>PARA_TWO</text:p>"
+		"<office:annotation><text:p>ANNOTE</text:p></office:annotation>"
+		"</table:table-cell></table:table-row>\n"
+		"  </table:table></office:spreadsheet></office:body>\n"
+		"</office:document-content>\n"));
+
+	qoasis::FileOds f(in);
+	QVERIFY(f.load());
+	QVERIFY(f.save(out, false));
+
+	const QByteArray content = readArchiveEntry(out, QStringLiteral("content.xml"));
+	QVERIFY2(content.contains("PARA_ONE"), content.constData());
+	QVERIFY2(content.contains("PARA_TWO"), content.constData());
+	QVERIFY2(content.contains("office:annotation"), content.constData());
+	QVERIFY2(content.contains("ANNOTE"), content.constData());
 }
 
 QTEST_MAIN(TestFileOdsRoundtrip)
