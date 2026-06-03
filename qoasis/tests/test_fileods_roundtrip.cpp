@@ -42,7 +42,8 @@ private slots:
 	void inlineTextPreservedInGenericTag();           // commit 96c8c3c
 	void coveredTableCellKeepsRowOrder();             // commit e8424a9
 	void cellMultipleParagraphsAndSubtagsPreserved(); // commit 8a03dbc
-	void richTextInsideTextParagraphPreserved();      // current commit
+	void richTextInsideTextParagraphPreserved();      // commit 65ca086
+	void manifestRegeneratedFromTempDir();            // current commit
 
 private:
 	QTemporaryDir work_;
@@ -310,6 +311,72 @@ void TestFileOdsRoundtrip::richTextInsideTextParagraphPreserved()
 	QVERIFY2(content.contains("RUN"), content.constData());
 	QVERIFY2(content.contains("before"), content.constData());
 	QVERIFY2(content.contains("after"), content.constData());
+}
+
+void TestFileOdsRoundtrip::manifestRegeneratedFromTempDir()
+{
+	const QString in = work_.path() + QStringLiteral("/in.ods");
+	const QString out = work_.path() + QStringLiteral("/out_manifest.ods");
+
+	// Input manifest contains a bogus entry that should NOT be re-emitted.
+	// Output manifest is regenerated from the actual file inventory.
+	QuaZip zip(in);
+	QVERIFY(zip.open(QuaZip::mdCreate));
+	zip.setDataDescriptorWritingEnabled(false);
+	{
+		QuaZipFile m(&zip);
+		QuaZipNewInfo mi(QStringLiteral("mimetype"));
+		mi.uncompressedSize = static_cast<ulong>(kMimetype.size());
+		QVERIFY(m.open(QIODevice::WriteOnly, mi, nullptr, 0, 0, 0));
+		QCOMPARE(m.write(kMimetype), qint64(kMimetype.size()));
+		m.close();
+	}
+	zip.setDataDescriptorWritingEnabled(true);
+
+	const QByteArray content = QByteArrayLiteral(
+		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+		"<office:document-content"
+		" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+		" office:version=\"1.2\">\n"
+		"  <office:body><office:spreadsheet/></office:body>\n"
+		"</office:document-content>\n");
+	{
+		QuaZipFile c(&zip);
+		QVERIFY(c.open(QIODevice::WriteOnly,
+		               QuaZipNewInfo(QStringLiteral("content.xml"))));
+		QCOMPARE(c.write(content), qint64(content.size()));
+		c.close();
+	}
+	const QByteArray staleManifest = QByteArrayLiteral(
+		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+		"<manifest:manifest"
+		" xmlns:manifest=\"urn:oasis:names:tc:opendocument:xmlns:manifest:1.0\">\n"
+		"  <manifest:file-entry manifest:full-path=\"NONEXISTENT_LIE.xml\""
+		" manifest:media-type=\"text/xml\"/>\n"
+		"</manifest:manifest>\n");
+	{
+		QuaZipFile mf(&zip);
+		QVERIFY(mf.open(QIODevice::WriteOnly,
+		                QuaZipNewInfo(QStringLiteral("META-INF/manifest.xml"))));
+		QCOMPARE(mf.write(staleManifest), qint64(staleManifest.size()));
+		mf.close();
+	}
+	zip.close();
+
+	qoasis::FileOds f(in);
+	QVERIFY(f.load());
+	QVERIFY(f.save(out, false));
+
+	const QByteArray outManifest =
+		readArchiveEntry(out, QStringLiteral("META-INF/manifest.xml"));
+	QVERIFY2(outManifest.contains("content.xml"), outManifest.constData());
+	QVERIFY2(outManifest.contains("application/vnd.oasis.opendocument.spreadsheet"),
+	         outManifest.constData());
+	QVERIFY2(!outManifest.contains("NONEXISTENT_LIE.xml"), outManifest.constData());
+	// The mimetype file itself is not listed in the manifest per ODF practice.
+	QVERIFY2(!outManifest.contains("manifest:full-path=\"mimetype\""),
+	         outManifest.constData());
 }
 
 QTEST_MAIN(TestFileOdsRoundtrip)

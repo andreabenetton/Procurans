@@ -4,6 +4,8 @@
 #include <QDebug>
 #include <QDirIterator>
 #include <QFile>
+#include <QXmlStreamWriter>
+#include <algorithm>
 
 #include "fileods.h"
 #include "quazip/JlCompress.h"
@@ -13,6 +15,105 @@
 
 namespace
 {
+	const QString kManifestRel = QStringLiteral("META-INF/manifest.xml");
+	const QString kMimetypeRel = QStringLiteral("mimetype");
+	const QString kManifestNs =
+		QStringLiteral("urn:oasis:names:tc:opendocument:xmlns:manifest:1.0");
+
+	QString mediaTypeFor(const QString& rel)
+	{
+		if (rel.endsWith(QStringLiteral(".xml"), Qt::CaseInsensitive))
+			return QStringLiteral("text/xml");
+		if (rel.endsWith(QStringLiteral(".png"), Qt::CaseInsensitive))
+			return QStringLiteral("image/png");
+		if (rel.endsWith(QStringLiteral(".jpg"), Qt::CaseInsensitive)
+		    || rel.endsWith(QStringLiteral(".jpeg"), Qt::CaseInsensitive))
+			return QStringLiteral("image/jpeg");
+		if (rel.endsWith(QStringLiteral(".gif"), Qt::CaseInsensitive))
+			return QStringLiteral("image/gif");
+		if (rel.endsWith(QStringLiteral(".svg"), Qt::CaseInsensitive))
+			return QStringLiteral("image/svg+xml");
+		return QStringLiteral("application/octet-stream");
+	}
+
+	bool isOdfPartXml(const QString& rel)
+	{
+		return rel == QStringLiteral("content.xml")
+		    || rel == QStringLiteral("styles.xml")
+		    || rel == QStringLiteral("meta.xml")
+		    || rel == QStringLiteral("settings.xml");
+	}
+
+	// Regenerate META-INF/manifest.xml from the actual temp-dir inventory so
+	// the manifest can't drift away from the files we're about to repack.
+	// Reads the mimetype file to determine the document root media-type.
+	bool writeFreshManifest(const QString& src_dir)
+	{
+		QDir src(src_dir);
+
+		QFile mt(src.filePath(kMimetypeRel));
+		if (!mt.open(QIODevice::ReadOnly))
+		{
+			qCritical() << "mimetype missing in" << qPrintable(src_dir);
+			return false;
+		}
+		const QByteArray root_media_type = mt.readAll().trimmed();
+		mt.close();
+
+		QStringList entries;
+		QDirIterator it(src_dir,
+		                QDir::Files | QDir::Hidden | QDir::NoSymLinks,
+		                QDirIterator::Subdirectories);
+		while (it.hasNext())
+		{
+			const QString path = it.next();
+			const QString rel = src.relativeFilePath(path);
+			if (rel == kMimetypeRel || rel == kManifestRel) continue;
+			entries.append(rel);
+		}
+		std::sort(entries.begin(), entries.end());
+
+		src.mkpath(QStringLiteral("META-INF"));
+		QFile mf(src.filePath(kManifestRel));
+		if (!mf.open(QIODevice::WriteOnly | QIODevice::Truncate))
+		{
+			qCritical() << "Cannot write" << qPrintable(kManifestRel);
+			return false;
+		}
+
+		QXmlStreamWriter w(&mf);
+		w.setAutoFormatting(true);
+		w.setAutoFormattingIndent(1);
+		w.writeStartDocument();
+		w.writeStartElement(QStringLiteral("manifest:manifest"));
+		w.writeNamespace(kManifestNs, QStringLiteral("manifest"));
+		w.writeAttribute(QStringLiteral("manifest:version"), QStringLiteral("1.2"));
+
+		w.writeStartElement(QStringLiteral("manifest:file-entry"));
+		w.writeAttribute(QStringLiteral("manifest:full-path"), QStringLiteral("/"));
+		w.writeAttribute(QStringLiteral("manifest:version"), QStringLiteral("1.2"));
+		w.writeAttribute(QStringLiteral("manifest:media-type"),
+		                 QString::fromUtf8(root_media_type));
+		w.writeEndElement();
+
+		for (const QString& rel : entries)
+		{
+			w.writeStartElement(QStringLiteral("manifest:file-entry"));
+			w.writeAttribute(QStringLiteral("manifest:full-path"), rel);
+			if (isOdfPartXml(rel))
+			{
+				w.writeAttribute(QStringLiteral("manifest:version"), QStringLiteral("1.2"));
+			}
+			w.writeAttribute(QStringLiteral("manifest:media-type"), mediaTypeFor(rel));
+			w.writeEndElement();
+		}
+
+		w.writeEndElement();
+		w.writeEndDocument();
+		mf.close();
+		return mf.error() == QFile::NoError;
+	}
+
 	// Re-pack the extracted ODS tree into an OASIS-compliant archive: the
 	// "mimetype" file is written first, STORED (no deflate, no data
 	// descriptor flag, no extra field). LibreOffice >=24 rejects archives
@@ -201,6 +302,12 @@ namespace qoasis
 		const bool content_file_saved = content_file_->save();
 		if (!content_file_saved)
 		{
+			return false;
+		}
+
+		if (!writeFreshManifest(temp_dir_path_))
+		{
+			qCritical() << "Failed to regenerate manifest in: " << qPrintable(temp_dir_path_);
 			return false;
 		}
 
