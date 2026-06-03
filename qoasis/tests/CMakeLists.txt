@@ -11,6 +11,7 @@ link_directories(${Procurans_BINARY_DIR}/lib)
 get_property(zlib_libs GLOBAL PROPERTY zlib_libs_property)
 
 set(qoasis_test_sources
+	test_currency.cpp
 	test_fileods_roundtrip.cpp)
 
 foreach(t IN LISTS qoasis_test_sources)
