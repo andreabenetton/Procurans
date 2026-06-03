@@ -252,7 +252,7 @@ namespace qoasis
 			}
 			index += direction;
 		}
-		while (direction == Direction::Forward ? index >= vector_.size() - 1 : index <= 0);
+		while (direction == Direction::Forward ? index < vector_.size() : index >= 0);
 		return -1;
 	}
 
