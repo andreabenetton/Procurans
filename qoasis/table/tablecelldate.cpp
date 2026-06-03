@@ -42,7 +42,10 @@ namespace qoasis::table
 	void TablecellDate::readAttribute(QStringRef name, QStringRef value)
 	{
 		if (name.toString() == kCellTypeAttribute) {
-			value_date_ = QDate::fromString(value.toString(), "yyyy-MM-dd");
+			// ODF allows either a date or a dateTime here; take the date
+			// prefix so timestamped inputs (e.g. "2026-01-15T10:30:00")
+			// still parse to a valid QDate.
+			value_date_ = QDate::fromString(value.toString().left(10), "yyyy-MM-dd");
 			return;
 		}
 		Tablecell::readAttribute(name, value);

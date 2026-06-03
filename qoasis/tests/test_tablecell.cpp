@@ -73,6 +73,7 @@ private slots:
 	void noSyntheticCalcextOnTypedCells();
 	void stringCellEmitsAndReadsOfficeStringValue();
 	void floatPrecisionBeyondTwoDecimals();
+	void dateAcceptsIsoDateTimeInput();
 };
 
 void TestTablecell::noValueTypeYieldsBaseTablecell()
@@ -228,6 +229,24 @@ void TestTablecell::floatPrecisionBeyondTwoDecimals()
 
 	const QByteArray out = writeCell(cell);
 	QVERIFY2(out.contains("3.14159"), out.constData());
+}
+
+void TestTablecell::dateAcceptsIsoDateTimeInput()
+{
+	// Pre-fix, QDate::fromString of the full ISO datetime failed → invalid
+	// QDate. Now we take the first 10 chars (the date prefix).
+	auto cell = parseCell(
+		"<table:table-cell"
+		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+		" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+		" office:value-type=\"date\""
+		" office:date-value=\"2026-01-15T10:30:00\"/>");
+	auto dcell = qSharedPointerDynamicCast<TablecellDate>(cell);
+	QVERIFY(dcell);
+	QCOMPARE(dcell->getDate(), QDate(2026, 1, 15));
+
+	const QByteArray out = writeCell(cell);
+	QVERIFY2(out.contains("office:date-value=\"2026-01-15\""), out.constData());
 }
 
 QTEST_MAIN(TestTablecell)
