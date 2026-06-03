@@ -58,7 +58,7 @@ namespace qoasis
 	template <class T>
 	RepeatVector<T>::RepeatVector(int array_size, QSharedPointer<T> items[]) : RepeatVector()
 	{
-		this.append(array_size, items);
+		this->append(array_size, items);
 	}
 
 	template <class T>
@@ -205,14 +205,14 @@ namespace qoasis
 
 		if (value->getRepeat() < MAXREPEAT) {
 			if (index == vector_.size()) {
-				this.append(value);
+				this->append(value);
 				return;
 			}
 			if (index > vector_.size()) {
 				const int previous_size = vector_.size();
 				QSharedPointer<T> default_item = T::placeholder(index - previous_size);
-				this.append(default_item);
-				this.append(value);
+				this->append(default_item);
+				this->append(value);
 				return;
 			}
 			if (vector_.at(index).isNull()) {
@@ -223,7 +223,7 @@ namespace qoasis
 				vector_.at(base_index)->setRepeat(new_base_repeat);
 				// insert the new element, filling repetitions in the case
 				vector_.remove(index);
-				vector_.insertWithRepeats(index, value);
+				insertWithRepeats(index, value);
 				// replace the following element with a placeholder
 				QSharedPointer<T> default_item = T::placeholder(previous_base_repeat - new_base_repeat);
 				vector_.replace(index + 1, default_item);
@@ -231,7 +231,7 @@ namespace qoasis
 			}
 
 			vector_.remove(index);
-			vector_.insertWithRepeats(index, value);
+			insertWithRepeats(index, value);
 		}
 	}
 
@@ -259,8 +259,10 @@ namespace qoasis
 	template <class T>
 	int RepeatVector<T>::size() const
 	{
-		int last_base_index = scanForBaseItem(vector_.size() - 1, Direction::Backward);
-		return last_base_index + vector_[last_base_index]->getRepeat() - 1;
+		if (vector_.isEmpty()) return 0;
+		const int last_base_index = scanForBaseItem(vector_.size() - 1, Direction::Backward);
+		if (last_base_index < 0) return 0;
+		return last_base_index + vector_[last_base_index]->getRepeat();
 	}
 
 	template <class T>
