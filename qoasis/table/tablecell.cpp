@@ -15,7 +15,6 @@ namespace qoasis::table
 	const QString Tablecell::kCellTypeValue = QString("");
 	const QString Tablecell::kRepeatAttribute = QString("table:number-columns-repeated");
 	const QString Tablecell::kTextPTag = QString("text:p");
-	const QString Tablecell::kCalcextValueType = QString("calcext:value-type");
 
 	// Constructors
 	Tablecell::Tablecell(int repeat, QString style) : IStyleable(style), IRepeatable(repeat)
@@ -136,10 +135,7 @@ namespace qoasis::table
 		if (name == Tablecell::kCellTypeAttribute) {
 			return;
 		}
-		if (name == Tablecell::kCalcextValueType) {
-			return;
-		}
-		// Deserialize present but unsupported attributes
+		// Deserialize present but unsupported attributes (calcext:* etc.)
 		Tag::readAttribute(name, value);
 	}
 
@@ -170,7 +166,6 @@ namespace qoasis::table
 		QString celltype = instanceCellType();
 		if (celltype != "") {
 			writer->writeAttribute(Tablecell::kCellTypeAttribute, celltype);
-			writer->writeAttribute(Tablecell::kCalcextValueType, celltype);
 		}
 		// Serialize present but unsupported attributes
 		Tag::writeAttributes(writer);

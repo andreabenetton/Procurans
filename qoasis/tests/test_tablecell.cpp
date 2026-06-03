@@ -70,6 +70,7 @@ private slots:
 	void dateValueTypeYieldsTablecellDateRoundTrip();
 	void currencyValueTypeYieldsTablecellCurrencyRoundTrip();
 	void coveredCellTagAndRoundTrip();
+	void noSyntheticCalcextOnTypedCells();
 };
 
 void TestTablecell::noValueTypeYieldsBaseTablecell()
@@ -163,6 +164,21 @@ void TestTablecell::coveredCellTagAndRoundTrip()
 	const QByteArray out = writeCell(cell);
 	QVERIFY2(out.contains("table:covered-table-cell"), out.constData());
 	QVERIFY2(!out.contains("<table:table-cell"), out.constData());
+}
+
+void TestTablecell::noSyntheticCalcextOnTypedCells()
+{
+	// Pre-fix, Tablecell synthesized calcext:value-type alongside
+	// office:value-type. calcext is a LibreOffice extension, not in ODF
+	// 1.2, and is emitted even when the input had no calcext declaration.
+	auto cell = parseCell(
+		"<table:table-cell"
+		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+		" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+		" office:value-type=\"float\""
+		" office:value=\"1.0\"/>");
+	const QByteArray out = writeCell(cell);
+	QVERIFY2(!out.contains("calcext:value-type"), out.constData());
 }
 
 QTEST_MAIN(TestTablecell)

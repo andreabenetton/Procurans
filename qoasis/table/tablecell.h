@@ -47,7 +47,6 @@ namespace qoasis::table
 
 		static const QString kRepeatAttribute;
 		static const QString kTextPTag;
-		static const QString kCalcextValueType;
 
 		// implements Tag
 		void writeAttributes(QXmlStreamWriter* writer) override;
