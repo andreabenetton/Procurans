@@ -56,7 +56,7 @@ namespace qoasis::table
 		void readSubtag(QXmlStreamReader& reader) override;
 
 		QString _valueText;
-		QStringList _extraParagraphs;
+		QVector<QSharedPointer<Tag>> _paragraphs;
 	};
 }
 #endif // TABLECELL_H

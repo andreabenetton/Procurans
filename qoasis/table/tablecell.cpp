@@ -146,16 +146,17 @@ namespace qoasis::table
 	void Tablecell::readSubtag(QXmlStreamReader& reader)
 	{
 		// <text:p> 5.1.3 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#element-text_p
-		// First <text:p> populates _valueText (which the typed subclasses,
-		// getText() and isEmpty() depend on). Subsequent paragraphs are kept
-		// in _extraParagraphs so a multi-paragraph cell round-trips intact.
+		// Build the <text:p> as a generic Tag so inline rich-text markup
+		// (text:span, text:a, etc.) survives round-trip. The first paragraph's
+		// flattened plain text still seeds _valueText so getText(), isEmpty()
+		// and the typed subclasses (TablecellString in particular) keep
+		// behaving like before.
 		if (reader.qualifiedName() == kTextPTag) {
-			const QString para = reader.readElementText(QXmlStreamReader::IncludeChildElements);
+			QSharedPointer<Tag> para = Tag::buildGeneric(reader);
 			if (_valueText.isEmpty()) {
-				_valueText = para;
-			} else {
-				_extraParagraphs.append(para);
+				_valueText = para->plainText();
 			}
+			_paragraphs.append(para);
 			return;
 		}
 		// Other cell children (e.g. <office:annotation>) preserved generically.
@@ -177,11 +178,18 @@ namespace qoasis::table
 
 	void Tablecell::writeSubtags(QXmlStreamWriter* writer)
 	{
-		if (!(_valueText.isNull() || _valueText.isEmpty())) {
-			writer->writeTextElement(Tablecell::kTextPTag, _valueText);
+		if (!_paragraphs.isEmpty()) {
+			// Rich-text paragraphs read from the input survive verbatim,
+			// preserving any text:span / text:a / etc. children.
+			for (const QSharedPointer<Tag>& para : _paragraphs) {
+				if (!para.isNull()) {
+					para->write(writer);
+				}
+			}
 		}
-		for (const QString& para : _extraParagraphs) {
-			writer->writeTextElement(Tablecell::kTextPTag, para);
+		else if (!(_valueText.isNull() || _valueText.isEmpty())) {
+			// Programmatically-constructed cell with only plain display text.
+			writer->writeTextElement(Tablecell::kTextPTag, _valueText);
 		}
 		// Other cell children preserved via base class.
 		Tag::writeSubtags(writer);

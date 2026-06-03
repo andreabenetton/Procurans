@@ -21,6 +21,10 @@ namespace qoasis
 
 		virtual bool isEmpty();
 
+		QString plainText() const;
+
+		static QSharedPointer<Tag> buildGeneric(QXmlStreamReader& reader);
+
 	protected:
 		Tag();
 		Tag(QXmlStreamReader& reader);

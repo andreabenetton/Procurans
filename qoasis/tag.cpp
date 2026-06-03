@@ -28,6 +28,24 @@ namespace qoasis
 		return subtags_.isEmpty();
 	}
 
+	QSharedPointer<Tag> Tag::buildGeneric(QXmlStreamReader& reader)
+	{
+		return QSharedPointer<Tag>(new Tag(reader));
+	}
+
+	QString Tag::plainText() const
+	{
+		QString out = inline_text_;
+		for (const auto& sub : subtags_)
+		{
+			if (!sub.isNull())
+			{
+				out += sub->plainText();
+			}
+		}
+		return out;
+	}
+
 	void Tag::read(QXmlStreamReader& reader)
 	{
 		tag_ = reader.qualifiedName().toString();
