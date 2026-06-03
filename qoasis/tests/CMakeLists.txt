@@ -13,7 +13,8 @@ get_property(zlib_libs GLOBAL PROPERTY zlib_libs_property)
 set(qoasis_test_sources
 	test_currency.cpp
 	test_fileods_roundtrip.cpp
-	test_repeatvector.cpp)
+	test_repeatvector.cpp
+	test_tag.cpp)
 
 foreach(t IN LISTS qoasis_test_sources)
 	get_filename_component(name ${t} NAME_WE)
