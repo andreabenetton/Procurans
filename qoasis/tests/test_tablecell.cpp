@@ -71,6 +71,7 @@ private slots:
 	void currencyValueTypeYieldsTablecellCurrencyRoundTrip();
 	void coveredCellTagAndRoundTrip();
 	void noSyntheticCalcextOnTypedCells();
+	void stringCellEmitsAndReadsOfficeStringValue();
 };
 
 void TestTablecell::noValueTypeYieldsBaseTablecell()
@@ -179,6 +180,33 @@ void TestTablecell::noSyntheticCalcextOnTypedCells()
 		" office:value=\"1.0\"/>");
 	const QByteArray out = writeCell(cell);
 	QVERIFY2(!out.contains("calcext:value-type"), out.constData());
+}
+
+void TestTablecell::stringCellEmitsAndReadsOfficeStringValue()
+{
+	// Read: office:string-value attribute also seeds the cell text (in
+	// addition to <text:p>, which already worked).
+	auto fromAttr = parseCell(
+		"<table:table-cell"
+		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+		" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+		" office:value-type=\"string\""
+		" office:string-value=\"hello\"/>");
+	QCOMPARE(fromAttr->getText(), QStringLiteral("hello"));
+
+	// Write: a TablecellString round-trips with both office:string-value
+	// AND the <text:p> child (matches LibreOffice's output style).
+	auto fromText = parseCell(
+		"<table:table-cell"
+		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+		" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+		" xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\""
+		" office:value-type=\"string\">"
+		"<text:p>world</text:p>"
+		"</table:table-cell>");
+	const QByteArray out = writeCell(fromText);
+	QVERIFY2(out.contains("office:string-value=\"world\""), out.constData());
+	QVERIFY2(out.contains("<text:p>world</text:p>"), out.constData());
 }
 
 QTEST_MAIN(TestTablecell)

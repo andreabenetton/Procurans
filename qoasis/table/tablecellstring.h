@@ -16,9 +16,15 @@ namespace qoasis::table
 		TablecellString(QXmlStreamReader& reader);
 
 		static const QString kCellTypeValue;
+		static const QString kStringValueAttribute;
 
 		// implements Tablecell
 		QString instanceCellType() override;
+
+	protected:
+		// implements Tag
+		void readAttribute(QStringRef name, QStringRef value) override;
+		void writeAttributes(QXmlStreamWriter* writer) override;
 	};
 }
 #endif // TABLECELLSTRING_H

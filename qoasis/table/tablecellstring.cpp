@@ -6,6 +6,7 @@
 namespace qoasis::table
 {
 	const QString TablecellString::kCellTypeValue = QString("string");
+	const QString TablecellString::kStringValueAttribute = QString("office:string-value");
 
 	TablecellString::TablecellString(QString text, int repeat, QString style) : Tablecell(repeat, style)
 	{
@@ -25,5 +26,23 @@ namespace qoasis::table
 	QString TablecellString::instanceCellType()
 	{
 		return kCellTypeValue;
+	}
+
+	// implements Tag
+	void TablecellString::readAttribute(QStringRef name, QStringRef value)
+	{
+		if (name.toString() == kStringValueAttribute) {
+			_valueText = value.toString();
+			return;
+		}
+		Tablecell::readAttribute(name, value);
+	}
+
+	void TablecellString::writeAttributes(QXmlStreamWriter* writer)
+	{
+		Tablecell::writeAttributes(writer);
+		if (!_valueText.isEmpty()) {
+			writer->writeAttribute(kStringValueAttribute, _valueText);
+		}
 	}
 }
