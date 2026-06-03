@@ -111,6 +111,6 @@ namespace qoasis::office
 			}
 		}
 		// Serialize present but unsupported subtags
-		//Tag::writeSubtags(writer);
+		Tag::writeSubtags(writer);
 	}
 }
