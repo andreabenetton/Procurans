@@ -52,6 +52,7 @@ namespace qoasis
 		QMap<QString, QString> attributes_;
 		QMap<QString, QString> namespaces_;
 		QVector<QSharedPointer<Tag>> subtags_;
+		QString inline_text_;
 	};
 }
 #endif // TAG_H

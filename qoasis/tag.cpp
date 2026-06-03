@@ -41,6 +41,10 @@ namespace qoasis
 		writeStart(writer);
 		writeNamespaces(writer);
 		writeAttributes(writer);
+		if (!inline_text_.isEmpty())
+		{
+			writer->writeCharacters(inline_text_);
+		}
 		writeSubtags(writer);
 		writeEnd(writer);
 	}
@@ -117,6 +121,9 @@ namespace qoasis
 			qDebug() << "Subtag read in: " << instanceTag() << " - XML Token read: " << TokenTypeToString(reader.tokenType()) << " - " << reader.name();
 			if (reader.tokenType() == QXmlStreamReader::StartElement) {
 				readSubtag(reader);
+			}
+			else if (reader.tokenType() == QXmlStreamReader::Characters && !reader.isWhitespace()) {
+				inline_text_ += reader.text();
 			}
 		}
 	}

@@ -38,3 +38,8 @@ endif(WIN32)
 add_subdirectory(quazip)
 add_subdirectory(qoasis)
 add_subdirectory(main)
+
+include(CTest)
+if (BUILD_TESTING)
+	add_subdirectory(qoasis/tests)
+endif()
