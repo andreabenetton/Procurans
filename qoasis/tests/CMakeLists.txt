@@ -14,6 +14,7 @@ set(qoasis_test_sources
 	test_currency.cpp
 	test_fileods_roundtrip.cpp
 	test_repeatvector.cpp
+	test_tablecell.cpp
 	test_tag.cpp)
 
 foreach(t IN LISTS qoasis_test_sources)
