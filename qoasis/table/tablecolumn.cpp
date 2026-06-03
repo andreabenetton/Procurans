@@ -54,7 +54,13 @@ namespace qoasis::table
 
 	bool Tablecolumn::isEmpty()
 	{
-		return true;
+		// A column is "empty" only when it carries no styling, no default
+		// cell style, and no repeat — i.e. a placeholder that contributes
+		// nothing the next column couldn't also describe. Anything else
+		// must survive RepeatVector::removeEndingEmpty pruning.
+		return getStyle().isEmpty()
+		    && default_cell_style_.isEmpty()
+		    && getRepeat() == 1;
 	}
 
 	// implements Tag
