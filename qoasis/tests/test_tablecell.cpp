@@ -72,6 +72,7 @@ private slots:
 	void coveredCellTagAndRoundTrip();
 	void noSyntheticCalcextOnTypedCells();
 	void stringCellEmitsAndReadsOfficeStringValue();
+	void floatPrecisionBeyondTwoDecimals();
 };
 
 void TestTablecell::noValueTypeYieldsBaseTablecell()
@@ -111,9 +112,10 @@ void TestTablecell::floatValueTypeYieldsTablecellFloatRoundTrip()
 	QCOMPARE(fcell->getDouble(), 42.5);
 
 	const QByteArray out = writeCell(cell);
-	QVERIFY2(out.contains("office:value=\"42.50\""), out.constData());
-	// Display text uses the , decimal separator (locale swap inside the
-	// typed cell's writeSubtags).
+	// 'g',15 emits the shortest representation that round-trips: "42.5".
+	QVERIFY2(out.contains("office:value=\"42.5\""), out.constData());
+	// Display text uses the , decimal separator with the legacy 2-decimal
+	// Italian format (the locale swap inside the typed cell's writeSubtags).
 	QVERIFY2(out.contains("42,50"), out.constData());
 }
 
@@ -207,6 +209,25 @@ void TestTablecell::stringCellEmitsAndReadsOfficeStringValue()
 	const QByteArray out = writeCell(fromText);
 	QVERIFY2(out.contains("office:string-value=\"world\""), out.constData());
 	QVERIFY2(out.contains("<text:p>world</text:p>"), out.constData());
+}
+
+void TestTablecell::floatPrecisionBeyondTwoDecimals()
+{
+	// Pre-fix, TablecellFloat hardcoded 'f' precision 2 on office:value,
+	// so 3.14159 became "3.14" — silent precision loss for any non-
+	// currency float. 'g',15 now preserves the input precision.
+	auto cell = parseCell(
+		"<table:table-cell"
+		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+		" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+		" office:value-type=\"float\""
+		" office:value=\"3.14159\"/>");
+	auto fcell = qSharedPointerDynamicCast<TablecellFloat>(cell);
+	QVERIFY(fcell);
+	QCOMPARE(fcell->getDouble(), 3.14159);
+
+	const QByteArray out = writeCell(cell);
+	QVERIFY2(out.contains("3.14159"), out.constData());
 }
 
 QTEST_MAIN(TestTablecell)

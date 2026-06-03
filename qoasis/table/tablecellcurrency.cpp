@@ -51,7 +51,7 @@ namespace qoasis::table
 	void TablecellCurrency::readAttribute(QStringRef name, QStringRef value)
 	{
 		if (name.toString() == kCellTypeAttribute) {
-			value_amount_ = value.toFloat();
+			value_amount_ = value.toDouble();
 			return;
 		}
 		if (name.toString() == kCellCurrencyAttribute) {

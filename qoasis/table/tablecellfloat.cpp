@@ -44,7 +44,7 @@ namespace qoasis::table
 	void TablecellFloat::readAttribute(QStringRef name, QStringRef value)
 	{
 		if (name.toString() == kCellTypeAttribute) {
-			value_number_ = value.toFloat();
+			value_number_ = value.toDouble();
 			return;
 		}
 		Tablecell::readAttribute(name, value);
@@ -53,7 +53,9 @@ namespace qoasis::table
 	void TablecellFloat::writeAttributes(QXmlStreamWriter* writer)
 	{
 		Tablecell::writeAttributes(writer);
-		writer->writeAttribute(kCellTypeAttribute, QString::number(value_number_, 'f', 2));
+		// 'g' with high precision preserves significant digits without
+		// truncating non-currency floats to 2 decimal places.
+		writer->writeAttribute(kCellTypeAttribute, QString::number(value_number_, 'g', 15));
 	}
 
 	void TablecellFloat::writeSubtags(QXmlStreamWriter* writer)
