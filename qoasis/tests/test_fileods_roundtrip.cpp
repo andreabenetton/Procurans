@@ -43,7 +43,8 @@ private slots:
 	void coveredTableCellKeepsRowOrder();             // commit e8424a9
 	void cellMultipleParagraphsAndSubtagsPreserved(); // commit 8a03dbc
 	void richTextInsideTextParagraphPreserved();      // commit 65ca086
-	void manifestRegeneratedFromTempDir();            // current commit
+	void manifestRegeneratedFromTempDir();            // commit 6267e0a
+	void nonSpreadsheetBodyRoundtrips();              // current commit
 
 private:
 	QTemporaryDir work_;
@@ -377,6 +378,39 @@ void TestFileOdsRoundtrip::manifestRegeneratedFromTempDir()
 	// The mimetype file itself is not listed in the manifest per ODF practice.
 	QVERIFY2(!outManifest.contains("manifest:full-path=\"mimetype\""),
 	         outManifest.constData());
+}
+
+void TestFileOdsRoundtrip::nonSpreadsheetBodyRoundtrips()
+{
+	// A document with a non-spreadsheet body (here office:text). The
+	// concern from the compliance review was that Body's default ctor
+	// pre-allocates an empty Spreadsheet, which would emit a spurious
+	// <office:spreadsheet/> on save. The XML-reading ctor doesn't go
+	// through the default path, so the text body should round-trip and
+	// no empty spreadsheet should be added.
+	const QString in = work_.path() + QStringLiteral("/in.ods");
+	const QString out = work_.path() + QStringLiteral("/out_text.ods");
+
+	writeOds(in, QByteArrayLiteral(
+		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+		"<office:document-content"
+		" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+		" xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\""
+		" office:version=\"1.2\">\n"
+		"  <office:body><office:text>"
+		"<text:p>WORDS</text:p>"
+		"</office:text></office:body>\n"
+		"</office:document-content>\n"));
+
+	qoasis::FileOds f(in);
+	QVERIFY(f.load());
+	QVERIFY(f.save(out, false));
+
+	const QByteArray content = readArchiveEntry(out, QStringLiteral("content.xml"));
+	QVERIFY2(content.contains("office:text"), content.constData());
+	QVERIFY2(content.contains("WORDS"), content.constData());
+	// No spurious empty <office:spreadsheet/> on a text body.
+	QVERIFY2(!content.contains("office:spreadsheet"), content.constData());
 }
 
 QTEST_MAIN(TestFileOdsRoundtrip)
