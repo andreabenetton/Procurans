@@ -142,7 +142,7 @@ namespace qoasis::table
 		return kTag;
 	}
 
-	void Tablerow::readAttribute(QStringRef name, QStringRef value)
+	void Tablerow::readAttribute(QStringView name, QStringView value)
 	{
 		// table:number-rows-repeated 19.677 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#attribute-table_number-rows-repeated
 		if (name.toString() == repeatTag()) {

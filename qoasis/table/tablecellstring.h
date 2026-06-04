@@ -23,7 +23,7 @@ namespace qoasis::table
 
 	protected:
 		// implements Tag
-		void readAttribute(QStringRef name, QStringRef value) override;
+		void readAttribute(QStringView name, QStringView value) override;
 		void writeAttributes(QXmlStreamWriter* writer) override;
 	};
 }

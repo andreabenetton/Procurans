@@ -25,7 +25,7 @@ namespace qoasis
 	protected:
 		QString name_;
 
-		void readName(QStringRef value);
+		void readName(QStringView value);
 		void writeName(QXmlStreamWriter* writer);
 
 	private:

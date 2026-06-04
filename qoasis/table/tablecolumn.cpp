@@ -69,7 +69,7 @@ namespace qoasis::table
 		return kTag;
 	}
 
-	void Tablecolumn::readAttribute(QStringRef name, QStringRef value)
+	void Tablecolumn::readAttribute(QStringView name, QStringView value)
 	{
 		// table:number-columns-repeated 19.675.4 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#attribute-table_number-columns-repeated_element-table_table-column
 		if (name == repeatTag()) {

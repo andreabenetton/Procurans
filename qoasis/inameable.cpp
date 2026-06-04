@@ -52,7 +52,7 @@ namespace qoasis
 		name_ = name;
 	}
 
-	void INameable::readName(QStringRef value)
+	void INameable::readName(QStringView value)
 	{
 		name_ = value.toString();
 	}

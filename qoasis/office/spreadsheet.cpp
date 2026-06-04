@@ -60,7 +60,7 @@ namespace qoasis::office
 		return Spreadsheet::kTag;
 	}
 
-	void Spreadsheet::readAttribute(QStringRef name, QStringRef value)
+	void Spreadsheet::readAttribute(QStringView name, QStringView value)
 	{
 		// Deserialize present but unsupported attributes
 		// table:protection-key 19.697 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#attribute-table_protection-key

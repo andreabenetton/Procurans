@@ -22,7 +22,7 @@ namespace qoasis
 	protected:
 		QString style_;
 
-		void readStyle(QStringRef value);
+		void readStyle(QStringView value);
 		void writeStyle(QXmlStreamWriter* writer);
 	};
 }

@@ -39,7 +39,7 @@ namespace qoasis::table
 	}
 
 	// implements Tag
-	void TablecellDate::readAttribute(QStringRef name, QStringRef value)
+	void TablecellDate::readAttribute(QStringView name, QStringView value)
 	{
 		if (name.toString() == kCellTypeAttribute) {
 			// ODF allows either a date or a dateTime here; take the date

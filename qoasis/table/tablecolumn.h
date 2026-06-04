@@ -36,7 +36,7 @@ namespace qoasis::table
 	protected:
 		// implements Tag
 		void writeAttributes(QXmlStreamWriter* writer) override;
-		void readAttribute(QStringRef name, QStringRef value) override;
+		void readAttribute(QStringView name, QStringView value) override;
 
 	private:
 		QString default_cell_style_;

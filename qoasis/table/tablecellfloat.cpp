@@ -41,7 +41,7 @@ namespace qoasis::table
 	}
 
 	// implements Tag
-	void TablecellFloat::readAttribute(QStringRef name, QStringRef value)
+	void TablecellFloat::readAttribute(QStringView name, QStringView value)
 	{
 		if (name.toString() == kCellTypeAttribute) {
 			value_number_ = value.toDouble();

@@ -119,19 +119,22 @@ namespace qoasis
 		}
 	}
 
-	void Tag::readNamespace(const QStringRef name, const QStringRef value)
+	void Tag::readNamespace(const QStringView name, const QStringView value)
 	{
 		namespaces_.insert(name.toString(), value.toString());
 	}
 
-	void Tag::readAttribute(const QStringRef name, const QStringRef value)
+	void Tag::readAttribute(const QStringView name, const QStringView value)
 	{
 		attributes_.insert(name.toString(), value.toString());
 	}
 
 	void Tag::loopToReadSubtag(QXmlStreamReader& reader)
 	{
-		QStringRef currentTokenName = reader.qualifiedName();
+		// Materialise the loop sentinel into a QString — a QStringView would
+		// be a borrowed reference into the reader's internal buffer and gets
+		// invalidated by readNext() on the very next iteration.
+		const QString currentTokenName = reader.qualifiedName().toString();
 		while (!((reader.tokenType() == QXmlStreamReader::EndElement && (reader.qualifiedName() == currentTokenName)))) {
 			reader.readNext();
 			if (reader.tokenType() == QXmlStreamReader::StartElement) {

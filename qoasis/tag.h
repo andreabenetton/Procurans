@@ -31,8 +31,8 @@ namespace qoasis
 
 		virtual void read(QXmlStreamReader& reader);
 
-		virtual void readAttribute(QStringRef name, QStringRef value);
-		virtual void readNamespace(QStringRef name, QStringRef value);
+		virtual void readAttribute(QStringView name, QStringView value);
+		virtual void readNamespace(QStringView name, QStringView value);
 		virtual void readSubtag(QXmlStreamReader& reader);
 
 		virtual void writeAttributes(QXmlStreamWriter* writer);

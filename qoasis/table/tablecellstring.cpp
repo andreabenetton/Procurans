@@ -29,7 +29,7 @@ namespace qoasis::table
 	}
 
 	// implements Tag
-	void TablecellString::readAttribute(QStringRef name, QStringRef value)
+	void TablecellString::readAttribute(QStringView name, QStringView value)
 	{
 		if (name.toString() == kStringValueAttribute) {
 			_valueText = value.toString();

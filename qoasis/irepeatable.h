@@ -22,7 +22,7 @@ namespace qoasis
 	protected:
 		int repeat_;
 
-		void readRepeat(QStringRef value);
+		void readRepeat(QStringView value);
 		void writeRepeat(QXmlStreamWriter* writer);
 	};
 }

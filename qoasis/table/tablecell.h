@@ -51,7 +51,7 @@ namespace qoasis::table
 		// implements Tag
 		void writeAttributes(QXmlStreamWriter* writer) override;
 		void writeSubtags(QXmlStreamWriter* writer) override;
-		void readAttribute(QStringRef name, QStringRef value) override;
+		void readAttribute(QStringView name, QStringView value) override;
 		void readSubtag(QXmlStreamReader& reader) override;
 
 		QString _valueText;

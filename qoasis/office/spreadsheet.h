@@ -28,7 +28,7 @@ namespace qoasis::office
 
 	protected:
 		// implements Tag
-		void readAttribute(QStringRef name, QStringRef value) override;
+		void readAttribute(QStringView name, QStringView value) override;
 		void readSubtag(QXmlStreamReader& reader) override;
 		void writeAttributes(QXmlStreamWriter* writer) override;
 		void writeSubtags(QXmlStreamWriter* writer) override;

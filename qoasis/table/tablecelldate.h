@@ -32,7 +32,7 @@ namespace qoasis::table
 		QDate value_date_;
 
 		// implements Tags
-		void readAttribute(QStringRef name, QStringRef value) override;
+		void readAttribute(QStringView name, QStringView value) override;
 		void writeAttributes(QXmlStreamWriter* writer) override;
 		void writeSubtags(QXmlStreamWriter* writer) override;
 	};

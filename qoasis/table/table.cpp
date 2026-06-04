@@ -79,7 +79,7 @@ namespace qoasis::table
 		return kTag;
 	}
 
-	void Table::readAttribute(QStringRef name, QStringRef value)
+	void Table::readAttribute(QStringView name, QStringView value)
 	{
 		// table:name 19.673.13 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#attribute-table_name_element-table_table
 		if (name.toString() == nameTag()) {

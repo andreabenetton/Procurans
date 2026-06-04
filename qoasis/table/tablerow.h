@@ -49,7 +49,7 @@ namespace qoasis::table
 		void readSubtag(QXmlStreamReader& reader) override;
 		void writeAttributes(QXmlStreamWriter* writer) override;
 		void writeSubtags(QXmlStreamWriter* writer) override;
-		void readAttribute(QStringRef name, QStringRef value) override;
+		void readAttribute(QStringView name, QStringView value) override;
 
 	private:
 		static const QString kRepeatAttribute;

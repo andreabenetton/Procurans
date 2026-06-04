@@ -72,7 +72,7 @@ namespace qoasis::office
 		return DocumentContent::kTag;
 	}
 
-	void DocumentContent::readAttribute(QStringRef name, QStringRef value)
+	void DocumentContent::readAttribute(QStringView name, QStringView value)
 	{
 		// office:version 19.386 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#attribute-office_version
 		if (name.toString() == kVersionAttribute)

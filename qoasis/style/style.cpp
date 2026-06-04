@@ -20,7 +20,7 @@ namespace qoasis::style
 		return kTag;
 	}
 
-	void Style::readAttribute(QStringRef attributename, QStringRef attributevalue)
+	void Style::readAttribute(QStringView attributename, QStringView attributevalue)
 	{
 		// Deserialize present but unsupported attributes
 		Tag::readAttribute(attributename, attributevalue);

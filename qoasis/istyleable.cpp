@@ -32,7 +32,7 @@ namespace qoasis
 		return QString("table:style-name");
 	}
 
-	void IStyleable::readStyle(QStringRef value)
+	void IStyleable::readStyle(QStringView value)
 	{
 		style_ = value.toString();
 	}

@@ -35,7 +35,7 @@ namespace qoasis::table
 		Currency value_currency_;
 
 		// implements Tag
-		void readAttribute(QStringRef name, QStringRef value) override;
+		void readAttribute(QStringView name, QStringView value) override;
 		void writeAttributes(QXmlStreamWriter* writer) override;
 		void writeSubtags(QXmlStreamWriter* writer) override;
 	};

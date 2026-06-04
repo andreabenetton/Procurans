@@ -48,7 +48,7 @@ namespace qoasis::table
 	}
 
 	// implements Tag
-	void TablecellCurrency::readAttribute(QStringRef name, QStringRef value)
+	void TablecellCurrency::readAttribute(QStringView name, QStringView value)
 	{
 		if (name.toString() == kCellTypeAttribute) {
 			value_amount_ = value.toDouble();

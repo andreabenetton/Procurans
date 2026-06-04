@@ -119,7 +119,7 @@ namespace qoasis::table
 		return kTag;
 	}
 
-	void Tablecell::readAttribute(QStringRef name, QStringRef value)
+	void Tablecell::readAttribute(QStringView name, QStringView value)
 	{
 		// table:style-name 19.726.13 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#attribute-table_style-name_element-table_table-cell
 		if (name.toString() == styleTag()) {

@@ -30,7 +30,7 @@ namespace qoasis
 		repeat_ = repeat_ + offset >= 1? repeat_ + offset : 1;
 	}
 
-	void IRepeatable::readRepeat(const QStringRef value)
+	void IRepeatable::readRepeat(const QStringView value)
 	{
 		repeat_ = value.toInt();
 	}
