@@ -4,20 +4,20 @@
 /*
 Copyright (C) 2005-2014 Sergey A. Tachenov
 
-This file is part of QuaZIP.
+This file is part of QuaZip.
 
-QuaZIP is free software: you can redistribute it and/or modify
+QuaZip is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation, either version 2.1 of the License, or
 (at your option) any later version.
 
-QuaZIP is distributed in the hope that it will be useful,
+QuaZip is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
-along with QuaZIP.  If not, see <http://www.gnu.org/licenses/>.
+along with QuaZip.  If not, see <http://www.gnu.org/licenses/>.
 
 See COPYING file for the full LGPL text.
 
@@ -59,16 +59,16 @@ struct QUAZIP_EXPORT QuaZipNewInfo {
    * to the source file timestamp instead of archive creating time. Use
    * setFileDateTime() or QuaZipNewInfo(const QString&, const QString&).
    **/
-  QDateTime dateTime;
+  QDateTime dateTime{};
   /// File internal attributes.
-  quint16 internalAttr;
+  quint16 internalAttr{};
   /// File external attributes.
   /**
     The highest 16 bits contain Unix file permissions and type (dir or
     file). The constructor QuaZipNewInfo(const QString&, const QString&)
     takes permissions from the provided file.
     */
-  quint32 externalAttr;
+  quint32 externalAttr{};
   /// File comment.
   /** Will be encoded in UTF-8 encoding.
    **/
@@ -81,7 +81,7 @@ struct QUAZIP_EXPORT QuaZipNewInfo {
   /** This is only needed if you are using raw file zipping mode, i. e.
    * adding precompressed file in the zip archive.
    **/
-  ulong uncompressedSize;
+  ulong uncompressedSize{};
   /// Constructs QuaZipNewInfo instance.
   /** Initializes name with \a name, dateTime with current date and
    * time. Attributes are initialized with zeros, comment and extra
@@ -94,10 +94,18 @@ struct QUAZIP_EXPORT QuaZipNewInfo {
    * is inaccessible (e. g. you do not have read permission for the
    * directory file in), uses current time and zero permissions. Other attributes are
    * initialized with zeros, comment and extra field with null values.
-   * 
    * \sa setFileDateTime()
    **/
   QuaZipNewInfo(const QString& name, const QString& file);
+  /// Constructs QuaZipNewInfo instance.
+  /** Initializes name with \a name and provided timestamp.  Permissions are taken
+   * from the specified file. If the \a file does not exists or
+   * is inaccessible (e. g. you do not have read permission for the
+   * directory file in), uses zero permissions. Other attributes are
+   * initialized with zeros, comment and extra field with null values.
+   * \sa setFileDateTime()
+   **/
+  QuaZipNewInfo(const QString& name, const QString& file, const QDateTime& dateTime);
   /// Initializes the new instance from existing file info.
   /** Mainly used when copying files between archives.
    *

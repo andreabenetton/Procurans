@@ -1,38 +1,71 @@
 message(STATUS ${CMAKE_CURRENT_LIST_FILE})
 
-if (NOT MSVC)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-endif (NOT MSVC)
-
-# Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-# Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
 
 include_directories(${Procurans_SOURCE_DIR})
-link_directories(${Procurans_BINARY_DIR})
+link_directories(${Procurans_BINARY_DIR}/lib)
+
 find_package(Qt5Core REQUIRED)
 
-# set all include directories for in and out of source builds
-include_directories(
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${ZLIB_INCLUDE_DIRS}
+# On Qt5, QTextCodec lives in QtCore — use it. On Qt6 it would require
+# the Qt6Core5Compat module; we opt out there in favour of the QStringConverter
+# path that quazip_textcodec.h provides under the same #ifndef guard.
+set(QUAZIP_CAN_USE_QTEXTCODEC 1)
+configure_file(quazip_config.h.in quazip_config.h @ONLY)
+
+set(quazip_sources
+	JlCompress.cpp
+	JlCompress.h
+	JlOptions.cpp
+	QuaCompress.cpp
+	QuaCompress.h
+	QuaExtract.cpp
+	QuaExtract.h
+	ioapi.h
+	minizip_crypt.h
+	qioapi.cpp
+	quaadler32.cpp
+	quaadler32.h
+	quachecksum32.cpp
+	quachecksum32.h
+	quacrc32.cpp
+	quacrc32.h
+	quagzipfile.cpp
+	quagzipfile.h
+	quaziodevice.cpp
+	quaziodevice.h
+	quazip.cpp
+	quazip.h
+	quazip_global.h
+	quazip_qt_compat.h
+	quazip_textcodec.cpp
+	quazip_textcodec.h
+	quazipdir.cpp
+	quazipdir.h
+	quazipfile.cpp
+	quazipfile.h
+	quazipfileinfo.cpp
+	quazipfileinfo.h
+	quazipnewinfo.cpp
+	quazipnewinfo.h
+	unzip.c
+	unzip.h
+	zip.c
+	zip.h
 )
 
-file(GLOB_RECURSE src_files
-	"*.h" "*.hh" "*.hpp" "*.hxx"
-	"*.c" "*.cc" "*.cpp")
+if (DEFINED QUAZIP_STATIC)
+	add_library(quazip STATIC ${quazip_sources})
+	target_compile_definitions(quazip PUBLIC QUAZIP_STATIC)
+else (DEFINED QUAZIP_STATIC)
+	add_library(quazip SHARED ${quazip_sources})
+	target_compile_definitions(quazip PRIVATE QUAZIP_BUILD)
+endif (DEFINED QUAZIP_STATIC)
 
-if (DEFINED QUAZIP_S)
-	set(lib_type STATIC)
-	add_compile_definitions(QUAZIP_STATIC)
-else ()
-	set(lib_type SHARED)
-	add_definitions(-DQUAZIP_SHARED -DQUAZIP_BUILD)
-endif ()
+set_target_properties(quazip PROPERTIES DEBUG_POSTFIX "d")
+target_compile_features(quazip PUBLIC cxx_std_17)
+target_include_directories(quazip PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(quazip ${lib_type} ${src_files})
 get_property(zlib_libs GLOBAL PROPERTY zlib_libs_property)
 target_link_libraries(quazip Qt5::Core ${zlib_libs})
-
