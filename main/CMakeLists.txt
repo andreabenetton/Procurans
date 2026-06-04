@@ -83,6 +83,7 @@ endif ()
 get_property(zlib_libs GLOBAL PROPERTY zlib_libs_property)
 
 target_link_libraries(${exe_name}
+    qfatturapa
     qoasis
     quazip
     ${zlib_libs}

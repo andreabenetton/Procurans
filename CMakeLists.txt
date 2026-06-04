@@ -37,6 +37,7 @@ endif(WIN32)
 
 add_subdirectory(quazip)
 add_subdirectory(qoasis)
+add_subdirectory(qfatturapa)
 add_subdirectory(main)
 
 include(CTest)
