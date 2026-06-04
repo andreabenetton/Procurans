@@ -5,6 +5,18 @@ message("Source dir: " ${Procurans_SOURCE_DIR})
 
 set(CMAKE_DEBUG_POSTFIX d)
 
+# Qt 6 requires C++17, and MSVC needs both /std:c++17 and /Zc:__cplusplus —
+# without the latter, MSVC defines __cplusplus as 199711L regardless of the
+# language standard, and Qt's CMake config rejects the build with a "Qt
+# requires a C++17 compiler" error. Set the floor globally so every target
+# inherits it before find_package(Qt6) runs.
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+if(MSVC)
+    add_compile_options(/Zc:__cplusplus /permissive-)
+endif()
+
 #only build zlib on windows because unix has it by default
 IF(WIN32)
 	include_directories(${Procurans_SOURCE_DIR}/zlib)
@@ -18,8 +30,12 @@ ELSE (WIN32)
 	endif(ZLIB_FOUND)
 ENDIF (WIN32)
 
-if(WIN32)
-    set (CMAKE_PREFIX_PATH "C:\\Qt\\6.5.0\\msvc2019_64\\")
+if(WIN32 AND NOT CMAKE_PREFIX_PATH)
+    # Reasonable default for a fresh dev box; override via
+    # -DCMAKE_PREFIX_PATH=... in CMakeSettings.json's cmakeCommandArgs (or
+    # an environment variable) when Qt is installed elsewhere or at a
+    # different point release.
+    set (CMAKE_PREFIX_PATH "C:\\Qt\\6.11.1\\mingw_64\\")
 endif()
 
 set(LIBRARY_OUTPUT_PATH "${Procurans_BINARY_DIR}/lib")
