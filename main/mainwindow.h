@@ -15,6 +15,7 @@ class QTableView;
 QT_END_NAMESPACE
 
 #include "gridschemafield.h"
+#include "qfatturapa/invoicetypes.h"
 #include "qoasis/fileods.h"
 #include "settings.h"
 
@@ -92,12 +93,12 @@ private:
 
     void LogOnModelChanged(QAbstractItemModel* detailsModel, const QModelIndex& topLeft, const QModelIndex& bottomRight);
 
-    void addHeaderToUI(QMap<QString,QString>& headerData);
-    void addDetailsToUI(QList< QMap<QString,QString> >& detailsData, QList<GridSchemaField*> detailsSchema);
-    void addPaymentsToUI(QList< QMap<QString,QString> >& paymentData, QList<GridSchemaField*> paymentSchema);
-    void addSummaryToUI(QList< QMap<QString,QString> >& summaryData, QList<GridSchemaField*> summarySchema);
+    void addHeaderToUI(const qfatturapa::InvoiceHeader& headerData);
+    void addDetailsToUI(const QList< QMap<QString,QString> >& detailsData, QList<GridSchemaField*> detailsSchema);
+    void addPaymentsToUI(const QList< QMap<QString,QString> >& paymentData, QList<GridSchemaField*> paymentSchema);
+    void addSummaryToUI(const QList< QMap<QString,QString> >& summaryData, QList<GridSchemaField*> summarySchema);
 
-    double computeTotal(QList< QMap<QString,QString> >& data, QString xmlfield);
+    double computeTotal(const QList< QMap<QString,QString> >& data, QString xmlfield);
 
     QString executeElencoFatture();
     QString executeMastriniFornitori();

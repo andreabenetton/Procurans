@@ -65,15 +65,12 @@ void TestInvoiceParser::parsesMinimalSellerHeader()
 	QString err;
 	QVERIFY2(runParse(xml, out, &err), qPrintable(err));
 
-	QCOMPARE(out.header.value(QStringLiteral("Denominazione")),
-	         QStringLiteral("ACME SRL"));
-	QCOMPARE(out.header.value(QStringLiteral("IdPaese")), QStringLiteral("IT"));
-	QCOMPARE(out.header.value(QStringLiteral("IdCodice")),
-	         QStringLiteral("01234567890"));
-	QCOMPARE(out.header.value(QStringLiteral("Indirizzo")),
-	         QStringLiteral("Via Roma 1"));
-	QCOMPARE(out.header.value(QStringLiteral("CAP")), QStringLiteral("20100"));
-	QCOMPARE(out.header.value(QStringLiteral("Comune")), QStringLiteral("Milano"));
+	QCOMPARE(out.header.seller.denominazione, QStringLiteral("ACME SRL"));
+	QCOMPARE(out.header.seller.idPaese,       QStringLiteral("IT"));
+	QCOMPARE(out.header.seller.idCodice,      QStringLiteral("01234567890"));
+	QCOMPARE(out.header.seller.indirizzo,     QStringLiteral("Via Roma 1"));
+	QCOMPARE(out.header.seller.cap,           QStringLiteral("20100"));
+	QCOMPARE(out.header.seller.comune,        QStringLiteral("Milano"));
 }
 
 void TestInvoiceParser::parsesDatiGeneraliDocumento()
@@ -91,10 +88,9 @@ void TestInvoiceParser::parsesDatiGeneraliDocumento()
 	qfatturapa::ParsedInvoice out;
 	QString err;
 	QVERIFY2(runParse(xml, out, &err), qPrintable(err));
-	QCOMPARE(out.header.value(QStringLiteral("Data")), QStringLiteral("2026-06-04"));
-	QCOMPARE(out.header.value(QStringLiteral("Numero")), QStringLiteral("FT-00042"));
-	QCOMPARE(out.header.value(QStringLiteral("ImportoTotaleDocumento")),
-	         QStringLiteral("1234.56"));
+	QCOMPARE(out.header.document.data,                   QStringLiteral("2026-06-04"));
+	QCOMPARE(out.header.document.numero,                 QStringLiteral("FT-00042"));
+	QCOMPARE(out.header.document.importoTotaleDocumento, QStringLiteral("1234.56"));
 }
 
 void TestInvoiceParser::parsesMultipleDettaglioLinee()
@@ -122,13 +118,10 @@ void TestInvoiceParser::parsesMultipleDettaglioLinee()
 	QString err;
 	QVERIFY2(runParse(xml, out, &err), qPrintable(err));
 	QCOMPARE(out.details.size(), 2);
-	QCOMPARE(out.details.at(0).value(QStringLiteral("Descrizione")),
-	         QStringLiteral("Consulenza"));
-	QCOMPARE(out.details.at(0).value(QStringLiteral("PrezzoTotale")),
-	         QStringLiteral("200.00"));
-	QCOMPARE(out.details.at(1).value(QStringLiteral("Natura")), QStringLiteral("N4"));
-	QCOMPARE(out.details.at(1).value(QStringLiteral("AliquotaIVA")),
-	         QStringLiteral("0.00"));
+	QCOMPARE(out.details.at(0).descrizione,  QStringLiteral("Consulenza"));
+	QCOMPARE(out.details.at(0).prezzoTotale, QStringLiteral("200.00"));
+	QCOMPARE(out.details.at(1).natura,       QStringLiteral("N4"));
+	QCOMPARE(out.details.at(1).aliquotaIVA,  QStringLiteral("0.00"));
 }
 
 void TestInvoiceParser::parsesDettaglioPagamento()
@@ -148,13 +141,11 @@ void TestInvoiceParser::parsesDettaglioPagamento()
 	QString err;
 	QVERIFY2(runParse(xml, out, &err), qPrintable(err));
 	QCOMPARE(out.payments.size(), 1);
-	const auto& p = out.payments.at(0);
-	QCOMPARE(p.value(QStringLiteral("ModalitaPagamento")), QStringLiteral("MP05"));
-	QCOMPARE(p.value(QStringLiteral("DataScadenzaPagamento")),
-	         QStringLiteral("2026-07-31"));
-	QCOMPARE(p.value(QStringLiteral("ImportoPagamento")), QStringLiteral("1234.56"));
-	QCOMPARE(p.value(QStringLiteral("IBAN")),
-	         QStringLiteral("IT60X0542811101000000123456"));
+	const qfatturapa::Payment& p = out.payments.at(0);
+	QCOMPARE(p.modalitaPagamento,     QStringLiteral("MP05"));
+	QCOMPARE(p.dataScadenzaPagamento, QStringLiteral("2026-07-31"));
+	QCOMPARE(p.importoPagamento,      QStringLiteral("1234.56"));
+	QCOMPARE(p.iban,                  QStringLiteral("IT60X0542811101000000123456"));
 }
 
 void TestInvoiceParser::parsesDatiRiepilogoNaturaN21()
@@ -176,9 +167,8 @@ void TestInvoiceParser::parsesDatiRiepilogoNaturaN21()
 	QString err;
 	QVERIFY2(runParse(xml, out, &err), qPrintable(err));
 	QCOMPARE(out.summary.size(), 1);
-	QCOMPARE(out.summary.at(0).value(QStringLiteral("Natura")), QStringLiteral("N2.1"));
-	QCOMPARE(out.summary.at(0).value(QStringLiteral("ImponibileImporto")),
-	         QStringLiteral("100.00"));
+	QCOMPARE(out.summary.at(0).natura,            QStringLiteral("N2.1"));
+	QCOMPARE(out.summary.at(0).imponibileImporto, QStringLiteral("100.00"));
 }
 
 void TestInvoiceParser::reportsErrorOnMalformedXml()

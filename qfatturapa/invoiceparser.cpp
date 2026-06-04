@@ -158,27 +158,35 @@ namespace qfatturapa
 	{
 		QXmlStreamReader xml(&source);
 
+		// The XML scan still produces intermediate QMap<QString,QString>
+		// rows (the addSubelementsDataToMap helper is shape-agnostic). We
+		// fold the seller and document blocks into one header map first
+		// and convert each row to the typed struct at the boundary below.
+		QMap<QString, QString> header_flat;
+
 		while (!xml.atEnd() && !xml.hasError()) {
 			const QXmlStreamReader::TokenType token = xml.readNext();
 			if (token == QXmlStreamReader::StartDocument) {
 				continue;
 			}
 			if (isStartElementNamed(xml, QStringLiteral("CedentePrestatore"))) {
-				mergeInto(out.header, parseHeader(xml));
+				mergeInto(header_flat, parseHeader(xml));
 			}
 			if (isStartElementNamed(xml, QStringLiteral("DatiGeneraliDocumento"))) {
-				mergeInto(out.header, parseDocument(xml));
+				mergeInto(header_flat, parseDocument(xml));
 			}
 			if (isStartElementNamed(xml, QStringLiteral("DettaglioLinee"))) {
-				out.details.append(parseDetail(xml));
+				out.details.append(InvoiceLine::fromFlatMap(parseDetail(xml)));
 			}
 			if (isStartElementNamed(xml, QStringLiteral("DettaglioPagamento"))) {
-				out.payments.append(parsePayment(xml));
+				out.payments.append(Payment::fromFlatMap(parsePayment(xml)));
 			}
 			if (isStartElementNamed(xml, QStringLiteral("DatiRiepilogo"))) {
-				out.summary.append(parseSummary(xml));
+				out.summary.append(SummaryRow::fromFlatMap(parseSummary(xml)));
 			}
 		}
+
+		out.header = InvoiceHeader::fromFlatMap(header_flat);
 
 		if (xml.hasError()) {
 			if (err) *err = xml.errorString();

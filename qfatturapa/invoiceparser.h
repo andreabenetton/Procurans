@@ -5,8 +5,9 @@
 #define QFATTURAPA_INVOICEPARSER_H
 
 #include <QList>
-#include <QMap>
 #include <QString>
+
+#include "invoicetypes.h"
 
 QT_BEGIN_NAMESPACE
 class QIODevice;
@@ -16,10 +17,10 @@ namespace qfatturapa
 {
 	struct ParsedInvoice
 	{
-		QMap<QString, QString>          header;     // 1 row
-		QList<QMap<QString, QString>>   details;    // N rows
-		QList<QMap<QString, QString>>   payments;   // N rows
-		QList<QMap<QString, QString>>   summary;    // N rows
+		InvoiceHeader         header;
+		QList<InvoiceLine>    details;
+		QList<Payment>        payments;
+		QList<SummaryRow>     summary;
 	};
 
 	/**

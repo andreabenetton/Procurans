@@ -808,15 +808,15 @@ void MainWindow::parseXMLFile(const QString &fileName)
     // a single placeholder row carrying ImportoTotaleDocumento so the
     // payments grid isn't empty. Not the parser library's responsibility.
     if(parsed.payments.isEmpty()) {
-        QMap<QString, QString> payment;
-        payment.insert("ImportoPagamento", parsed.header.value("ImportoTotaleDocumento"));
-        parsed.payments.append(payment);
+        qfatturapa::Payment p;
+        p.importoPagamento = parsed.header.document.importoTotaleDocumento;
+        parsed.payments.append(p);
     }
 
     this->addHeaderToUI(parsed.header);
-    this->addPaymentsToUI(parsed.payments, createPaymentsGridSchema());
-    this->addDetailsToUI(parsed.details, createDetailsGridSchema());
-    this->addSummaryToUI(parsed.summary, createSummaryGridSchema());
+    this->addPaymentsToUI(qfatturapa::toFlatMaps(parsed.payments), createPaymentsGridSchema());
+    this->addDetailsToUI(qfatturapa::toFlatMaps(parsed.details),   createDetailsGridSchema());
+    this->addSummaryToUI(qfatturapa::toFlatMaps(parsed.summary),   createSummaryGridSchema());
 
 #ifndef QT_NO_CURSOR
     QApplication::restoreOverrideCursor();
@@ -870,53 +870,53 @@ QStandardItemModel* createGridModel(const QList< QMap<QString,QString> >  &data,
     return model;
 }
 
-void MainWindow::addHeaderToUI(QMap<QString,QString>& headerData)
+void MainWindow::addHeaderToUI(const qfatturapa::InvoiceHeader& headerData)
 {
+    const qfatturapa::SellerIdentity& seller = headerData.seller;
+    const qfatturapa::DocumentInfo&   doc    = headerData.document;
+
     QLineEdit* qle = this->findChild<QLineEdit*>("entitaEdit");
-    if (qle != nullptr){
-        if (headerData.contains("Denominazione"))
-            qle->setText(headerData.value("Denominazione"));
+    if (qle != nullptr) {
+        if (!seller.denominazione.isEmpty())
+            qle->setText(seller.denominazione);
         else
-            qle->setText(headerData.value("Cognome") + " " + headerData.value("Nome")) ;
+            qle->setText(seller.cognome + " " + seller.nome);
     }
 
     qle = this->findChild<QLineEdit*>("pivaEdit");
     if (qle != nullptr)
-        qle->setText(headerData.value("IdPaese") + headerData.value("IdCodice"));
+        qle->setText(seller.idPaese + seller.idCodice);
 
     qle = this->findChild<QLineEdit*>("indirizzoEdit");
     if (qle != nullptr)
-        qle->setText(headerData.value("Indirizzo"));
+        qle->setText(seller.indirizzo);
 
     qle = this->findChild<QLineEdit*>("capEdit");
     if (qle != nullptr)
-        qle->setText(headerData.value("CAP"));
+        qle->setText(seller.cap);
 
     qle = this->findChild<QLineEdit*>("comuneEdit");
     if (qle != nullptr)
-        qle->setText(headerData.value("Comune"));
+        qle->setText(seller.comune);
 
     QDateEdit* qde = this->findChild<QDateEdit*>("dataemissioneEdit");
     if (qde != nullptr) {
-        QDate date = QDate::fromString(headerData.value("Data"),"yyyy-MM-dd");
+        const QDate date = QDate::fromString(doc.data, "yyyy-MM-dd");
         qde->setDate(date);
     }
 
     qle = this->findChild<QLineEdit*>("numeroEdit");
     if (qle != nullptr)
-        qle->setText(headerData.value("Numero"));
+        qle->setText(doc.numero);
 
-    qle = this->findChild<QLineEdit*>("imponibileEdit");
-    if (qle != nullptr)
-        qle->setText(headerData.value("ImponibileImporto"));
-
-    qle = this->findChild<QLineEdit*>("impostaEdit");
-    if (qle != nullptr)
-        qle->setText(headerData.value("Imposta"));
+    // imponibileEdit / impostaEdit are populated by UpdateSummaryUI from
+    // the summary grid totals; there's no ImponibileImporto / Imposta in
+    // the header block. Leave those line edits to be updated by the
+    // summary path.
 
     qle = this->findChild<QLineEdit*>("totaleEdit");
     if (qle != nullptr)
-        qle->setText(headerData.value("ImportoTotaleDocumento"));
+        qle->setText(doc.importoTotaleDocumento);
 }
 
 QList<GridSchemaField*> MainWindow::createDetailsGridSchema()
@@ -956,18 +956,17 @@ QList<GridSchemaField*> MainWindow::createSummaryGridSchema()
     return schema;
 }
 
-double MainWindow::computeTotal(QList< QMap<QString,QString> >& data, QString xmlfield)
+double MainWindow::computeTotal(const QList< QMap<QString,QString> >& data, QString xmlfield)
 {
     double result = 0.0;
     int rowN = data.size();
     for (int _row = 0; _row < rowN; _row++) {
-        auto item = data.at(_row);
-        result += item[xmlfield].toDouble();
+        result += data.at(_row).value(xmlfield).toDouble();
     }
     return result;
 }
 
-void MainWindow::addSummaryToUI(QList< QMap<QString,QString> >& summaryData, QList<GridSchemaField*> summarySchema)
+void MainWindow::addSummaryToUI(const QList< QMap<QString,QString> >& summaryData, QList<GridSchemaField*> summarySchema)
 {
     QTableView *grid = ui->summaryTable;
 
@@ -1094,7 +1093,7 @@ void MainWindow::onSummaryChanged(const QModelIndex& topLeft, const QModelIndex&
     LogOnModelChanged(model, topLeft, bottomRight);
 }
 
-void MainWindow::addDetailsToUI(QList< QMap<QString,QString> >& detailsData, QList<GridSchemaField*> detailsSchema)
+void MainWindow::addDetailsToUI(const QList< QMap<QString,QString> >& detailsData, QList<GridSchemaField*> detailsSchema)
 {
     QTableView *grid = ui->detailsTable;
 
@@ -1115,7 +1114,7 @@ void MainWindow::addDetailsToUI(QList< QMap<QString,QString> >& detailsData, QLi
 
 
 
-void MainWindow::addPaymentsToUI(QList< QMap<QString,QString> >& paymentData, QList<GridSchemaField*> paymentSchema)
+void MainWindow::addPaymentsToUI(const QList< QMap<QString,QString> >& paymentData, QList<GridSchemaField*> paymentSchema)
 {
     QTableView *grid = ui->paymentsTable;
 

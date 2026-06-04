@@ -10,6 +10,8 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 set(lib_files
     codelists.h
     codelists.cpp
+    invoicetypes.h
+    invoicetypes.cpp
     invoiceparser.h
     invoiceparser.cpp
 )
