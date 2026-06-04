@@ -4,15 +4,12 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#include <QHash>
 #include <QMainWindow>
+#include <QString>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
-class QString;
-//class QAction;
-//class QMenu;
-//class QTableView;
-//class QXmlStreamReader;
 class QSettings;
 QT_END_NAMESPACE
 
@@ -42,6 +39,10 @@ class Settings
         void toggleExecute(Execute p);
         bool isExecute(Execute p);
 
+        // IBAN -> bank display name. Persisted in Procurans.ini under
+        // [bankaccounts]; seeded with a built-in default if absent.
+        const QHash<QString, QString>& getBankAccounts() const;
+
         Settings(Settings const&)        = delete;
         void operator=(Settings const&)  = delete;
 
@@ -62,6 +63,8 @@ class Settings
         bool executePrimaNota;
         bool executeScadenziario;
         bool executeBackupFiles;
+
+        QHash<QString, QString> bankAccounts;
 
         bool updated;
 };

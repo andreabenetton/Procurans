@@ -106,7 +106,6 @@ private:
     QString executeScadenziario();
 
     QString curFile;
-    QHash<QString, QString> bankAccount;
 
     Settings* m_setting;
 

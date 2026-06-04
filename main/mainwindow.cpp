@@ -34,11 +34,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_setting = &Settings::getInstance();
 
-    bankAccount["IT64U0503451861000000001728"] = "BPM";
-    bankAccount["IT23P0503451861000000001817"] = "BPM Fotovoltaico";
-    bankAccount["IT65Z0306951030615272528476"] = "Intesa";
-    bankAccount["IT33U0843051030000000180277"] = "CRAC";
-
     ui->setupUi(this);
 
     createActions();
@@ -567,7 +562,7 @@ QString MainWindow::executeScadenziario()
         row->appendCell(QSharedPointer<Tablecell>(new Tablecell()));
 
         Tablecell* p1;
-        if (cassa == bankAccount["IT33U0843051030000000180277"])
+        if (cassa == m_setting->getBankAccounts()["IT33U0843051030000000180277"])
             p1 = new TablecellCurrency(Currency::EUR, importo);
         else
             p1 = new Tablecell();
@@ -575,7 +570,7 @@ QString MainWindow::executeScadenziario()
         row->appendCell(QSharedPointer<Tablecell>(new Tablecell()));
 
         Tablecell* p2;
-        if (cassa == bankAccount["IT65Z0306951030615272528476"])
+        if (cassa == m_setting->getBankAccounts()["IT65Z0306951030615272528476"])
             p2 = new TablecellCurrency(Currency::EUR, importo);
         else
             p2 = new Tablecell();
@@ -583,7 +578,7 @@ QString MainWindow::executeScadenziario()
         row->appendCell(QSharedPointer<Tablecell>(new Tablecell()));
 
         Tablecell* p3;
-        if (cassa == bankAccount["IT64U0503451861000000001728"])
+        if (cassa == m_setting->getBankAccounts()["IT64U0503451861000000001728"])
             p3 = new TablecellCurrency(Currency::EUR, importo);
         else
             p3 = new Tablecell();
@@ -939,7 +934,7 @@ QList<GridSchemaField*> MainWindow::createPaymentsGridSchema()
     schema.append(new GridSchemaField(QObject::tr("Modalita"), "ModalitaPagamento", &qfatturapa::paymentMethodType()));
     schema.append(new GridSchemaField(QObject::tr("Scadenza"), "DataScadenzaPagamento", DateColumn));
     schema.append(new GridSchemaField(QObject::tr("Importo"), "ImportoPagamento", FloatColumn, 2));
-    schema.append(new GridSchemaField(QObject::tr("Banca"), "IBAN", &bankAccount));
+    schema.append(new GridSchemaField(QObject::tr("Banca"), "IBAN", &m_setting->getBankAccounts()));
 
     return schema;
 }
@@ -1135,7 +1130,7 @@ void MainWindow::addPaymentsToUI(const QList< QMap<QString,QString> >& paymentDa
 
     grid->setItemDelegateForColumn(0, cbid);
 
-    QStringList q(bankAccount.values());
+    QStringList q(m_setting->getBankAccounts().values());
     q.append("");
     q.sort(Qt::CaseInsensitive);
     ComboBoxItemDelegate* cbid1 = new ComboBoxItemDelegate(q, grid);

@@ -41,6 +41,33 @@ void Settings::load()
     settings->beginGroup("othersettings");
     executeBackupFiles = (settings->value("backupfiles", true)).toBool();
     settings->endGroup();
+
+    settings->beginGroup("bankaccounts");
+    const QStringList ibans = settings->childKeys();
+    bankAccounts.clear();
+    if (ibans.isEmpty())
+    {
+        // First run: seed with the historic in-code default. Mark `updated`
+        // so save() will persist them, giving the user a populated section
+        // in Procurans.ini they can edit.
+        bankAccounts.insert(QStringLiteral("IT64U0503451861000000001728"),
+                            QStringLiteral("BPM"));
+        bankAccounts.insert(QStringLiteral("IT23P0503451861000000001817"),
+                            QStringLiteral("BPM Fotovoltaico"));
+        bankAccounts.insert(QStringLiteral("IT65Z0306951030615272528476"),
+                            QStringLiteral("Intesa"));
+        bankAccounts.insert(QStringLiteral("IT33U0843051030000000180277"),
+                            QStringLiteral("CRAC"));
+        updated = true;
+    }
+    else
+    {
+        for (const QString& iban : ibans)
+        {
+            bankAccounts.insert(iban, settings->value(iban).toString());
+        }
+    }
+    settings->endGroup();
 }
 
 void Settings::save()
@@ -60,7 +87,20 @@ void Settings::save()
         settings->beginGroup("othersettings");
         settings->setValue("backupfiles", executeBackupFiles);
         settings->endGroup();
+        settings->beginGroup("bankaccounts");
+        settings->remove(QString());        // wipe stale IBANs in the group
+        for (auto it = bankAccounts.constBegin();
+             it != bankAccounts.constEnd(); ++it)
+        {
+            settings->setValue(it.key(), it.value());
+        }
+        settings->endGroup();
     }
+}
+
+const QHash<QString, QString>& Settings::getBankAccounts() const
+{
+    return bankAccounts;
 }
 
 void Settings::restore(QMainWindow* window)
