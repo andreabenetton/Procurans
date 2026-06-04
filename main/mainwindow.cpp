@@ -59,6 +59,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     naturaType["N1"] = "Escluse ex. art. 15";
     naturaType["N2"] = "Non soggette";
+    naturaType["N2.1"] = "Non soggette - artt. da 7 a 7-septies DPR 633/72";
+    naturaType["N2.2"] = "Non soggette - altri casi";
     naturaType["N3"] = "Non Imponibili";
     naturaType["N3.1"] = "Non Imponibili - esportazioni";
     naturaType["N3.2"] = "Non Imponibili - cessioni intracomunitarie";
