@@ -14,6 +14,7 @@
 #include "comboboxitemdelegate.h"
 #include "gridschemafield.h"
 
+#include "qfatturapa/codelists.h"
 #include "qoasis/currency.h"
 #include "qoasis/table/tablecell.h"
 #include "qoasis/table/tablecellstring.h"
@@ -32,55 +33,6 @@ MainWindow::MainWindow(QWidget *parent)
     billLoaded = false;
 
     m_setting = &Settings::getInstance();
-
-    paymentMethodType["MP01"] = "contanti";
-    paymentMethodType["MP02"] = "assegno";
-    paymentMethodType["MP03"] = "assegno circolare";
-    paymentMethodType["MP04"] = "contanti presso Tesoreria";
-    paymentMethodType["MP05"] = "bonifico";
-    paymentMethodType["MP06"] = "vaglia cambiario";
-    paymentMethodType["MP07"] = "bollettino bancario";
-    paymentMethodType["MP08"] = "carta di pagamento";
-    paymentMethodType["MP09"] = "RID";
-    paymentMethodType["MP10"] = "RID utenze";
-    paymentMethodType["MP11"] = "RID veloce";
-    paymentMethodType["MP12"] = "RIBA";
-    paymentMethodType["MP13"] = "MAV";
-    paymentMethodType["MP14"] = "quietanza erario";
-    paymentMethodType["MP15"] = "giroconto su conti di contabilità speciale";
-    paymentMethodType["MP16"] = "domiciliazione bancaria";
-    paymentMethodType["MP17"] = "domiciliazione postale";
-    paymentMethodType["MP18"] = "bollettino di c/c postale";
-    paymentMethodType["MP19"] = "SEPA Direct Debit";
-    paymentMethodType["MP20"] = "SEPA Direct Debit CORE";
-    paymentMethodType["MP21"] = "SEPA Direct Debit B2B";
-    paymentMethodType["MP22"] = "Trattenuta su somme già riscosse";
-    paymentMethodType["MP23"] = "PagoPA";
-
-    naturaType["N1"] = "Escluse ex. art. 15";
-    naturaType["N2"] = "Non soggette";
-    naturaType["N2.1"] = "Non soggette - artt. da 7 a 7-septies DPR 633/72";
-    naturaType["N2.2"] = "Non soggette - altri casi";
-    naturaType["N3"] = "Non Imponibili";
-    naturaType["N3.1"] = "Non Imponibili - esportazioni";
-    naturaType["N3.2"] = "Non Imponibili - cessioni intracomunitarie";
-    naturaType["N3.3"] = "Non Imponibili - cessioni verso San Marino";
-    naturaType["N3.4"] = "Non Imponibili - operazioni assimilate alle cessioni all'esportazione";
-    naturaType["N3.5"] = "Non Imponibili - a seguito di dichiarazioni d'intento";
-    naturaType["N3.6"] = "Non Imponibili - altre operazioni che non concorrono alla formazione del plafond";
-    naturaType["N4"] = "Esenti";
-    naturaType["N5"] = "Regime del margine";
-    naturaType["N6"] = "Inversione contabile";
-    naturaType["N6.1"] = "Inversione contabile - cessione di rottami e altri materiali di recupero";
-    naturaType["N6.2"] = "Inversione contabile - cessione di oro e argento puro";
-    naturaType["N6.3"] = "Inversione contabile - subappalto nel settore edile";
-    naturaType["N6.4"] = "Inversione contabile - cessione di fabbricati";
-    naturaType["N6.5"] = "Inversione contabile - cessione di telefoni cellulari";
-    naturaType["N6.6"] = "Inversione contabile - cessione di prodotti elettronici";
-    naturaType["N6.7"] = "Inversione contabile - prestazioni comparto edile e settori connessi";
-    naturaType["N6.8"] = "Inversione contabile - operazioni settore energetico";
-    naturaType["N6.9"] = "Inversione contabile - altri casi";
-    naturaType["N7"] = "IVA assolta in altro stato UE";
 
     bankAccount["IT64U0503451861000000001728"] = "BPM";
     bankAccount["IT23P0503451861000000001817"] = "BPM Fotovoltaico";
@@ -404,11 +356,12 @@ QString MainWindow::executeMastriniFornitori()
             QSharedPointer<Tablecell>(new TablecellCurrency(Currency::EUR, totale)) :
             QSharedPointer<Tablecell>(new Tablecell));
         row->appendCell(QSharedPointer<Tablecell>(new Tablecell));
+        const QHash<QString, QString>& pmt = qfatturapa::paymentMethodType();
         row->appendCell(modalita == "" ||
-            modalita == paymentMethodType["MP01"] ||
-            modalita == paymentMethodType["MP02"] ||
-            modalita == paymentMethodType["MP03"] ||
-            modalita == paymentMethodType["MP08"] ?
+            modalita == pmt["MP01"] ||
+            modalita == pmt["MP02"] ||
+            modalita == pmt["MP03"] ||
+            modalita == pmt["MP08"] ?
             QSharedPointer<Tablecell>(new TablecellString("RD")) :
             QSharedPointer<Tablecell>(new TablecellDate(datascadenza)));
         row->appendCell(QSharedPointer<Tablecell>(new Tablecell));
@@ -578,7 +531,7 @@ QString MainWindow::executeScadenziario()
         QString modalita = grid->model()->data(grid->model()->index(crow, 0)).toString();
         QDate datascadenza = QDate::fromString(grid->model()->data(grid->model()->index(crow,1)).toString(),"dd/MM/yyyy");
         if ((!datascadenza.isValid()) || datascadenza.isNull()) {
-            if(modalita == paymentMethodType["MP05"]) {
+            if(modalita == qfatturapa::paymentMethodType()["MP05"]) {
                 datascadenza = dataemissione.addMonths(1);
             }
             else {
@@ -1164,7 +1117,7 @@ QList<GridSchemaField*> MainWindow::createDetailsGridSchema()
 QList<GridSchemaField*> MainWindow::createPaymentsGridSchema()
 {
     QList<GridSchemaField*> schema;
-    schema.append(new GridSchemaField(QObject::tr("Modalita"), "ModalitaPagamento", &paymentMethodType));
+    schema.append(new GridSchemaField(QObject::tr("Modalita"), "ModalitaPagamento", &qfatturapa::paymentMethodType()));
     schema.append(new GridSchemaField(QObject::tr("Scadenza"), "DataScadenzaPagamento", DateColumn));
     schema.append(new GridSchemaField(QObject::tr("Importo"), "ImportoPagamento", FloatColumn, 2));
     schema.append(new GridSchemaField(QObject::tr("Banca"), "IBAN", &bankAccount));
@@ -1179,7 +1132,7 @@ QList<GridSchemaField*> MainWindow::createSummaryGridSchema()
     schema.append(new GridSchemaField(QObject::tr("Imponibile"), "ImponibileImporto", FloatColumn, 2));
     schema.append(new GridSchemaField(QObject::tr("Aliquota"), "AliquotaIVA", FloatColumn, 2));
     schema.append(new GridSchemaField(QObject::tr("Imposta"), "Imposta", FloatColumn, 2));
-    schema.append(new GridSchemaField(QObject::tr("Natura"), "Natura", &naturaType));
+    schema.append(new GridSchemaField(QObject::tr("Natura"), "Natura", &qfatturapa::naturaType()));
 
     return schema;
 }
@@ -1358,7 +1311,7 @@ void MainWindow::addPaymentsToUI(QList< QMap<QString,QString> >& paymentData, QL
 
     Q_ASSERT(ok);
 
-    QStringList z(paymentMethodType.values());
+    QStringList z(qfatturapa::paymentMethodType().values());
     z.sort(Qt::CaseInsensitive);
     ComboBoxItemDelegate* cbid = new ComboBoxItemDelegate(z, grid);
 

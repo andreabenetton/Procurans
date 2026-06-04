@@ -16,7 +16,7 @@ GridSchemaField::GridSchemaField(const QString columnName, const QString element
     this->toBeIgnored = false;
 }
 
-GridSchemaField::GridSchemaField(const QString columnName, const QString elementName, QHash<QString, QString> *translationtable)
+GridSchemaField::GridSchemaField(const QString columnName, const QString elementName, const QHash<QString, QString> *translationtable)
 {
     this->translationTable = translationtable;
     this->elementName = elementName;

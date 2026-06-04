@@ -23,7 +23,7 @@ class GridSchemaField
 {
 public:
     GridSchemaField(const QString columnName, const QString elementName = "", const GridSchemaFieldType type = GridSchemaFieldType::LStringColumn, int truncAt = 0, bool ignoreIfEmpty = false);
-    GridSchemaField(const QString columnName, const QString elementName, QHash<QString, QString> *translationtable);
+    GridSchemaField(const QString columnName, const QString elementName, const QHash<QString, QString> *translationtable);
     QString getElementName();
     QString getColumnName();
     GridSchemaFieldType getType();
@@ -39,7 +39,7 @@ private:
     int truncAt;
     bool ignoreIfEmpty;
     bool toBeIgnored;
-    QHash<QString, QString> *translationTable;
+    const QHash<QString, QString> *translationTable;
 };
 
 #endif // GRIDSCHEMA_H
