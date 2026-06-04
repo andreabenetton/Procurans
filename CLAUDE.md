@@ -4,37 +4,43 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Procurans is a Qt5/C++17 desktop utility that imports Italian electronic invoices (*fatturazione elettronica* XML) and writes the parsed data into OpenDocument spreadsheet (`.ods`) files used for Italian bookkeeping. Vocabulary in code and UI is Italian (`elencoFatture`, `mastriniFornitori`, `primaNota`, `scadenziario`, `fattureElettroniche`, `naturaType`, etc.). License: AGPL-3.0.
+Procurans is a Qt 6.5 LTS / C++17 desktop utility that imports Italian electronic invoices (*fatturazione elettronica* / *FatturaPA* XML) and writes the parsed data into OpenDocument spreadsheet (`.ods`) files used for Italian bookkeeping. Vocabulary in code and UI is Italian (`elencoFatture`, `mastriniFornitori`, `primaNota`, `scadenziario`, `fattureElettroniche`, `naturaType`, etc.). License: AGPL-3.0.
 
 ## Build
 
-CMake top-level project; out-of-source build is expected (the `.gitignore` excludes `build/`).
+CMake top-level project (`cmake_minimum_required(3.21)` — Qt 6.5 LTS floor); out-of-source build expected (the `.gitignore` excludes `build/`).
 
 ```sh
-# Linux (requires Qt5 dev packages + system zlib)
+# Linux (Fedora 43: dnf install qt6-qtbase-devel zlib-ng-compat-devel)
 cmake -S . -B build
 cmake --build build -j
+
+# Tests (Qt6Test, gated on BUILD_TESTING which CTest sets ON by default)
+ctest --test-dir build --output-on-failure
 
 # Resulting binary
 ./build/main/Procurans            # GUI; optional positional arg = .xml invoice
 ./build/main/Procurans --debug    # adds QtDebugMsg entries to Procurans.log
 ```
 
-Windows builds use `CMakeSettings.json` (Visual Studio + Ninja, MSVC x64, Qt at `C:\Qt\5.15.0\msvc2019_64\`). On Windows the bundled `zlib/` is built; on Unix `find_package(ZLIB)` is required instead — `CMakeLists.txt:9-19` selects which.
+Windows builds use `CMakeSettings.json` (Visual Studio + Ninja, MSVC x64, Qt at `C:\Qt\6.5.0\msvc2019_64\` — Qt 6.5 LTS supports both VS 2019 and VS 2022 toolchains). On Windows the bundled `zlib/` is built; on Unix `find_package(ZLIB)` is required instead — `CMakeLists.txt:9-19` selects which.
 
-Required Qt5 modules: `Core`, `Widgets`, `Gui`, `Xml`, `XmlPatterns`, `Sql`. `qoasis` itself only needs `Qt5Core`.
+Required Qt6 modules: `Core`, `Widgets`, `Gui`, `Xml`, `Sql`, `Test` (the last only when `BUILD_TESTING` is on). `qoasis/`, `qfatturapa/` and `quazip/` only need `Qt6Core`. **Not** required: `Qt6Core5Compat`. The vendored QuaZip (upstream v1.7.1) is configured with `QUAZIP_CAN_USE_QTEXTCODEC` unset, so its `QStringConverter` path is taken instead of `QTextCodec`.
 
-By default everything builds as static libraries (`BUILD_STATIC_LIBRARIES=1` in top-level `CMakeLists.txt:27`, which sets `QOASIS_STATIC`, `QUAZIP_S`, `ZLIB_STATIC`). Flipping that to shared makes `qoasis` define `ODS_SHARED -DODS_BUILDING`.
+By default everything builds as static libraries (`BUILD_STATIC_LIBRARIES=1` in top-level `CMakeLists.txt:27`, which sets `QOASIS_STATIC`, `QUAZIP_STATIC`, `ZLIB_STATIC`). Flipping that to shared makes `qoasis` define `ODS_SHARED -DODS_BUILDING` and `quazip` define `QUAZIP_BUILD`.
 
-There is no test target and no linter configuration in-tree.
+The build is memory-hungry under Qt6 AUTOMOC; on small AppVMs use `cmake --build build -j2` (or whatever matches the VM's vCPU count) to avoid OOM during link.
 
 ## Architecture
 
-Three CMake subprojects, built bottom-up:
+Four CMake subprojects, built bottom-up:
 
-1. **`quazip/`** — vendored QuaZIP + minizip (`zip.c`/`unzip.c`) wrapping zlib. Used by `qoasis` to read/write the ZIP container of `.ods` files. Treat as a third-party dependency; don't restructure it.
-2. **`qoasis/`** — in-tree OpenDocument (ODF) read/write library, namespace `qoasis`. Produces `libqoasis`. This is the non-trivial piece of the codebase and is where most ODS-related changes belong.
-3. **`main/`** — the Qt Widgets GUI application (`Procurans` executable). Pulls in `qoasis` and `quazip`.
+1. **`quazip/`** — upstream QuaZip v1.7.1 (LGPL 2.1) wrapping vendored minizip (`zip.c`/`unzip.c`) over zlib. Used by `qoasis` to read/write the ZIP container of `.ods` files. Treat as a third-party dependency; don't restructure it.
+2. **`qoasis/`** — in-tree OpenDocument (ODF) read/write library, namespace `qoasis`. Produces `libqoasis`. This is the non-trivial output-side piece of the codebase and is where most ODS-related changes belong.
+3. **`qfatturapa/`** — in-tree FatturaPA (Italian electronic-invoice) read library, namespace `qfatturapa`. Produces `libqfatturapa`. Owns the XML element-name strings, the FatturaPA code lists (`paymentMethodType` MP01–MP23, `naturaType` N1–N7 + sub-codes), and the typed `ParsedInvoice` domain model.
+4. **`main/`** — the Qt Widgets GUI application (`Procurans` executable). Thin shell over `qfatturapa` (input) + `qoasis` (output).
+
+Tests live under `qoasis/tests/` and `qfatturapa/tests/` (Qt6Test, registered with CTest).
 
 ### `qoasis` model
 
@@ -51,21 +57,30 @@ File-level orchestration:
 - `FileOds` (`qoasis/fileods.h`) is the entry point. It extracts the `.ods` ZIP into a `QTemporaryDir`, loads `content.xml` via `FileContent`/`FileXml` (which parse into a `DocumentContent` tree), and re-zips on `save()`. The temp dir is the source of truth between `load()` and `save()` — preserve `temp_dir_valid_` semantics when changing this path.
 - `FileXml` reads/writes a single XML file by delegating to `Tag::write` / a tag's `read` constructor; `FileContent` is the `content.xml`-specific specialization.
 
-When adding a new ODF element: subclass `Tag`, declare a `static const QString kTag`, register the constructor as a builder where its parent dispatches `readSubtag`, and override the four read/write hooks. Don't bypass `Tag::write` — namespace and attribute serialization rely on it.
+When adding a new ODF element: subclass `Tag`, declare a `static const QString kTag`, register the constructor as a builder where its parent dispatches `readSubtag`, and override the four read/write hooks. Don't bypass `Tag::write` — namespace and attribute serialization rely on it. Subclass virtual signatures use `QStringView` (Qt6-native, Qt5-backport-compatible) — not `QStringRef`.
+
+### `qfatturapa` model
+
+The library exposes a typed `ParsedInvoice` (`qfatturapa/invoiceparser.h`) containing `InvoiceHeader{seller, document}`, `QList<InvoiceLine>`, `QList<Payment>`, `QList<SummaryRow>`. Field values are kept as `QString` — lossless from XML, no early `double`/`QDate` parsing that could hide invalid inputs. Each row-shaped struct also exposes `toFlatMap()` / `fromFlatMap()` plus a `toFlatMaps<T>()` template helper; `parseInvoice` itself keeps its shape-agnostic XML scan loop (the `addSubelementsDataToMap` helper) and converts each intermediate `QMap<QString,QString>` to the typed struct at the boundary. The flat-map bridge is what lets `MainWindow`'s `GridSchemaField`-driven grids keep consuming the legacy `QList<QMap<QString,QString>>` shape without rewriting the grid machinery.
+
+Code-list constants (`qfatturapa::paymentMethodType()`, `qfatturapa::naturaType()`) are function-local-static Meyers singletons in `qfatturapa/codelists.cpp`. When the FatturaPA spec adds new MP* or N* codes (e.g. N2.1 / N2.2 in v1.5), update them there. The `tipoDocumento` codes are intentionally NOT modelled today — Procurans doesn't surface `TipoDocumento` in the UI.
+
+The `parseInvoice` API is the only public entry point; the `parseHeader` / `parseDocument` / `parseDetail` / `parsePayment` / `parseSummary` helpers and the four `isStartElementNamed` / `isNotEndElementNamed` / `addSubelementsDataToMap` / `addElementDataToMap` utilities are intentionally hidden in an anonymous namespace.
 
 ### `main` (GUI) flow
 
 - `main.cpp` installs a `Logger` (singleton, writes `Procurans.log` next to the executable), parses CLI flags (`--debug`, optional `file` positional), then shows `MainWindow`.
-- `MainWindow` (`main/mainwindow.{h,cpp,ui}`) is one large class doing everything: menu/actions, parsing the invoice XML with `QXmlStreamReader`, populating three `QTableView` grids (details / payments / summary) backed by `QStandardItemModel`, and producing the four output ODS reports via `executeElencoFatture/MastriniFornitori/PrimaNota/Scadenziario`. Italian invoice constants (`paymentMethodType`, `naturaType`, `bankAccount` IBANs) are initialized in the constructor.
-- Grids are described declaratively by `GridSchemaField` lists (`gridschemafield.h`) — column name, source XML element, type (`LStringColumn`, `FloatColumn`, `DateColumn`, `RelatedColumn`, …), optional truncation and translation hash. `RelatedColumn` cells use `ComboBoxItemDelegate` for editing.
+- `MainWindow` (`main/mainwindow.{h,cpp,ui}`) is one large class doing everything: menu/actions, calling `qfatturapa::parseInvoice` to populate a typed `ParsedInvoice`, applying a UI-only no-payment-fallback (synthesises one `Payment` from `ImportoTotaleDocumento` when `DatiPagamento` is absent), populating three `QTableView` grids (details / payments / summary) backed by `QStandardItemModel`, and producing the four output ODS reports via `executeElencoFatture/MastriniFornitori/PrimaNota/Scadenziario`. The customer-specific `bankAccount` IBAN map is still initialised in the constructor (the spec lookups now come from `qfatturapa::codelists`).
+- `addHeaderToUI` consumes a `const qfatturapa::InvoiceHeader&` directly — typed field access, no string-keyed lookups. The three grid binders (`addDetailsToUI`, `addPaymentsToUI`, `addSummaryToUI`) take `const QList<QMap<QString,QString>>&` produced by `qfatturapa::toFlatMaps(parsed.details)` etc. at the call site.
+- Grids are described declaratively by `GridSchemaField` lists (`gridschemafield.h`) — column name, source XML element, type (`LStringColumn`, `FloatColumn`, `DateColumn`, `RelatedColumn`, …), optional truncation and translation hash (`const QHash<QString,QString>*`, pointing at e.g. `&qfatturapa::naturaType()`). `RelatedColumn` cells use `ComboBoxItemDelegate` for editing.
 - `Settings` (`main/settings.h`) is a singleton over `QSettings`: paths for the four output files + the input invoice folder, the per-report enable toggles, and main-window geometry/state. `load()`/`save()` are called from `MainWindow` open/close.
 - Each `execute*` method opens the corresponding `.ods` via `qoasis::FileOds`, mutates `DocumentContent`, and saves back. Bookkeeping operations append to existing files — be careful with overwrite semantics (`save(path, overwrite_protected)`).
 
 ### Cross-cutting
 
-- `SRC_FILE_NAME` is set as a per-file `COMPILE_DEFINITIONS` macro (see the `foreach` in both `CMakeLists.txt`) so `Logger` can tag entries with the originating source file. Preserve that loop if reorganizing sources.
-- App identity macros `APP_VERSION`, `COMPANY_NAME`, `PRODUCT_NAME` come from `main/CMakeLists.txt:1-14`; bump `VERSION_*` there.
-- `application.qrc` bundles icons under `:/images/...`; new GUI assets go in `main/images/` and must be added to the `.qrc`.
+- `SRC_FILE_NAME` is set as a per-file `COMPILE_DEFINITIONS` macro (see the `foreach` in each subproject's `CMakeLists.txt`) so `Logger` can tag entries with the originating source file. Preserve that loop if reorganizing sources.
+- App identity macros `APP_VERSION`, `COMPANY_NAME`, `PRODUCT_NAME` come from `main/CMakeLists.txt:1-13`; bump `VERSION_MAJOR`/`MINOR`/`PATCH` there. The user-visible version is 3-part (`2.1.0`); `APP_VERSION_RC` pads to a 4-tuple (`2,1,0,0`) because Windows `VERSIONINFO` `FILEVERSION` requires exactly four integers.
+- `application.qrc` bundles icons under `:/images/...`; new GUI assets go in `main/images/` and must be added to the `.qrc`. Resource compilation is wired via `qt6_add_resources`.
 - Windows-only `fileinfo.rc.in` is configured into the binary for the file-properties metadata.
 
 ## Code discipline
