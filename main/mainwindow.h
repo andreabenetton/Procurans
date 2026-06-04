@@ -12,7 +12,6 @@ namespace Ui { class MainWindow; }
 class QAction;
 class QMenu;
 class QTableView;
-class QXmlStreamReader;
 QT_END_NAMESPACE
 
 #include "gridschemafield.h"
@@ -82,23 +81,6 @@ private:
     void createStatusBar();
 
     QString strippedName(const QString &fullFileName);
-    //bool validateBill(const QByteArray &document);
-
-    bool isStartElementNamed(QXmlStreamReader& xml, const QString &tokenName);
-    bool isNotEndElementNamed(QXmlStreamReader& xml, const QString &tokenName);
-    void addSubelementsDataToMap(QXmlStreamReader& xml,
-                                 const QString &tokenName,
-                                 const QStringList &mapping,
-                                 QMap<QString, QString> &header);
-
-    QMap<QString, QString> parseHeader(QXmlStreamReader& xml);
-    QMap<QString, QString> parseDocument(QXmlStreamReader& xml);
-    QMap<QString, QString> parseDetail(QXmlStreamReader& xml);
-    QMap<QString, QString> parsePayment(QXmlStreamReader& xml);
-    QMap<QString, QString> parseSummary(QXmlStreamReader& xml);
-
-    void addElementDataToMap(QXmlStreamReader& xml,
-                             QMap<QString, QString>& map) const;
 
     QList<GridSchemaField*> createDetailsGridSchema();
     QList<GridSchemaField*> createPaymentsGridSchema();

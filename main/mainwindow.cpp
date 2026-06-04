@@ -15,6 +15,7 @@
 #include "gridschemafield.h"
 
 #include "qfatturapa/codelists.h"
+#include "qfatturapa/invoiceparser.h"
 #include "qoasis/currency.h"
 #include "qoasis/table/tablecell.h"
 #include "qoasis/table/tablecellstring.h"
@@ -782,77 +783,41 @@ void MainWindow::parseXMLFile(const QString &fileName)
 
     statusBar()->showMessage(tr("Fattura in caricamento ..."), 2000);
 
-    QXmlStreamReader xml(&file);
-    QList< QMap<QString,QString> > detailsData;
-    QList< QMap<QString,QString> > paymentsData;
-    QList< QMap<QString,QString> > summaryData;
-    QMap<QString,QString> headerData;
-
 #ifndef QT_NO_CURSOR
     QApplication::setOverrideCursor(Qt::WaitCursor);
 #endif
 
-    /* We'll parse the XML until we reach end of it.*/
-    QStringRef latestValid;
-    while(!xml.atEnd() &&
-            !xml.hasError()) {
-        /* Read next element.*/
-        QXmlStreamReader::TokenType token = xml.readNext();
-        /* If token is just StartDocument, we'll go to next.*/
-        if(token == QXmlStreamReader::StartDocument) {
-            continue;
-        }
+    qfatturapa::ParsedInvoice parsed;
+    QString parseError;
+    const bool ok = qfatturapa::parseInvoice(file, parsed, &parseError);
+    file.close();
 
-        if(isStartElementNamed(xml, "CedentePrestatore")) {
-            headerData = this->parseHeader(xml);
-        }
-        if(isStartElementNamed(xml, "DatiGeneraliDocumento")) {
-            headerData.unite(this->parseDocument(xml));
-        }
-
-        if(isStartElementNamed(xml, "DettaglioLinee")) {
-            detailsData.append(this->parseDetail(xml));
-        }
-        if(isStartElementNamed(xml, "DettaglioPagamento")) {
-            paymentsData.append(this->parsePayment(xml));
-        }
-        if(isStartElementNamed(xml, "DatiRiepilogo")) {
-            summaryData.append(this->parseSummary(xml));
-        }
-    }
-    /* Error handling. */
-    if(xml.hasError()) {
+    if (!ok) {
         QMessageBox::critical(this,
                               tr("Procurans"),
                               tr("Error parsing XML file %1")
                               .arg(QDir::toNativeSeparators(fileName)),
                               QMessageBox::Ok);
-        qWarning(logWarning())  << QString("Cannot parse file %1:\n%2.").arg(QDir::toNativeSeparators(fileName), xml.errorString());
-
+        qWarning(logWarning())  << QString("Cannot parse file %1:\n%2.").arg(QDir::toNativeSeparators(fileName), parseError);
     }
     else {
         billLoaded = true;
         qInfo(logInfo())  << "XML File parsed: " << fileName;
-        //QMenu e = menuBar()->findChild<QMenu>("test");
     }
-    /* Removes any device() or data from the reader
-     * and resets its internal state to the initial state. */
-    xml.clear();
-    file.close();
 
-    if(paymentsData.isEmpty()) {
+    // UI-layer convention: when the invoice has no DatiPagamento, synthesise
+    // a single placeholder row carrying ImportoTotaleDocumento so the
+    // payments grid isn't empty. Not the parser library's responsibility.
+    if(parsed.payments.isEmpty()) {
         QMap<QString, QString> payment;
-       // "ModalitaPagamento",
-       //     "DataScadenzaPagamento",
-
-        payment.insert("ImportoPagamento", headerData.value("ImportoTotaleDocumento"));
-        paymentsData.append(payment);
+        payment.insert("ImportoPagamento", parsed.header.value("ImportoTotaleDocumento"));
+        parsed.payments.append(payment);
     }
 
-    this->addHeaderToUI(headerData);
-    this->addPaymentsToUI(paymentsData, createPaymentsGridSchema());
-    this->addDetailsToUI(detailsData, createDetailsGridSchema());
-    this->addSummaryToUI(summaryData, createSummaryGridSchema());
+    this->addHeaderToUI(parsed.header);
+    this->addPaymentsToUI(parsed.payments, createPaymentsGridSchema());
+    this->addDetailsToUI(parsed.details, createDetailsGridSchema());
+    this->addSummaryToUI(parsed.summary, createSummaryGridSchema());
 
 #ifndef QT_NO_CURSOR
     QApplication::restoreOverrideCursor();
@@ -864,151 +829,6 @@ void MainWindow::parseXMLFile(const QString &fileName)
 
     statusBar()->showMessage(tr("Fattura caricata"), 2000);
     executeAct->setEnabled(true);
-}
-
-inline bool MainWindow::isStartElementNamed(QXmlStreamReader& xml, const QString &tokenName)
-{
-    return ((xml.tokenType() == QXmlStreamReader::StartElement) && (xml.name() == tokenName));
-}
-
-inline bool MainWindow::isNotEndElementNamed(QXmlStreamReader& xml, const QString &tokenName)
-{
-    return !((xml.tokenType() == QXmlStreamReader::EndElement) && (xml.name() == tokenName));
-}
-
-inline void MainWindow::addSubelementsDataToMap(QXmlStreamReader& xml,
-                                                const QString& tokenName,
-                                                const QStringList& subTokenName,
-                                                QMap<QString, QString>& header)
-{
-    if(isStartElementNamed(xml, tokenName)) {
-        do {
-            /* Next element... */
-            xml.readNext();
-
-            for (int i = 0; i < subTokenName.size(); ++i) {
-                if(isStartElementNamed(xml, subTokenName.at(i))) {
-                    this->addElementDataToMap(xml, header);
-                }
-            }
-        }
-        while(isNotEndElementNamed(xml, tokenName));
-
-    }
-}
-
-QMap<QString, QString> MainWindow::parseDocument(QXmlStreamReader& xml)
-{
-    QMap<QString, QString> document;
-
-    if(xml.tokenType() != QXmlStreamReader::StartElement &&
-            xml.name() == "DatiGeneraliDocumento") {
-        return document;
-    }
-
-    addSubelementsDataToMap(xml, "DatiGeneraliDocumento", { "Data", "Numero", "ImportoTotaleDocumento" }, document);
-
-    return document;
-}
-
-QMap<QString, QString> MainWindow::parseSummary(QXmlStreamReader& xml)
-{
-    QMap<QString, QString> summary;
-
-    if(xml.tokenType() != QXmlStreamReader::StartElement &&
-            xml.name() == "DatiRiepilogo") {
-        return summary;
-    }
-
-    addSubelementsDataToMap(xml, "DatiRiepilogo", { "ImponibileImporto", "Imposta", "AliquotaIVA", "Natura" }, summary);
-
-    return summary;
-}
-
-QMap<QString, QString> MainWindow::parseHeader(QXmlStreamReader& xml)
-{
-    QMap<QString, QString> header;
-
-    if(xml.tokenType() != QXmlStreamReader::StartElement &&
-            xml.name() == "CedentePrestatore") {
-        return header;
-    }
-
-    do {
-        /* Next element... */
-        xml.readNext();
-
-        if(isStartElementNamed(xml, "DatiAnagrafici")) {
-            do {
-                /* Next element... */
-                xml.readNext();
-
-                addSubelementsDataToMap(xml, "Anagrafica", { "Denominazione", "Nome", "Cognome" }, header);
-                addSubelementsDataToMap(xml, "IdFiscaleIVA", { "IdPaese", "IdCodice" }, header);
-            }
-            while(isNotEndElementNamed(xml,"DatiAnagrafici"));
-        }
-        addSubelementsDataToMap(xml, "Sede", { "Indirizzo", "CAP", "Comune" }, header);
-    }
-    while(isNotEndElementNamed(xml,"CedentePrestatore"));
-
-    return header;
-}
-
-QMap<QString, QString> MainWindow::parseDetail(QXmlStreamReader& xml)
-{
-    QMap<QString, QString> detail;
-
-    if(xml.tokenType() != QXmlStreamReader::StartElement &&
-            xml.name() == "DettaglioLinee") {
-        return detail;
-    }
-
-    addSubelementsDataToMap(xml, "DettaglioLinee", { "Descrizione",
-                                                     "Quantita",
-                                                     "UnitaMisura",
-                                                     "PrezzoUnitario",
-                                                     "PrezzoTotale",
-                                                     "AliquotaIVA",
-                                                     "Natura" }, detail);
-    return detail;
-}
-
-QMap<QString, QString> MainWindow::parsePayment(QXmlStreamReader& xml)
-{
-    QMap<QString, QString> payment;
-
-    if(xml.tokenType() != QXmlStreamReader::StartElement &&
-            xml.name() == "DettaglioPagamento") {
-        return payment;
-    }
-
-    addSubelementsDataToMap(xml, "DettaglioPagamento", { "ModalitaPagamento",
-                                                         "DataScadenzaPagamento",
-                                                         "ImportoPagamento",
-                                                         "IBAN"}, payment);
-    return payment;
-}
-
-void MainWindow::addElementDataToMap(QXmlStreamReader& xml, QMap<QString, QString>& map) const
-{
-    /* We need a start element, like <foo> */
-    if(xml.tokenType() != QXmlStreamReader::StartElement) {
-        return;
-    }
-    /* Let's read the name... */
-    QString elementName = xml.name().toString();
-    /* ...go to the next. */
-    xml.readNext();
-    /*
-     * This elements needs to contain Characters so we know it's
-     * actually data, if it's not we'll leave.
-     */
-    if(xml.tokenType() != QXmlStreamReader::Characters) {
-        return;
-    }
-    /* Now we can add it to the map.*/
-    map.insert(elementName, xml.text().toString());
 }
 
 QStandardItemModel* createGridModel(const QList< QMap<QString,QString> >  &data,
