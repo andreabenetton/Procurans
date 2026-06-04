@@ -26,12 +26,7 @@ if (NOT MSVC)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 endif (NOT MSVC)
 
-#find_package(Qt5LinguistTools REQUIRED)
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Widgets  REQUIRED)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5Sql REQUIRED)
-find_package(Qt5Xml REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Sql Xml)
 
 set(src_files	
 	license.h
@@ -48,7 +43,7 @@ set(src_files
 	settings.cpp
 	settings.h)
 
-qt5_add_resources(src_files application.qrc)
+qt6_add_resources(src_files application.qrc)
 
 foreach(f IN LISTS src_files)
 	get_filename_component(b ${f} NAME)
@@ -86,7 +81,7 @@ target_link_libraries(${exe_name}
     qoasis
     quazip
     ${zlib_libs}
-    Qt5::Widgets)
+    Qt6::Widgets)
 
 target_compile_features(${exe_name} PUBLIC cxx_std_17)
 

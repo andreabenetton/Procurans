@@ -5,7 +5,7 @@ set(CMAKE_AUTOMOC ON)
 
 include_directories(${Procurans_SOURCE_DIR})
 link_directories(${Procurans_BINARY_DIR})
-find_package(Qt5Core REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 set(lib_files
     codelists.h
@@ -28,4 +28,4 @@ endif (DEFINED QOASIS_STATIC)
 add_library(qfatturapa ${lib_type} ${lib_files})
 set_target_properties(qfatturapa PROPERTIES DEBUG_POSTFIX "d")
 target_compile_features(qfatturapa PUBLIC cxx_std_17)
-target_link_libraries(qfatturapa Qt5::Core)
+target_link_libraries(qfatturapa Qt6::Core)

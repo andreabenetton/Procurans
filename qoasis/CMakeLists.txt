@@ -11,7 +11,7 @@ set(CMAKE_AUTOMOC ON)
 
 include_directories(${Procurans_SOURCE_DIR})
 link_directories(${Procurans_BINARY_DIR})
-find_package(Qt5Core REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 set(lib_files
     currency.h
@@ -74,4 +74,4 @@ endif (DEFINED QOASIS_STATIC)
 add_library(qoasis ${lib_type} ${lib_files})
 set_target_properties(qoasis PROPERTIES DEBUG_POSTFIX "d")
 target_compile_features(qoasis PUBLIC cxx_std_17)
-target_link_libraries(qoasis quazip Qt5::Core)
+target_link_libraries(qoasis quazip Qt6::Core)

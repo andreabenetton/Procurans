@@ -37,7 +37,7 @@ void Logger::messageHandler(QtMsgType type, const QMessageLogContext &context, c
     }
 
     // Write to the output category of the message and the message itself
-    //out << context.category << ": " << msg << endl;
-    out << ": " << msg << endl;
+    //out << context.category << ": " << msg << Qt::endl;
+    out << ": " << msg << Qt::endl;
     out.flush();    // Clear the buffered data
 }

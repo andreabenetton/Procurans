@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.21)
 Project(Procurans)
 
 message("Source dir: " ${Procurans_SOURCE_DIR})
@@ -19,7 +19,7 @@ ELSE (WIN32)
 ENDIF (WIN32)
 
 if(WIN32)
-    set (CMAKE_PREFIX_PATH "C:\\Qt\\5.15.0\\msvc2019_64\\")
+    set (CMAKE_PREFIX_PATH "C:\\Qt\\6.5.0\\msvc2019_64\\")
 endif()
 
 set(LIBRARY_OUTPUT_PATH "${Procurans_BINARY_DIR}/lib")

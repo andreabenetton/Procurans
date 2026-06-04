@@ -1,5 +1,4 @@
-find_package(Qt5Test REQUIRED)
-find_package(Qt5Core REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Core Test)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
@@ -25,8 +24,8 @@ foreach(t IN LISTS qoasis_test_sources)
 		qoasis
 		quazip
 		${zlib_libs}
-		Qt5::Core
-		Qt5::Test)
+		Qt6::Core
+		Qt6::Test)
 	target_compile_features(${name} PUBLIC cxx_std_17)
 	add_test(NAME ${name} COMMAND ${name})
 endforeach()

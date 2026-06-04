@@ -6,12 +6,11 @@ set(CMAKE_AUTOMOC ON)
 include_directories(${Procurans_SOURCE_DIR})
 link_directories(${Procurans_BINARY_DIR}/lib)
 
-find_package(Qt5Core REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
-# On Qt5, QTextCodec lives in QtCore — use it. On Qt6 it would require
-# the Qt6Core5Compat module; we opt out there in favour of the QStringConverter
-# path that quazip_textcodec.h provides under the same #ifndef guard.
-set(QUAZIP_CAN_USE_QTEXTCODEC 1)
+# We deliberately do NOT set QUAZIP_CAN_USE_QTEXTCODEC so the upstream
+# QStringConverter path in quazip_textcodec.h is taken. That keeps us off
+# the Qt6Core5Compat module entirely.
 configure_file(quazip_config.h.in quazip_config.h @ONLY)
 
 set(quazip_sources
@@ -68,4 +67,4 @@ target_compile_features(quazip PUBLIC cxx_std_17)
 target_include_directories(quazip PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 get_property(zlib_libs GLOBAL PROPERTY zlib_libs_property)
-target_link_libraries(quazip Qt5::Core ${zlib_libs})
+target_link_libraries(quazip Qt6::Core ${zlib_libs})
