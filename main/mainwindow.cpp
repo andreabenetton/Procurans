@@ -9,6 +9,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "Logger.h"
+#include "bankaccountsdialog.h"
 #include "settings.h"
 #include "comboboxitemdelegate.h"
 #include "gridschemafield.h"
@@ -117,6 +118,15 @@ void MainWindow::saveWindowSettings()
 {
     m_setting->backup(this);
     statusBar()->showMessage(tr("Impostazioni della finestra dell'applicazione salvati"), 2000);
+}
+
+void MainWindow::manageBankAccounts()
+{
+    BankAccountsDialog dlg(m_setting->getBankAccounts(), this);
+    if (dlg.exec() == QDialog::Accepted) {
+        m_setting->setBankAccounts(dlg.result());
+        statusBar()->showMessage(tr("Conti bancari aggiornati"), 2000);
+    }
 }
 
 void MainWindow::setPathElencoFatture()
@@ -714,7 +724,11 @@ void MainWindow::createActions()
     pathSaveSettingsAct = new QAction(tr("Salva Impostazioni Finestra"), this);
     pathSaveSettingsAct->setStatusTip(tr("Cambia lo stato della finestra dell'applicazione"));
     connect(pathSaveSettingsAct, &QAction::triggered, this, &MainWindow::saveWindowSettings);
-    
+
+    manageBankAccountsAct = new QAction(tr("Conti bancari..."), this);
+    manageBankAccountsAct->setStatusTip(tr("Modifica la lista dei conti bancari (IBAN -> Banca)"));
+    connect(manageBankAccountsAct, &QAction::triggered, this, &MainWindow::manageBankAccounts);
+
     aboutAct = new QAction(tr("&About"), this);
     aboutAct->setStatusTip(tr("Show the application's About box"));
     connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
@@ -749,6 +763,8 @@ void MainWindow::setupMenuBar()
     toolsMenu->addAction(pathMastrinoFornitoriAct);
     toolsMenu->addAction(pathPrimaNotaAct);
     toolsMenu->addAction(pathScadenziarioAct);
+    toolsMenu->addSeparator();
+    toolsMenu->addAction(manageBankAccountsAct);
     toolsMenu->addSeparator();
     toolsMenu->addAction(pathSaveSettingsAct);
     menuBar()->addSeparator();

@@ -52,6 +52,7 @@ private slots:
     void setPathPrimaNota();
     void setPathScadenziario();
     void setPathFattureElettroniche();
+    void manageBankAccounts();
 
     void saveWindowSettings();
 
@@ -72,6 +73,7 @@ private:
     QAction* pathPrimaNotaAct;
     QAction* pathScadenziarioAct;
     QAction* pathSaveSettingsAct;
+    QAction* manageBankAccountsAct;
     QAction* aboutAct;
     QAction* aboutQtAct;
 

@@ -28,12 +28,14 @@ endif (NOT MSVC)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Sql Xml)
 
-set(src_files	
+set(src_files
 	license.h
 	main.cpp
 	mainwindow.ui
 	mainwindow.cpp
 	mainwindow.h
+	bankaccountsdialog.h
+	bankaccountsdialog.cpp
 	comboboxitemdelegate.cpp
 	comboboxitemdelegate.h
 	gridschemafield.h

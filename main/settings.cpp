@@ -103,6 +103,16 @@ const QHash<QString, QString>& Settings::getBankAccounts() const
     return bankAccounts;
 }
 
+void Settings::setBankAccounts(const QHash<QString, QString>& accounts)
+{
+    if (bankAccounts != accounts)
+    {
+        bankAccounts = accounts;
+        qInfo(logInfo()) << "Bank accounts updated, count=" << bankAccounts.size();
+        updated = true;
+    }
+}
+
 void Settings::restore(QMainWindow* window)
 {
     window->restoreGeometry(mainwindowgeometry);

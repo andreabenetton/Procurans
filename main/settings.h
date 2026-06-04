@@ -42,6 +42,7 @@ class Settings
         // IBAN -> bank display name. Persisted in Procurans.ini under
         // [bankaccounts]; seeded with a built-in default if absent.
         const QHash<QString, QString>& getBankAccounts() const;
+        void setBankAccounts(const QHash<QString, QString>& accounts);
 
         Settings(Settings const&)        = delete;
         void operator=(Settings const&)  = delete;
