@@ -30,7 +30,6 @@ endif (NOT MSVC)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets  REQUIRED)
 find_package(Qt5Gui REQUIRED)
-find_package(Qt5XmlPatterns REQUIRED)
 find_package(Qt5Sql REQUIRED)
 find_package(Qt5Xml REQUIRED)
 
@@ -87,8 +86,7 @@ target_link_libraries(${exe_name}
     qoasis
     quazip
     ${zlib_libs}
-    Qt5::Widgets
-    Qt5::XmlPatterns)
+    Qt5::Widgets)
 
 target_compile_features(${exe_name} PUBLIC cxx_std_17)
 

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 #include <QtWidgets>
-#include <QtXmlPatterns>
 #include <QTableView>
 #include <QDir>
 #include <QDebug>
