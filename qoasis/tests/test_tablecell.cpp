@@ -197,8 +197,16 @@ void TestTablecell::stringCellEmitsAndReadsOfficeStringValue()
 		" office:string-value=\"hello\"/>");
 	QCOMPARE(fromAttr->getText(), QStringLiteral("hello"));
 
-	// Write: a TablecellString round-trips with both office:string-value
-	// AND the <text:p> child (matches LibreOffice's output style).
+	// Write-preserves-input-shape: an input cell that carried
+	// office:string-value writes it back...
+	const QByteArray outWithAttr = writeCell(fromAttr);
+	QVERIFY2(outWithAttr.contains("office:string-value=\"hello\""),
+	         outWithAttr.constData());
+
+	// ...but a <text:p>-only cell does NOT have office:string-value
+	// auto-added on save. ODF 1.2 §19.385 allows either form; the previous
+	// auto-add bloated round-tripped files and could disagree with rich
+	// <text:p> content (the attribute carries only the flat projection).
 	auto fromText = parseCell(
 		"<table:table-cell"
 		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
@@ -207,9 +215,10 @@ void TestTablecell::stringCellEmitsAndReadsOfficeStringValue()
 		" office:value-type=\"string\">"
 		"<text:p>world</text:p>"
 		"</table:table-cell>");
-	const QByteArray out = writeCell(fromText);
-	QVERIFY2(out.contains("office:string-value=\"world\""), out.constData());
-	QVERIFY2(out.contains("<text:p>world</text:p>"), out.constData());
+	const QByteArray outNoAttr = writeCell(fromText);
+	QVERIFY2(!outNoAttr.contains("office:string-value"), outNoAttr.constData());
+	QVERIFY2(outNoAttr.contains("<text:p>world</text:p>"),
+	         outNoAttr.constData());
 }
 
 void TestTablecell::floatPrecisionBeyondTwoDecimals()

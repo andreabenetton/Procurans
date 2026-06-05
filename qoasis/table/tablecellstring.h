@@ -25,6 +25,16 @@ namespace qoasis::table
 		// implements Tag
 		void readAttribute(QStringView name, QStringView value) override;
 		void writeAttributes(QXmlStreamWriter* writer) override;
+
+	private:
+		// office:string-value is OPTIONAL in ODF 1.2 §19.385 — <text:p>
+		// alone is conformant. LibreOffice writes both for freshly-authored
+		// cells, but auto-adding it on round-trip bloats files and can
+		// disagree with rich-text <text:p> content (the attribute only
+		// carries the flat projection). Default true so programmatic ctors
+		// still emit a LO-style attribute; the XML-reading ctor clears it,
+		// readAttribute flips it back on if the input carried one.
+		bool _emit_string_value = true;
 	};
 }
 #endif // TABLECELLSTRING_H

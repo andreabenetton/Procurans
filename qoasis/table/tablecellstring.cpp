@@ -15,10 +15,13 @@ namespace qoasis::table
 
 	TablecellString::TablecellString(QString text, QString style) : TablecellString(text, 1, style){}
 
-	TablecellString::TablecellString(QXmlStreamReader& reader) 
+	TablecellString::TablecellString(QXmlStreamReader& reader)
 	{
 		Q_ASSERT(reader.qualifiedName() == TablecellString::kTag);
 		_valueText = "";
+		// Start with "don't emit". readAttribute flips it on when the input
+		// carries office:string-value, so the output preserves the input shape.
+		_emit_string_value = false;
 		Tag::read(reader);
 	}
 
@@ -33,6 +36,7 @@ namespace qoasis::table
 	{
 		if (name.toString() == kStringValueAttribute) {
 			_valueText = value.toString();
+			_emit_string_value = true;
 			return;
 		}
 		Tablecell::readAttribute(name, value);
@@ -41,7 +45,7 @@ namespace qoasis::table
 	void TablecellString::writeAttributes(QXmlStreamWriter* writer)
 	{
 		Tablecell::writeAttributes(writer);
-		if (!_valueText.isEmpty()) {
+		if (_emit_string_value && !_valueText.isEmpty()) {
 			writer->writeAttribute(kStringValueAttribute, _valueText);
 		}
 	}
