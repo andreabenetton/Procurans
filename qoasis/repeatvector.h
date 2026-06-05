@@ -21,7 +21,13 @@ namespace qoasis
 
 		enum Type { Base, Repeat, Null };
 
-		const int MAXREPEAT = 1000;
+		// Sanity cap on repeat counts. LibreOffice routinely emits
+		// number-columns-repeated="1010" / "1024" for the trailing default-column
+		// fill, and number-rows-repeated up to the Calc sheet maximum (2^20).
+		// Anything larger is almost certainly malformed input; we drop it rather
+		// than risk OOM expanding the in-memory placeholder vector. The check
+		// is `< MAXREPEAT`, so the value here is one past the largest accepted.
+		const int MAXREPEAT = 1048577;
 
 		RepeatVector();
 		RepeatVector(int array_size, QSharedPointer<T> items[]);

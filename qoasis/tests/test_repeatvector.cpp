@@ -40,6 +40,7 @@ private slots:
 	void replaceAtConcreteIndex();
 	void removeOnPlaceholderDecrementsBaseRepeat();
 	void removeEndingEmptyStripsTrailing();
+	void appendHighRepeatPreserved();
 };
 
 void TestRepeatVector::emptyVectorReportsZero()
@@ -144,6 +145,22 @@ void TestRepeatVector::removeEndingEmptyStripsTrailing()
 	rv.removeEndingEmpty();
 	QCOMPARE(rv.lastNotEmpty(), 0);
 	QCOMPARE(rv.size(), 1);
+}
+
+void TestRepeatVector::appendHighRepeatPreserved()
+{
+	// Regression: LibreOffice emits <table:table-column
+	// number-columns-repeated="1010"/> (or 1024) as the trailing default-column
+	// fill for a Calc sheet. The previous MAXREPEAT=1000 cap silently dropped
+	// the entire column declaration, leaving the saved file with fewer columns
+	// declared than rows actually use — which LO 24+ flags as "damaged file".
+	RepeatVector<Tablecell> rv;
+	auto fill = mkEmptyBase(1010);
+	rv.append(fill);
+
+	QCOMPARE(rv.size(), 1010);
+	QVERIFY(rv.at(0) == fill);
+	QVERIFY(rv.at(1009).isNull());
 }
 
 QTEST_MAIN(TestRepeatVector)
