@@ -61,3 +61,20 @@ if (BUILD_TESTING)
 	add_subdirectory(qoasis/tests)
 	add_subdirectory(qfatturapa/tests)
 endif()
+
+# Windows redistributable zip via CPack — `cmake --build build --target package`
+# (or `cpack` from the build dir) produces Procurans-<APP_VERSION>-win64.zip
+# in the build root. Install rules contributing to the layout live in
+# main/CMakeLists.txt; this block only configures the packaging.
+if (WIN32)
+	set(CPACK_GENERATOR "ZIP")
+	set(CPACK_PACKAGE_NAME "Procurans")
+	set(CPACK_PACKAGE_VENDOR "BlueTeam")
+	set(CPACK_PACKAGE_VERSION "${APP_VERSION}")
+	set(CPACK_PACKAGE_FILE_NAME "Procurans-${APP_VERSION}-win64")
+	# Don't wrap everything in an extra Procurans-<version>/ directory
+	# inside the zip — the customer extracts and runs Procurans.exe
+	# directly from the unzip target.
+	set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+	include(CPack)
+endif()

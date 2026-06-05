@@ -10,6 +10,10 @@ set(VERSION_MINOR "1")
 set(VERSION_PATCH "0")
 
 set(APP_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+# Share the resolved string with the top-level CMakeLists.txt so CPack
+# below names the .zip Procurans-<APP_VERSION>-win64.zip from a single
+# source of truth.
+set(APP_VERSION "${APP_VERSION}" PARENT_SCOPE)
 # Windows VERSIONINFO requires a 4-tuple; pad the resource form with 0.
 set(APP_VERSION_RC "${VERSION_MAJOR},${VERSION_MINOR},${VERSION_PATCH},0")
 
@@ -102,5 +106,25 @@ if (WIN32)
                 "$<TARGET_FILE:${exe_name}>"
         COMMENT "windeployqt -> $<TARGET_FILE_NAME:${exe_name}>"
         VERBATIM)
+
+    # Redistributable layout: copy everything windeployqt deposited next
+    # to the .exe except build artefacts (PDB symbols, incremental linker
+    # database, AUTOMOC working dirs, generated .rc/.cpp/.depends and the
+    # CMakeFiles bookkeeping). Use `cmake --install build --prefix <dir>`
+    # to get a clean folder; CPack below zips it up.
+    install(DIRECTORY $<TARGET_FILE_DIR:${exe_name}>/
+        DESTINATION .
+        USE_SOURCE_PERMISSIONS
+        PATTERN "CMakeFiles" EXCLUDE
+        PATTERN "*_autogen" EXCLUDE
+        PATTERN "*.pdb" EXCLUDE
+        PATTERN "*.ilk" EXCLUDE
+        PATTERN "*.exp" EXCLUDE
+        PATTERN "*.lib" EXCLUDE
+        PATTERN "*.cpp" EXCLUDE
+        PATTERN "*.depends" EXCLUDE
+        PATTERN "*.cmake" EXCLUDE
+        PATTERN "*.rc" EXCLUDE
+    )
 endif (WIN32)
 
