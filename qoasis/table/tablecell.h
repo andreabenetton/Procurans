@@ -34,9 +34,20 @@ namespace qoasis::table
 
 		QString getText() const;
 
+		// Typed accessors for table:number-columns-spanned /
+		// table:number-rows-spanned (ODF Part 1 §19.677 / §19.683). 1 means
+		// the cell does not span; values >1 cover that many columns or rows
+		// of trailing <table:covered-table-cell> placeholders. The previous
+		// API only preserved these as opaque attributes via the generic Tag
+		// path.
+		int getColumnSpan() const;
+		void setColumnSpan(int span);
+		int getRowSpan() const;
+		void setRowSpan(int span);
+
 		// implements IRepeatable
 		QString repeatTag() override;
-		
+
 
 		// implements Tag
 		QString instanceTag() override;
@@ -61,6 +72,12 @@ namespace qoasis::table
 		// extensions). Typed subclasses override instanceCellType() and
 		// leave this empty; on write, the explicit type wins.
 		QString _valueType;
+		// table:number-columns-spanned / table:number-rows-spanned default
+		// to 1 (no span). Captured from input on read, re-emitted on write
+		// only when non-default to keep round-tripped XML byte-similar to
+		// what LibreOffice writes.
+		int _columnSpan = 1;
+		int _rowSpan = 1;
 	};
 }
 #endif // TABLECELL_H

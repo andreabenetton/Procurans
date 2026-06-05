@@ -85,6 +85,7 @@ private slots:
 	void timeValueTypeFallsBackAndRoundTrips();
 	void percentageValueTypeFallsBackAndRoundTrips();
 	void richTextSpanBetweenLiteralsRoundtrip();
+	void cellSpanTypedApiRoundtrip();
 };
 
 void TestTablecell::noValueTypeYieldsBaseTablecell()
@@ -376,6 +377,46 @@ void TestTablecell::richTextSpanBetweenLiteralsRoundtrip()
 	const int posB = out.indexOf(" b</text:p>");
 	QVERIFY2(posA >= 0 && posSpan > posA && posB > posSpan, out.constData());
 	QVERIFY2(!out.contains("a  b"), out.constData());
+}
+
+void TestTablecell::cellSpanTypedApiRoundtrip()
+{
+	// table:number-columns-spanned / table:number-rows-spanned previously
+	// survived round-trip only as opaque generic attributes — no typed
+	// accessor existed. Verify both the typed getter on read and the
+	// on-wire emission via the typed setter.
+	auto cell = parseCell(
+		"<table:table-cell"
+		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+		" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+		" office:value-type=\"string\""
+		" table:number-columns-spanned=\"3\""
+		" table:number-rows-spanned=\"2\"/>");
+	QVERIFY(cell);
+	QCOMPARE(cell->getColumnSpan(), 3);
+	QCOMPARE(cell->getRowSpan(), 2);
+
+	const QByteArray out = writeCell(cell);
+	QVERIFY2(out.contains("table:number-columns-spanned=\"3\""),
+	         out.constData());
+	QVERIFY2(out.contains("table:number-rows-spanned=\"2\""), out.constData());
+
+	// Programmatic update via the typed setter.
+	cell->setColumnSpan(5);
+	cell->setRowSpan(1);
+	const QByteArray out2 = writeCell(cell);
+	QVERIFY2(out2.contains("table:number-columns-spanned=\"5\""),
+	         out2.constData());
+	// rowSpan=1 is default; the attribute is omitted to keep output
+	// byte-similar to LibreOffice's idiom.
+	QVERIFY2(!out2.contains("table:number-rows-spanned"), out2.constData());
+
+	// A fresh cell without spans declared defaults to 1/1 with no attrs.
+	auto plain = parseCell(
+		"<table:table-cell"
+		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\"/>");
+	QCOMPARE(plain->getColumnSpan(), 1);
+	QCOMPARE(plain->getRowSpan(), 1);
 }
 
 QTEST_MAIN(TestTablecell)

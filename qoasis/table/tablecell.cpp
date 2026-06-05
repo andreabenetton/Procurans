@@ -19,6 +19,14 @@ namespace qoasis::table
 	const QString Tablecell::kRepeatAttribute = QString("table:number-columns-repeated");
 	const QString Tablecell::kTextPTag = QString("text:p");
 
+	namespace
+	{
+		const QString kColumnSpanAttribute =
+			QStringLiteral("table:number-columns-spanned");
+		const QString kRowSpanAttribute =
+			QStringLiteral("table:number-rows-spanned");
+	}
+
 	// Constructors
 	Tablecell::Tablecell(int repeat, QString style) : IStyleable(style), IRepeatable(repeat)
 	{
@@ -106,6 +114,26 @@ namespace qoasis::table
 		return QSharedPointer<Tablecell>(new Tablecell(repeat));
 	}
 
+	int Tablecell::getColumnSpan() const
+	{
+		return _columnSpan;
+	}
+
+	void Tablecell::setColumnSpan(int span)
+	{
+		_columnSpan = span > 0 ? span : 1;
+	}
+
+	int Tablecell::getRowSpan() const
+	{
+		return _rowSpan;
+	}
+
+	void Tablecell::setRowSpan(int span)
+	{
+		_rowSpan = span > 0 ? span : 1;
+	}
+
 	// Methods
 	QString Tablecell::getText() const
 	{
@@ -155,6 +183,20 @@ namespace qoasis::table
 			_valueType = value.toString();
 			return;
 		}
+		// table:number-columns-spanned 19.677 / table:number-rows-spanned
+		// 19.683 — typed via getColumnSpan/getRowSpan so callers can
+		// introspect merges programmatically without reaching into the
+		// generic attribute map.
+		if (name == kColumnSpanAttribute) {
+			_columnSpan = value.toInt();
+			if (_columnSpan < 1) _columnSpan = 1;
+			return;
+		}
+		if (name == kRowSpanAttribute) {
+			_rowSpan = value.toInt();
+			if (_rowSpan < 1) _rowSpan = 1;
+			return;
+		}
 		// Deserialize present but unsupported attributes (calcext:* etc.)
 		Tag::readAttribute(name, value);
 	}
@@ -192,6 +234,17 @@ namespace qoasis::table
 		}
 		if (!celltype.isEmpty()) {
 			writer->writeAttribute(Tablecell::kCellTypeAttribute, celltype);
+		}
+		// Emit span attributes only when non-default so unmerged cells stay
+		// byte-similar to LibreOffice's output (LO writes attributes only
+		// when >1).
+		if (_columnSpan > 1) {
+			writer->writeAttribute(kColumnSpanAttribute,
+			                       QString::number(_columnSpan));
+		}
+		if (_rowSpan > 1) {
+			writer->writeAttribute(kRowSpanAttribute,
+			                       QString::number(_rowSpan));
 		}
 		// Serialize present but unsupported attributes
 		Tag::writeAttributes(writer);
