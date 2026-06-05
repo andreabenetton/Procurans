@@ -4,6 +4,8 @@
 #ifndef TABLE_H
 #define TABLE_H
 
+#include <QStringList>
+
 #include "../tag.h"
 #include "../istyleable.h"
 #include "../inameable.h"
@@ -22,6 +24,14 @@ namespace qoasis::table
 		static QSharedPointer<Table> Builder(QXmlStreamReader& reader);
 		static const QString kTag;
 
+		// table:print-ranges is an ODF cellRangeAddressList — a
+		// whitespace-separated list of cell-range addresses. The
+		// previous QString getter returned the whole attribute opaque;
+		// the typed list lets callers inspect or rewrite individual
+		// ranges. The single-string getter/setter are kept for source
+		// compatibility and convert by joining/splitting on whitespace.
+		QStringList getPrintRanges() const;
+		void setPrintRanges(const QStringList& ranges);
 		QString getPrintRange();
 		void setPrintRange(QString name);
 
@@ -51,7 +61,7 @@ namespace qoasis::table
 		static const QString kNameAttribute;
 		static const QString kPrintRangeAttribute;
 
-		QString print_ranges_ = "";
+		QStringList print_ranges_;
 		RepeatVector<Tablecolumn> columns_ = RepeatVector<Tablecolumn>();
 		int processed_columns_ = 0;
 		RepeatVector<Tablerow> rows_ = RepeatVector<Tablerow>();

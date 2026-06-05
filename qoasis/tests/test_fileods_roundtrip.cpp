@@ -50,7 +50,8 @@ private slots:
 	void manifestVersionAndForeignNamespacesPreserved(); // commit 442d6cd
 	void emptyDirectoryEntryRoundtrips();             // commit 710d044
 	void freshDocumentContentDeclaresBaselineNamespaces(); // commit b6486f5
-	void spreadsheetSubtagsPartitionedByOdfOrder();        // current commit
+	void spreadsheetSubtagsPartitionedByOdfOrder();        // commit f8b971d
+	void printRangesMultipleTokensRoundtrip();             // current commit
 
 private:
 	QTemporaryDir work_;
@@ -715,6 +716,37 @@ void TestFileOdsRoundtrip::spreadsheetSubtagsPartitionedByOdfOrder()
 	const int posTable = outContent.indexOf("table:table ");
 	const int posNamed = outContent.indexOf("table:named-expressions");
 	QVERIFY2(posCalc >= 0 && posTable > posCalc && posNamed > posTable,
+	         outContent.constData());
+}
+
+void TestFileOdsRoundtrip::printRangesMultipleTokensRoundtrip()
+{
+	// table:print-ranges is an ODF cellRangeAddressList (whitespace-
+	// separated tokens). Previously stored as an opaque QString; now a
+	// QStringList. Confirm a multi-range input both survives the round-
+	// trip on the wire and is still emitted with single-space joins.
+	const QByteArray content = QByteArrayLiteral(
+		"<?xml version=\"1.0\"?>\n"
+		"<office:document-content"
+		" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+		" office:version=\"1.2\">"
+		"<office:body><office:spreadsheet>"
+		"<table:table table:name=\"S\""
+		" table:print-ranges=\"S.A1:S.B2 S.D4:S.E5\"/>"
+		"</office:spreadsheet></office:body>"
+		"</office:document-content>");
+	const QString in = work_.path() + QStringLiteral("/in_pr.ods");
+	const QString out = work_.path() + QStringLiteral("/out_pr.ods");
+	writeOds(in, content);
+
+	qoasis::FileOds f(in);
+	QVERIFY(f.load());
+	QVERIFY(f.save(out, false));
+
+	const QByteArray outContent = readArchiveEntry(out, QStringLiteral("content.xml"));
+	QVERIFY2(outContent.contains(
+	            "table:print-ranges=\"S.A1:S.B2 S.D4:S.E5\""),
 	         outContent.constData());
 }
 

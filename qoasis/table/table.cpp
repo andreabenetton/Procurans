@@ -3,6 +3,8 @@
 
 #include "table.h"
 
+#include <QRegularExpression>
+
 namespace qoasis::table
 {
 	const QString Table::kTag = QString("table:table");
@@ -27,6 +29,30 @@ namespace qoasis::table
 	{
 		Q_ASSERT(reader.qualifiedName() == Table::kTag);
 		return QSharedPointer<Table>(new Table(reader));
+	}
+
+	QStringList Table::getPrintRanges() const
+	{
+		return print_ranges_;
+	}
+
+	void Table::setPrintRanges(const QStringList& ranges)
+	{
+		print_ranges_ = ranges;
+	}
+
+	QString Table::getPrintRange()
+	{
+		return print_ranges_.join(QLatin1Char(' '));
+	}
+
+	void Table::setPrintRange(QString name)
+	{
+		// Convenience overload — split a whitespace-separated string into
+		// individual range tokens. Empty tokens are dropped so a trailing
+		// space doesn't produce a phantom range.
+		print_ranges_ = name.split(QRegularExpression(QStringLiteral("\\s+")),
+		                           Qt::SkipEmptyParts);
 	}
 
 	QSharedPointer<Tablecolumn> Table::getColumn(int index) const
@@ -91,9 +117,14 @@ namespace qoasis::table
 			readStyle(value);
 			return;
 		}
-		// table:print-ranges 19.694 http://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part1.html#attribute-table_print-ranges
+		// table:print-ranges 19.694 — ODF cellRangeAddressList, a
+		// whitespace-separated list of cell-range tokens. Stored typed
+		// for programmatic access; serialised back joined on a single
+		// space, matching LibreOffice's output convention.
 		if (name.toString() == kPrintRangeAttribute) {
-			print_ranges_ = value.toString();
+			print_ranges_ =
+				value.toString().split(QRegularExpression(QStringLiteral("\\s+")),
+				                       Qt::SkipEmptyParts);
 			return;
 		}
 		// Deserialize present but unsupported attributes
@@ -149,8 +180,10 @@ namespace qoasis::table
 		writeName(writer);
 		writeStyle(writer);
 
-		if (print_ranges_ != "") {
-			writer->writeAttribute(kPrintRangeAttribute, print_ranges_);
+		if (!print_ranges_.isEmpty()) {
+			writer->writeAttribute(
+				kPrintRangeAttribute,
+				print_ranges_.join(QLatin1Char(' ')));
 		}
 		// Serialize present but unsupported attributes
 		Tag::writeAttributes(writer);
