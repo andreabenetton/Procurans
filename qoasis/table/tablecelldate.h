@@ -30,6 +30,12 @@ namespace qoasis::table
 		static const QString kCellTypeAttribute;
 
 		QDate value_date_;
+		// Raw input string for office:date-value. ODF allows xsd:dateTime
+		// (yyyy-MM-ddThh:mm:ss[Z|±hh:mm]) in addition to plain xsd:date —
+		// preserving the original avoids lossy QDate round-trip when the
+		// host application carried a timestamp portion. Empty for cells
+		// constructed via the typed QDate ctors.
+		QString value_raw_;
 
 		// implements Tags
 		void readAttribute(QStringView name, QStringView value) override;

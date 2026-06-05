@@ -87,6 +87,7 @@ private slots:
 	void richTextSpanBetweenLiteralsRoundtrip();
 	void cellSpanTypedApiRoundtrip();
 	void formulaRoundtripViaTypedApi();
+	void dateTimeWithTimezoneRoundtripsVerbatim();
 };
 
 void TestTablecell::noValueTypeYieldsBaseTablecell()
@@ -280,8 +281,10 @@ void TestTablecell::floatPreservesInputDisplayText()
 
 void TestTablecell::dateAcceptsIsoDateTimeInput()
 {
-	// Pre-fix, QDate::fromString of the full ISO datetime failed → invalid
-	// QDate. Now we take the first 10 chars (the date prefix).
+	// Earlier fix: QDate::fromString of the full ISO datetime failed,
+	// leaving value_date_ invalid. Now we take the first 10 chars for the
+	// typed accessor. Additionally, the raw input string round-trips
+	// verbatim so the time/TZ component isn't dropped silently on save.
 	auto cell = parseCell(
 		"<table:table-cell"
 		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
@@ -293,7 +296,24 @@ void TestTablecell::dateAcceptsIsoDateTimeInput()
 	QCOMPARE(dcell->getDate(), QDate(2026, 1, 15));
 
 	const QByteArray out = writeCell(cell);
-	QVERIFY2(out.contains("office:date-value=\"2026-01-15\""), out.constData());
+	QVERIFY2(out.contains("office:date-value=\"2026-01-15T10:30:00\""),
+	         out.constData());
+}
+
+void TestTablecell::dateTimeWithTimezoneRoundtripsVerbatim()
+{
+	// ODF allows xsd:dateTime with timezone (e.g. ...+02:00 or ...Z).
+	// Pre-fix, the writer truncated to yyyy-MM-dd, dropping both time
+	// and TZ. Now the raw input is preserved.
+	auto cell = parseCell(
+		"<table:table-cell"
+		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+		" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+		" office:value-type=\"date\""
+		" office:date-value=\"2026-06-05T12:30:00+02:00\"/>");
+	const QByteArray out = writeCell(cell);
+	QVERIFY2(out.contains("office:date-value=\"2026-06-05T12:30:00+02:00\""),
+	         out.constData());
 }
 
 void TestTablecell::booleanValueTypeFallsBackAndRoundTrips()

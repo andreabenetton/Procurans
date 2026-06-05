@@ -42,10 +42,12 @@ namespace qoasis::table
 	void TablecellDate::readAttribute(QStringView name, QStringView value)
 	{
 		if (name.toString() == kCellTypeAttribute) {
-			// ODF allows either a date or a dateTime here; take the date
-			// prefix so timestamped inputs (e.g. "2026-01-15T10:30:00")
-			// still parse to a valid QDate.
-			value_date_ = QDate::fromString(value.toString().left(10), "yyyy-MM-dd");
+			// ODF allows either a date or a dateTime here. Capture the raw
+			// string so any time/TZ component round-trips verbatim, and
+			// also parse a QDate from the leading date for the typed
+			// accessor's benefit.
+			value_raw_ = value.toString();
+			value_date_ = QDate::fromString(value_raw_.left(10), "yyyy-MM-dd");
 			return;
 		}
 		Tablecell::readAttribute(name, value);
@@ -53,8 +55,14 @@ namespace qoasis::table
 
 	void TablecellDate::writeAttributes(QXmlStreamWriter* writer)
 	{
-		if (!value_date_.isNull() && value_date_.isValid()) {
-			writer->writeAttribute(kCellTypeAttribute, value_date_.toString("yyyy-MM-dd"));
+		// Loaded-from-XML cells write back the raw input (preserves any
+		// time/TZ component). Programmatic cells synthesise from QDate.
+		if (!value_raw_.isEmpty()) {
+			writer->writeAttribute(kCellTypeAttribute, value_raw_);
+		}
+		else if (!value_date_.isNull() && value_date_.isValid()) {
+			writer->writeAttribute(kCellTypeAttribute,
+			                       value_date_.toString("yyyy-MM-dd"));
 		}
 		Tablecell::writeAttributes(writer);
 	}
