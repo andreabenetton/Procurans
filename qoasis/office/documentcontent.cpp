@@ -8,34 +8,39 @@ namespace qoasis::office
 	// Constants
 	const QString DocumentContent::kTag = QString("office:document-content");
 
-	const QString DocumentContent::kNsOfficeAttribute = QString("xmlns:office");
-	const QString DocumentContent::kNsDcAttribute = QString("xmlns:dc");
-	const QString DocumentContent::kNsDrawAttribute = QString("xmlns:draw");
-	const QString DocumentContent::kNsFoAttribute = QString("xmlns:fo");
-	const QString DocumentContent::kNsNumberAttribute = QString("xmlns:number");
-	const QString DocumentContent::kNsOfAttribute = QString("xmlns:of");
-	const QString DocumentContent::kNsStyleAttribute = QString("xmlns:style");
-	const QString DocumentContent::kNsSvgAttribute = QString("xmlns:svg");
-	const QString DocumentContent::kNsTableAttribute = QString("xmlns:table");
-	const QString DocumentContent::kNsTextAttribute = QString("xmlns:text");
-	const QString DocumentContent::kNsXlinkAttribute = QString("xmlns:xlink");
-
 	const QString DocumentContent::kVersionAttribute = QString("office:version");
+
+	namespace
+	{
+		// Baseline ODF 1.2 namespaces seeded on a from-scratch DocumentContent.
+		// Tag::namespaces_ is URI->prefix, so the readNamespace call below
+		// uses that order. The previous code declared an 'xmlns:office'-keyed
+		// map on a duplicate field that no write path actually read, so a
+		// freshly-created document emitted no namespace declarations at all.
+		struct NsSeed { const char* uri; const char* prefix; };
+		const NsSeed kSeeds[] = {
+			{"urn:oasis:names:tc:opendocument:xmlns:office:1.0",          "office"},
+			{"urn:oasis:names:tc:opendocument:xmlns:table:1.0",           "table"},
+			{"urn:oasis:names:tc:opendocument:xmlns:text:1.0",            "text"},
+			{"urn:oasis:names:tc:opendocument:xmlns:style:1.0",           "style"},
+			{"urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0", "fo"},
+			{"urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0",  "svg"},
+			{"urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0",       "number"},
+			{"urn:oasis:names:tc:opendocument:xmlns:of:1.2",              "of"},
+			{"urn:oasis:names:tc:opendocument:xmlns:drawing:1.0",         "draw"},
+			{"http://purl.org/dc/elements/1.1/",                          "dc"},
+			{"http://www.w3.org/1999/xlink",                              "xlink"},
+		};
+	}
 
 	// Constructors
 	DocumentContent::DocumentContent() : Tag()
 	{
-		namespaces_.insert(kNsOfficeAttribute, "urn:oasis:names:tc:opendocument:xmlns:office:1.0");
-		namespaces_.insert(kNsDcAttribute, "http://purl.org/dc/elements/1.1/");
-		namespaces_.insert(kNsDrawAttribute, "urn:oasis:names:tc:opendocument:xmlns:drawing:1.0");
-		namespaces_.insert(kNsFoAttribute, "urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0");
-		namespaces_.insert(kNsNumberAttribute, "urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0");
-		namespaces_.insert(kNsOfAttribute, "urn:oasis:names:tc:opendocument:xmlns:of:1.2");
-		namespaces_.insert(kNsStyleAttribute, "urn:oasis:names:tc:opendocument:xmlns:style:1.0");
-		namespaces_.insert(kNsSvgAttribute, "urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0");
-		namespaces_.insert(kNsTableAttribute, "urn:oasis:names:tc:opendocument:xmlns:table:1.0");
-		namespaces_.insert(kNsTextAttribute, "urn:oasis:names:tc:opendocument:xmlns:text:1.0");
-		namespaces_.insert(kNsXlinkAttribute, "http://www.w3.org/1999/xlink");
+		for (const NsSeed& s : kSeeds)
+		{
+			readNamespace(QString::fromUtf8(s.uri),
+			              QString::fromUtf8(s.prefix));
+		}
 
 		version_ = "1.2";
 

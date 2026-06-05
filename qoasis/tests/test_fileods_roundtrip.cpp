@@ -8,6 +8,7 @@
 #include <QTemporaryDir>
 
 #include "qoasis/fileods.h"
+#include "qoasis/office/documentcontent.h"
 #include "quazip/quazip.h"
 #include "quazip/quazipfile.h"
 #include "quazip/quazipfileinfo.h"
@@ -47,7 +48,8 @@ private slots:
 	void nonSpreadsheetBodyRoundtrips();              // commit 8ec57b9
 	void manifestRdfGetsRdfXmlMediaType();            // commit 86dbcab
 	void manifestVersionAndForeignNamespacesPreserved(); // commit 442d6cd
-	void emptyDirectoryEntryRoundtrips();             // current commit
+	void emptyDirectoryEntryRoundtrips();             // commit 710d044
+	void freshDocumentContentDeclaresBaselineNamespaces(); // current commit
 
 private:
 	QTemporaryDir work_;
@@ -648,6 +650,36 @@ void TestFileOdsRoundtrip::emptyDirectoryEntryRoundtrips()
 	}
 	outZip.close();
 	QVERIFY2(foundConfDir, "Configurations2/ directory entry missing from zip");
+}
+
+void TestFileOdsRoundtrip::freshDocumentContentDeclaresBaselineNamespaces()
+{
+	// Regression: the previous default ctor inserted xmlns:office-keyed
+	// entries into a duplicate namespaces_ field on DocumentContent that no
+	// write path ever read. A freshly-created (FileOds::create()) document
+	// therefore emitted office:document-content with NO xmlns declarations
+	// at all, producing invalid XML.
+	qoasis::office::DocumentContent doc;
+	QByteArray out;
+	{
+		QXmlStreamWriter w(&out);
+		w.setAutoFormatting(false);
+		doc.write(&w);
+	}
+	QVERIFY2(out.contains(
+	            "xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""),
+	         out.constData());
+	QVERIFY2(out.contains(
+	            "xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""),
+	         out.constData());
+	QVERIFY2(out.contains(
+	            "xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\""),
+	         out.constData());
+	QVERIFY2(out.contains(
+	            "xmlns:style=\"urn:oasis:names:tc:opendocument:xmlns:style:1.0\""),
+	         out.constData());
+	// No leftover xmlns:xmlns:* garbage from the old key-inversion bug.
+	QVERIFY2(!out.contains("xmlns:xmlns:"), out.constData());
 }
 
 QTEST_MAIN(TestFileOdsRoundtrip)

@@ -20,18 +20,6 @@ namespace qoasis::office
 
 		static const QString kTag;
 
-		static const QString kNsOfficeAttribute;
-		static const QString kNsDcAttribute;
-		static const QString kNsDrawAttribute;
-		static const QString kNsFoAttribute;
-		static const QString kNsNumberAttribute;
-		static const QString kNsOfAttribute;
-		static const QString kNsStyleAttribute;
-		static const QString kNsSvgAttribute;
-		static const QString kNsTableAttribute;
-		static const QString kNsTextAttribute;
-		static const QString kNsXlinkAttribute;
-
 		static const QString kVersionAttribute;
 
 		QString getVersion() const;
@@ -49,7 +37,6 @@ namespace qoasis::office
 
 	private:
 		QSharedPointer<Body> body_;
-		QMap<QString, QString> namespaces_;
 		QString version_;
 	};
 }
