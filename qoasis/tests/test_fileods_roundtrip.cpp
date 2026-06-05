@@ -46,7 +46,8 @@ private slots:
 	void manifestRegeneratedFromTempDir();            // commit 6267e0a
 	void nonSpreadsheetBodyRoundtrips();              // commit 8ec57b9
 	void manifestRdfGetsRdfXmlMediaType();            // commit 86dbcab
-	void manifestVersionAndForeignNamespacesPreserved(); // current commit
+	void manifestVersionAndForeignNamespacesPreserved(); // commit 442d6cd
+	void emptyDirectoryEntryRoundtrips();             // current commit
 
 private:
 	QTemporaryDir work_;
@@ -551,6 +552,102 @@ void TestFileOdsRoundtrip::manifestVersionAndForeignNamespacesPreserved()
 	            "manifest:full-path=\"content.xml\""
 	            " manifest:media-type=\"text/xml\""),
 	         outManifest.constData());
+}
+
+void TestFileOdsRoundtrip::emptyDirectoryEntryRoundtrips()
+{
+	// Regression: packOdfArchive walked the temp dir with QDir::Files only,
+	// so empty directory entries the input archive carried (LibreOffice
+	// always emits Configurations2/) were dropped on save. The manifest
+	// also lost the corresponding file-entry. LO can recreate the dir but
+	// the manifest mismatch contributed to the "damaged file" surface.
+	const QString in = work_.path() + QStringLiteral("/in_dir.ods");
+	const QString out = work_.path() + QStringLiteral("/out_dir.ods");
+
+	QuaZip zip(in);
+	QVERIFY(zip.open(QuaZip::mdCreate));
+	zip.setDataDescriptorWritingEnabled(false);
+	{
+		QuaZipFile m(&zip);
+		QuaZipNewInfo mi(QStringLiteral("mimetype"));
+		mi.uncompressedSize = static_cast<ulong>(kMimetype.size());
+		QVERIFY(m.open(QIODevice::WriteOnly, mi, nullptr, 0, 0, 0));
+		QCOMPARE(m.write(kMimetype), qint64(kMimetype.size()));
+		m.close();
+	}
+	zip.setDataDescriptorWritingEnabled(true);
+	{
+		QuaZipFile c(&zip);
+		QVERIFY(c.open(QIODevice::WriteOnly,
+		               QuaZipNewInfo(QStringLiteral("content.xml"))));
+		const QByteArray content = QByteArrayLiteral(
+			"<?xml version=\"1.0\"?>\n"
+			"<office:document-content"
+			" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+			" office:version=\"1.2\">"
+			"<office:body><office:spreadsheet/></office:body>"
+			"</office:document-content>");
+		QCOMPARE(c.write(content), qint64(content.size()));
+		c.close();
+	}
+	{
+		// Zero-byte directory entry, mirroring `zip -r` on an empty subdir.
+		QuaZipFile d(&zip);
+		QVERIFY(d.open(QIODevice::WriteOnly,
+		               QuaZipNewInfo(QStringLiteral("Configurations2/"))));
+		d.close();
+	}
+	{
+		const QByteArray inputManifest = QByteArrayLiteral(
+			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+			"<manifest:manifest"
+			" xmlns:manifest=\"urn:oasis:names:tc:opendocument:xmlns:manifest:1.0\""
+			" manifest:version=\"1.2\">\n"
+			" <manifest:file-entry manifest:full-path=\"/\""
+			" manifest:version=\"1.2\""
+			" manifest:media-type=\"application/vnd.oasis.opendocument.spreadsheet\"/>\n"
+			" <manifest:file-entry manifest:full-path=\"Configurations2/\""
+			" manifest:media-type=\"application/vnd.sun.xml.ui.configuration\"/>\n"
+			" <manifest:file-entry manifest:full-path=\"content.xml\""
+			" manifest:media-type=\"text/xml\"/>\n"
+			"</manifest:manifest>\n");
+		QuaZipFile mf(&zip);
+		QVERIFY(mf.open(QIODevice::WriteOnly,
+		                QuaZipNewInfo(QStringLiteral("META-INF/manifest.xml"))));
+		QCOMPARE(mf.write(inputManifest), qint64(inputManifest.size()));
+		mf.close();
+	}
+	zip.close();
+
+	qoasis::FileOds f(in);
+	QVERIFY(f.load());
+	QVERIFY(f.save(out, false));
+
+	// 1) Output manifest must list the directory with its original media-type.
+	const QByteArray outManifest =
+		readArchiveEntry(out, QStringLiteral("META-INF/manifest.xml"));
+	QVERIFY2(outManifest.contains(
+	            "manifest:full-path=\"Configurations2/\""
+	            " manifest:media-type=\"application/vnd.sun.xml.ui.configuration\""),
+	         outManifest.constData());
+
+	// 2) Output archive must contain a zip entry for the empty directory.
+	QuaZip outZip(out);
+	QVERIFY(outZip.open(QuaZip::mdUnzip));
+	bool foundConfDir = false;
+	for (bool more = outZip.goToFirstFile(); more; more = outZip.goToNextFile())
+	{
+		QuaZipFileInfo info;
+		QVERIFY(outZip.getCurrentFileInfo(&info));
+		if (info.name == QStringLiteral("Configurations2/"))
+		{
+			foundConfDir = true;
+			QCOMPARE(info.uncompressedSize, quint64(0));
+			break;
+		}
+	}
+	outZip.close();
+	QVERIFY2(foundConfDir, "Configurations2/ directory entry missing from zip");
 }
 
 QTEST_MAIN(TestFileOdsRoundtrip)

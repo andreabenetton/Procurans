@@ -51,6 +51,10 @@ namespace
 	{
 		QString version = QStringLiteral("1.2");
 		QList<QPair<QString, QString>> extra_namespaces;
+		// Directory-only manifest entries (full-path ends with '/'). Empty
+		// directories like Configurations2/ aren't visible to the QDir::Files
+		// pack walk, so we remember them here and re-emit them on save.
+		QList<QPair<QString, QString>> directory_entries; // {full-path, media-type}
 	};
 
 	ManifestRootMeta readManifestRootMeta(const QString& manifest_path)
@@ -62,27 +66,76 @@ namespace
 		while (!r.atEnd())
 		{
 			r.readNext();
-			if (!r.isStartElement()) continue;
-			if (r.qualifiedName() != QStringLiteral("manifest:manifest")) continue;
-			for (const QXmlStreamAttribute& a : r.attributes())
+			if (r.isStartElement()
+			    && r.qualifiedName() == QStringLiteral("manifest:manifest"))
 			{
-				if (a.qualifiedName() == QStringLiteral("manifest:version"))
+				for (const QXmlStreamAttribute& a : r.attributes())
 				{
-					meta.version = a.value().toString();
+					if (a.qualifiedName() == QStringLiteral("manifest:version"))
+					{
+						meta.version = a.value().toString();
+					}
+				}
+				for (const QXmlStreamNamespaceDeclaration& ns
+				     : r.namespaceDeclarations())
+				{
+					const QString prefix = ns.prefix().toString();
+					const QString uri = ns.namespaceUri().toString();
+					if (prefix.isEmpty()) continue;
+					if (prefix == QStringLiteral("manifest")) continue;
+					meta.extra_namespaces.append({prefix, uri});
+				}
+				continue;
+			}
+			if (r.isStartElement()
+			    && r.qualifiedName() == QStringLiteral("manifest:file-entry"))
+			{
+				QString fullPath;
+				QString mediaType;
+				for (const QXmlStreamAttribute& a : r.attributes())
+				{
+					if (a.qualifiedName() == QStringLiteral("manifest:full-path"))
+						fullPath = a.value().toString();
+					else if (a.qualifiedName() == QStringLiteral("manifest:media-type"))
+						mediaType = a.value().toString();
+				}
+				if (!fullPath.isEmpty()
+				    && fullPath != QStringLiteral("/")
+				    && fullPath.endsWith(QLatin1Char('/')))
+				{
+					meta.directory_entries.append({fullPath, mediaType});
 				}
 			}
-			for (const QXmlStreamNamespaceDeclaration& ns
-			     : r.namespaceDeclarations())
-			{
-				const QString prefix = ns.prefix().toString();
-				const QString uri = ns.namespaceUri().toString();
-				if (prefix.isEmpty()) continue;
-				if (prefix == QStringLiteral("manifest")) continue;
-				meta.extra_namespaces.append({prefix, uri});
-			}
-			break;
 		}
 		return meta;
+	}
+
+	// Walk the temp dir for empty subdirectories. Used in concert with the
+	// input manifest's directory_entries list so that LibreOffice-style empty
+	// markers like Configurations2/ survive round-trip; their media-type comes
+	// from the input manifest when available.
+	QStringList listEmptyRelDirs(const QString& src_dir)
+	{
+		QStringList out;
+		const QDir src(src_dir);
+		QDirIterator it(src_dir,
+		                QDir::AllDirs | QDir::Hidden | QDir::NoSymLinks
+		                | QDir::NoDotAndDotDot,
+		                QDirIterator::Subdirectories);
+		while (it.hasNext())
+		{
+			const QString path = it.next();
+			if (QDir(path).isEmpty(QDir::AllEntries | QDir::Hidden
+			                       | QDir::NoDotAndDotDot))
+			{
+				QString rel = src.relativeFilePath(path);
+				if (rel == QStringLiteral("META-INF")) continue;
+				if (!rel.endsWith(QLatin1Char('/'))) rel.append(QLatin1Char('/'));
+				out.append(rel);
+			}
+		}
+		std::sort(out.begin(), out.end());
+		return out;
 	}
 
 	// Regenerate META-INF/manifest.xml from the actual temp-dir inventory so
@@ -157,6 +210,28 @@ namespace
 			w.writeStartElement(QStringLiteral("manifest:file-entry"));
 			w.writeAttribute(QStringLiteral("manifest:full-path"), rel);
 			w.writeAttribute(QStringLiteral("manifest:media-type"), mediaTypeFor(rel));
+			w.writeEndElement();
+		}
+
+		// Empty directories (Configurations2/, etc.) — re-emit if they still
+		// exist on disk. Use the input manifest's media-type when we know it
+		// (LibreOffice tags Configurations2/ as application/vnd.sun.xml.ui.
+		// configuration); otherwise leave the attribute off entirely, matching
+		// what LO does for unrecognised empty entries.
+		const QStringList empty_rel_dirs = listEmptyRelDirs(src_dir);
+		for (const QString& rel : empty_rel_dirs)
+		{
+			QString mediaType;
+			for (const auto& d : input_meta.directory_entries)
+			{
+				if (d.first == rel) { mediaType = d.second; break; }
+			}
+			w.writeStartElement(QStringLiteral("manifest:file-entry"));
+			w.writeAttribute(QStringLiteral("manifest:full-path"), rel);
+			if (!mediaType.isEmpty())
+			{
+				w.writeAttribute(QStringLiteral("manifest:media-type"), mediaType);
+			}
 			w.writeEndElement();
 		}
 
@@ -262,6 +337,22 @@ namespace
 				zip.close();
 				return false;
 			}
+		}
+
+		// Restore empty-directory zip entries (Configurations2/, etc.) so the
+		// archive layout matches what LibreOffice produced. QuaZipNewInfo with
+		// a trailing-slash name and no payload writes a zero-byte directory
+		// entry, mirroring `zip -r` on an empty subdir.
+		for (const QString& rel : listEmptyRelDirs(src_dir))
+		{
+			QuaZipFile dir_out(&zip);
+			if (!dir_out.open(QIODevice::WriteOnly, QuaZipNewInfo(rel)))
+			{
+				qCritical() << "Failed to add empty dir entry" << qPrintable(rel);
+				zip.close();
+				return false;
+			}
+			dir_out.close();
 		}
 
 		zip.close();
