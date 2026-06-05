@@ -47,6 +47,7 @@ private slots:
 	void mixedContentPlainTextConcatenates();
 	void emptyElementWrittenSelfClosing();
 	void plainTextRecursesIntoDescendants();
+	void mixedContentInterleaveRoundtrip();
 };
 
 void TestTag::attributeSurvivesRoundTrip()
@@ -85,9 +86,9 @@ void TestTag::nestedSubtagsRoundTripInOrder()
 
 void TestTag::mixedContentPlainTextConcatenates()
 {
-	// Characters tokens around <bar> are kept by loopToReadSubtag; the
-	// generic Tag model concatenates them into a single inline_text_,
-	// then plainText() prepends that to bar's own plainText("middle").
+	// Characters tokens around <bar> live in the ordered children_ list;
+	// plainText() walks it and stitches every text fragment + each child's
+	// plainText() back together in source order.
 	QSharedPointer<Tag> tag;
 	roundtrip("<foo>start <bar>middle</bar> end</foo>", &tag);
 	const QString text = tag->plainText();
@@ -112,6 +113,30 @@ void TestTag::plainTextRecursesIntoDescendants()
 	const QString text = tag->plainText();
 	QVERIFY2(text.contains(QStringLiteral("X")), qPrintable(text));
 	QVERIFY2(text.contains(QStringLiteral("Y")), qPrintable(text));
+}
+
+void TestTag::mixedContentInterleaveRoundtrip()
+{
+	// Regression: the old model kept inline_text_ (joined characters) and
+	// subtags_ in parallel containers and wrote text then all subtags. ODF
+	// mixed content like <text:p>a <text:span>bold</text:span> b</text:p>
+	// became <text:p>a  b<text:span>bold</text:span></text:p> on save —
+	// the span pulled out, and the surrounding text fragments concatenated.
+	// Children are now stored in source order.
+	const QByteArray in =
+		"<foo xmlns:n=\"urn:n\">a <n:b>X</n:b> c <n:d/> e</foo>";
+	const QByteArray out = roundtrip(in);
+	const int posA = out.indexOf('a');
+	const int posB = out.indexOf("<n:b");
+	const int posC = out.indexOf(" c ");
+	const int posD = out.indexOf("<n:d");
+	const int posE = out.indexOf(" e<");
+	QVERIFY2(posA >= 0 && posB > posA && posC > posB && posD > posC
+	         && posE > posD, out.constData());
+	// Plain-text roundtrip stitches the fragments back in source order too.
+	QSharedPointer<Tag> tag;
+	roundtrip(in, &tag);
+	QCOMPARE(tag->plainText(), QStringLiteral("a X c  e"));
 }
 
 QTEST_MAIN(TestTag)

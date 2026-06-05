@@ -4,10 +4,11 @@
 #ifndef TAG_H
 #define TAG_H
 
-#include <QXmlStreamReader>
-#include <QSharedPointer>
+#include <QList>
 #include <QMap>
-#include <QVector>
+#include <QSharedPointer>
+#include <QString>
+#include <QXmlStreamReader>
 
 namespace qoasis
 {
@@ -43,6 +44,20 @@ namespace qoasis
 		//bool isNotEndElementNamed(QXmlStreamReader& xml, const QString& token_name);
 
 	private:
+		// Mixed-content child entry. ODF mixed content (e.g.
+		// <text:p>a <text:span>bold</text:span> b</text:p>) requires
+		// preserving the order of text fragments and child elements. The
+		// earlier model held inline_text_ as one concatenated string and
+		// subtags_ as a parallel vector, which destroyed the interleave on
+		// round-trip (text-first, then all elements). Each Child here is
+		// either a text fragment (tag is null) or a child Tag (text is
+		// empty); written back in insertion order.
+		struct Child
+		{
+			QString text;
+			QSharedPointer<Tag> tag;
+		};
+
 		void loopToReadAttributes(QXmlStreamReader& reader);
 		void loopToReadNamespaces(QXmlStreamReader& reader);
 		void loopToReadSubtag(QXmlStreamReader& reader);
@@ -53,8 +68,7 @@ namespace qoasis
 		QString tag_;
 		QMap<QString, QString> attributes_;
 		QMap<QString, QString> namespaces_;
-		QVector<QSharedPointer<Tag>> subtags_;
-		QString inline_text_;
+		QList<Child> children_;
 	};
 }
 #endif // TAG_H

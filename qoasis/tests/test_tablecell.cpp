@@ -77,6 +77,7 @@ private slots:
 	void booleanValueTypeFallsBackAndRoundTrips();
 	void timeValueTypeFallsBackAndRoundTrips();
 	void percentageValueTypeFallsBackAndRoundTrips();
+	void richTextSpanBetweenLiteralsRoundtrip();
 };
 
 void TestTablecell::noValueTypeYieldsBaseTablecell()
@@ -315,6 +316,30 @@ void TestTablecell::percentageValueTypeFallsBackAndRoundTrips()
 	const QByteArray out = writeCell(cell);
 	QVERIFY2(out.contains("office:value-type=\"percentage\""), out.constData());
 	QVERIFY2(out.contains("office:value=\"0.5\""), out.constData());
+}
+
+void TestTablecell::richTextSpanBetweenLiteralsRoundtrip()
+{
+	// Regression: the previous Tag model concatenated all Characters tokens
+	// into one inline_text_ and held child elements in a parallel subtags_
+	// vector, so <text:p>a <text:span>bold</text:span> b</text:p> became
+	// <text:p>a  b<text:span>bold</text:span></text:p> on save. Children are
+	// now stored in source order.
+	auto cell = parseCell(
+		"<table:table-cell"
+		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+		" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+		" xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\""
+		" office:value-type=\"string\">"
+		"<text:p>a <text:span text:style-name=\"T1\">bold</text:span> b</text:p>"
+		"</table:table-cell>");
+	const QByteArray out = writeCell(cell);
+	// Span sits between the two literal fragments, in the original order.
+	const int posA = out.indexOf("a ");
+	const int posSpan = out.indexOf("<text:span");
+	const int posB = out.indexOf(" b</text:p>");
+	QVERIFY2(posA >= 0 && posSpan > posA && posB > posSpan, out.constData());
+	QVERIFY2(!out.contains("a  b"), out.constData());
 }
 
 QTEST_MAIN(TestTablecell)

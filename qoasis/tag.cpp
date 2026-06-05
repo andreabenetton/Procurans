@@ -25,7 +25,7 @@ namespace qoasis
 
 	bool Tag::isEmpty()
 	{
-		return subtags_.isEmpty();
+		return children_.isEmpty();
 	}
 
 	QSharedPointer<Tag> Tag::buildGeneric(QXmlStreamReader& reader)
@@ -35,12 +35,16 @@ namespace qoasis
 
 	QString Tag::plainText() const
 	{
-		QString out = inline_text_;
-		for (const auto& sub : subtags_)
+		QString out;
+		for (const auto& c : children_)
 		{
-			if (!sub.isNull())
+			if (c.tag.isNull())
 			{
-				out += sub->plainText();
+				out += c.text;
+			}
+			else
+			{
+				out += c.tag->plainText();
 			}
 		}
 		return out;
@@ -59,10 +63,8 @@ namespace qoasis
 		writeStart(writer);
 		writeNamespaces(writer);
 		writeAttributes(writer);
-		if (!inline_text_.isEmpty())
-		{
-			writer->writeCharacters(inline_text_);
-		}
+		// children_ carries the original text/element interleave;
+		// writeSubtags emits both in source order.
 		writeSubtags(writer);
 		writeEnd(writer);
 	}
@@ -92,10 +94,14 @@ namespace qoasis
 
 	void Tag::writeSubtags(QXmlStreamWriter* writer)
 	{
-		for (int i = 0; i < subtags_.length(); i++) {
-			if (!subtags_[i].isNull())
+		for (const Child& c : children_) {
+			if (c.tag.isNull())
 			{
-				subtags_[i]->write(writer);
+				if (!c.text.isEmpty()) writer->writeCharacters(c.text);
+			}
+			else
+			{
+				c.tag->write(writer);
 			}
 		}
 	}
@@ -141,14 +147,18 @@ namespace qoasis
 				readSubtag(reader);
 			}
 			else if (reader.tokenType() == QXmlStreamReader::Characters && !reader.isWhitespace()) {
-				inline_text_ += reader.text();
+				// Preserve text fragments in source order alongside child
+				// elements so mixed content round-trips lossless. Whitespace-
+				// only fragments are skipped to keep pretty-printed input
+				// from accumulating indentation noise.
+				children_.append(Child{ reader.text().toString(), {} });
 			}
 		}
 	}
 
 	void Tag::readSubtag(QXmlStreamReader& reader)
 	{
-		subtags_.append(QSharedPointer<Tag>(new Tag(reader)));
+		children_.append(Child{ {}, QSharedPointer<Tag>(new Tag(reader)) });
 	}
 
 	bool Tag::isStartElementNamed(QXmlStreamReader& xml, const QString& token_name)
