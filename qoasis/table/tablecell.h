@@ -45,6 +45,15 @@ namespace qoasis::table
 		int getRowSpan() const;
 		void setRowSpan(int span);
 
+		// Typed accessor for table:formula (ODF Part 1 §19.642). The raw
+		// formula string is preserved verbatim, including its namespace
+		// prefix: "of:" for OpenFormula 1.2 (what LibreOffice >=24 writes
+		// by default) or the legacy "oooc:" OpenOffice form. qoasis does
+		// not parse or evaluate; consumers that need to introspect should
+		// inspect the prefix themselves.
+		QString getFormula() const;
+		void setFormula(const QString& formula);
+
 		// implements IRepeatable
 		QString repeatTag() override;
 
@@ -78,6 +87,9 @@ namespace qoasis::table
 		// what LibreOffice writes.
 		int _columnSpan = 1;
 		int _rowSpan = 1;
+		// table:formula — raw text including the of:= / oooc:= prefix.
+		// Empty when the cell has no formula.
+		QString _formula;
 	};
 }
 #endif // TABLECELL_H

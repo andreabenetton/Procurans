@@ -86,6 +86,7 @@ private slots:
 	void percentageValueTypeFallsBackAndRoundTrips();
 	void richTextSpanBetweenLiteralsRoundtrip();
 	void cellSpanTypedApiRoundtrip();
+	void formulaRoundtripViaTypedApi();
 };
 
 void TestTablecell::noValueTypeYieldsBaseTablecell()
@@ -417,6 +418,37 @@ void TestTablecell::cellSpanTypedApiRoundtrip()
 		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\"/>");
 	QCOMPARE(plain->getColumnSpan(), 1);
 	QCOMPARE(plain->getRowSpan(), 1);
+}
+
+void TestTablecell::formulaRoundtripViaTypedApi()
+{
+	// table:formula previously survived only via the generic Tag attribute
+	// map; consumers wanting to read or set a formula had no typed API.
+	// Verify the typed getter on an of:= input AND that setFormula on a
+	// fresh cell emits the attribute with the prefix preserved.
+	auto cell = parseCell(
+		"<table:table-cell"
+		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+		" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+		" office:value-type=\"float\""
+		" office:value=\"6\""
+		" table:formula=\"of:=SUM([.A1:.A3])\"/>");
+	QVERIFY(cell);
+	QCOMPARE(cell->getFormula(), QStringLiteral("of:=SUM([.A1:.A3])"));
+
+	const QByteArray out = writeCell(cell);
+	QVERIFY2(out.contains("table:formula=\"of:=SUM([.A1:.A3])\""),
+	         out.constData());
+
+	// Programmatic update with the legacy OpenOffice prefix.
+	cell->setFormula(QStringLiteral("oooc:=A1+A2"));
+	const QByteArray out2 = writeCell(cell);
+	QVERIFY2(out2.contains("table:formula=\"oooc:=A1+A2\""), out2.constData());
+
+	// Clearing drops the attribute entirely.
+	cell->setFormula(QString());
+	const QByteArray out3 = writeCell(cell);
+	QVERIFY2(!out3.contains("table:formula"), out3.constData());
 }
 
 QTEST_MAIN(TestTablecell)

@@ -25,6 +25,7 @@ namespace qoasis::table
 			QStringLiteral("table:number-columns-spanned");
 		const QString kRowSpanAttribute =
 			QStringLiteral("table:number-rows-spanned");
+		const QString kFormulaAttribute = QStringLiteral("table:formula");
 	}
 
 	// Constructors
@@ -134,6 +135,16 @@ namespace qoasis::table
 		_rowSpan = span > 0 ? span : 1;
 	}
 
+	QString Tablecell::getFormula() const
+	{
+		return _formula;
+	}
+
+	void Tablecell::setFormula(const QString& formula)
+	{
+		_formula = formula;
+	}
+
 	// Methods
 	QString Tablecell::getText() const
 	{
@@ -197,6 +208,13 @@ namespace qoasis::table
 			if (_rowSpan < 1) _rowSpan = 1;
 			return;
 		}
+		// table:formula 19.642 — captured typed so consumers can read/edit
+		// the formula without reaching into the generic attribute map.
+		// Preserved verbatim including the of:= / oooc:= prefix.
+		if (name == kFormulaAttribute) {
+			_formula = value.toString();
+			return;
+		}
 		// Deserialize present but unsupported attributes (calcext:* etc.)
 		Tag::readAttribute(name, value);
 	}
@@ -245,6 +263,9 @@ namespace qoasis::table
 		if (_rowSpan > 1) {
 			writer->writeAttribute(kRowSpanAttribute,
 			                       QString::number(_rowSpan));
+		}
+		if (!_formula.isEmpty()) {
+			writer->writeAttribute(kFormulaAttribute, _formula);
 		}
 		// Serialize present but unsupported attributes
 		Tag::writeAttributes(writer);
