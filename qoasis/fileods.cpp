@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QDirIterator>
 #include <QFile>
+#include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 #include <algorithm>
 
@@ -41,17 +42,55 @@ namespace
 		return QStringLiteral("application/octet-stream");
 	}
 
-	bool isOdfPartXml(const QString& rel)
+	// Extracted from the input manifest before we rewrite it, so the regenerated
+	// file echoes the original version + any foreign-namespace decorations the
+	// host suite (LibreOffice >=24 declares xmlns:loext) put on the manifest
+	// root. Defaults are used when the input had no manifest, which only
+	// happens for create()-from-scratch flows.
+	struct ManifestRootMeta
 	{
-		return rel == QStringLiteral("content.xml")
-		    || rel == QStringLiteral("styles.xml")
-		    || rel == QStringLiteral("meta.xml")
-		    || rel == QStringLiteral("settings.xml");
+		QString version = QStringLiteral("1.2");
+		QList<QPair<QString, QString>> extra_namespaces;
+	};
+
+	ManifestRootMeta readManifestRootMeta(const QString& manifest_path)
+	{
+		ManifestRootMeta meta;
+		QFile f(manifest_path);
+		if (!f.open(QIODevice::ReadOnly)) return meta;
+		QXmlStreamReader r(&f);
+		while (!r.atEnd())
+		{
+			r.readNext();
+			if (!r.isStartElement()) continue;
+			if (r.qualifiedName() != QStringLiteral("manifest:manifest")) continue;
+			for (const QXmlStreamAttribute& a : r.attributes())
+			{
+				if (a.qualifiedName() == QStringLiteral("manifest:version"))
+				{
+					meta.version = a.value().toString();
+				}
+			}
+			for (const QXmlStreamNamespaceDeclaration& ns
+			     : r.namespaceDeclarations())
+			{
+				const QString prefix = ns.prefix().toString();
+				const QString uri = ns.namespaceUri().toString();
+				if (prefix.isEmpty()) continue;
+				if (prefix == QStringLiteral("manifest")) continue;
+				meta.extra_namespaces.append({prefix, uri});
+			}
+			break;
+		}
+		return meta;
 	}
 
 	// Regenerate META-INF/manifest.xml from the actual temp-dir inventory so
 	// the manifest can't drift away from the files we're about to repack.
-	// Reads the mimetype file to determine the document root media-type.
+	// Reads the mimetype file for the document root media-type, and inherits
+	// the input manifest's version and foreign namespaces so a v1.4 archive
+	// stays a v1.4 archive on round-trip (downgrading to 1.2 was what LO 24+
+	// flagged as a damaged-file mismatch against content's office:version).
 	bool writeFreshManifest(const QString& src_dir)
 	{
 		QDir src(src_dir);
@@ -64,6 +103,9 @@ namespace
 		}
 		const QByteArray root_media_type = mt.readAll().trimmed();
 		mt.close();
+
+		const ManifestRootMeta input_meta =
+			readManifestRootMeta(src.filePath(kManifestRel));
 
 		QStringList entries;
 		QDirIterator it(src_dir,
@@ -92,23 +134,28 @@ namespace
 		w.writeStartDocument();
 		w.writeStartElement(QStringLiteral("manifest:manifest"));
 		w.writeNamespace(kManifestNs, QStringLiteral("manifest"));
-		w.writeAttribute(QStringLiteral("manifest:version"), QStringLiteral("1.2"));
+		for (const auto& ns : input_meta.extra_namespaces)
+		{
+			w.writeNamespace(ns.second, ns.first);
+		}
+		w.writeAttribute(QStringLiteral("manifest:version"), input_meta.version);
 
 		w.writeStartElement(QStringLiteral("manifest:file-entry"));
 		w.writeAttribute(QStringLiteral("manifest:full-path"), QStringLiteral("/"));
-		w.writeAttribute(QStringLiteral("manifest:version"), QStringLiteral("1.2"));
+		w.writeAttribute(QStringLiteral("manifest:version"), input_meta.version);
 		w.writeAttribute(QStringLiteral("manifest:media-type"),
 		                 QString::fromUtf8(root_media_type));
 		w.writeEndElement();
 
+		// Per-file manifest:version is optional in ODF Part 3. LibreOffice >=24
+		// omits it on individual file entries and only stamps it on '/' (the
+		// root entry above). Matching that convention keeps round-tripped
+		// archives byte-similar to fresh LO output and avoids the cross-entry
+		// version mismatch the previous hardcoded "1.2" introduced.
 		for (const QString& rel : entries)
 		{
 			w.writeStartElement(QStringLiteral("manifest:file-entry"));
 			w.writeAttribute(QStringLiteral("manifest:full-path"), rel);
-			if (isOdfPartXml(rel))
-			{
-				w.writeAttribute(QStringLiteral("manifest:version"), QStringLiteral("1.2"));
-			}
 			w.writeAttribute(QStringLiteral("manifest:media-type"), mediaTypeFor(rel));
 			w.writeEndElement();
 		}

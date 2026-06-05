@@ -45,7 +45,8 @@ private slots:
 	void richTextInsideTextParagraphPreserved();      // commit 65ca086
 	void manifestRegeneratedFromTempDir();            // commit 6267e0a
 	void nonSpreadsheetBodyRoundtrips();              // commit 8ec57b9
-	void manifestRdfGetsRdfXmlMediaType();            // current commit
+	void manifestRdfGetsRdfXmlMediaType();            // commit 86dbcab
+	void manifestVersionAndForeignNamespacesPreserved(); // current commit
 
 private:
 	QTemporaryDir work_;
@@ -470,6 +471,85 @@ void TestFileOdsRoundtrip::manifestRdfGetsRdfXmlMediaType()
 	            " manifest:media-type=\"application/rdf+xml\""),
 	         outManifest.constData());
 	QVERIFY2(!outManifest.contains("application/octet-stream"),
+	         outManifest.constData());
+}
+
+void TestFileOdsRoundtrip::manifestVersionAndForeignNamespacesPreserved()
+{
+	// Regression: writeFreshManifest used to hardcode manifest:version="1.2"
+	// and never re-emit the input root's foreign-namespace decorations.
+	// LibreOffice 24+ emits manifest:version="1.4" plus xmlns:loext on the
+	// manifest root; downgrading silently to 1.2 (with the content still
+	// stamped office:version="1.4") is what LO flagged as "damaged file".
+	const QString in = work_.path() + QStringLiteral("/in_ver.ods");
+	const QString out = work_.path() + QStringLiteral("/out_ver.ods");
+
+	QuaZip zip(in);
+	QVERIFY(zip.open(QuaZip::mdCreate));
+	zip.setDataDescriptorWritingEnabled(false);
+	{
+		QuaZipFile m(&zip);
+		QuaZipNewInfo mi(QStringLiteral("mimetype"));
+		mi.uncompressedSize = static_cast<ulong>(kMimetype.size());
+		QVERIFY(m.open(QIODevice::WriteOnly, mi, nullptr, 0, 0, 0));
+		QCOMPARE(m.write(kMimetype), qint64(kMimetype.size()));
+		m.close();
+	}
+	zip.setDataDescriptorWritingEnabled(true);
+	{
+		QuaZipFile c(&zip);
+		QVERIFY(c.open(QIODevice::WriteOnly,
+		               QuaZipNewInfo(QStringLiteral("content.xml"))));
+		const QByteArray content = QByteArrayLiteral(
+			"<?xml version=\"1.0\"?>\n"
+			"<office:document-content"
+			" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+			" office:version=\"1.4\">"
+			"<office:body><office:spreadsheet/></office:body>"
+			"</office:document-content>");
+		QCOMPARE(c.write(content), qint64(content.size()));
+		c.close();
+	}
+	{
+		const QByteArray inputManifest = QByteArrayLiteral(
+			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+			"<manifest:manifest"
+			" xmlns:manifest=\"urn:oasis:names:tc:opendocument:xmlns:manifest:1.0\""
+			" manifest:version=\"1.4\""
+			" xmlns:loext=\"urn:org:documentfoundation:names:experimental:office:xmlns:loext:1.0\">\n"
+			" <manifest:file-entry manifest:full-path=\"/\""
+			" manifest:version=\"1.4\""
+			" manifest:media-type=\"application/vnd.oasis.opendocument.spreadsheet\"/>\n"
+			" <manifest:file-entry manifest:full-path=\"content.xml\""
+			" manifest:media-type=\"text/xml\"/>\n"
+			"</manifest:manifest>\n");
+		QuaZipFile mf(&zip);
+		QVERIFY(mf.open(QIODevice::WriteOnly,
+		                QuaZipNewInfo(QStringLiteral("META-INF/manifest.xml"))));
+		QCOMPARE(mf.write(inputManifest), qint64(inputManifest.size()));
+		mf.close();
+	}
+	zip.close();
+
+	qoasis::FileOds f(in);
+	QVERIFY(f.load());
+	QVERIFY(f.save(out, false));
+
+	const QByteArray outManifest =
+		readArchiveEntry(out, QStringLiteral("META-INF/manifest.xml"));
+	QVERIFY2(outManifest.contains("manifest:version=\"1.4\""),
+	         outManifest.constData());
+	QVERIFY2(!outManifest.contains("manifest:version=\"1.2\""),
+	         outManifest.constData());
+	QVERIFY2(outManifest.contains(
+	            "xmlns:loext=\"urn:org:documentfoundation:names:experimental"
+	            ":office:xmlns:loext:1.0\""),
+	         outManifest.constData());
+	// LO >=24 emits version only on '/'. content.xml gets only full-path +
+	// media-type; verify per-entry version is NOT stamped on it.
+	QVERIFY2(outManifest.contains(
+	            "manifest:full-path=\"content.xml\""
+	            " manifest:media-type=\"text/xml\""),
 	         outManifest.constData());
 }
 
