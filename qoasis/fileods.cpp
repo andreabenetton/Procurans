@@ -24,6 +24,11 @@ namespace
 	{
 		if (rel.endsWith(QStringLiteral(".xml"), Qt::CaseInsensitive))
 			return QStringLiteral("text/xml");
+		// ODF Part 3 §6.1: manifest.rdf carries the package metadata graph
+		// and LibreOffice tags it application/rdf+xml. The earlier octet-stream
+		// fallback caused LO 24+ to warn about the type mismatch.
+		if (rel.endsWith(QStringLiteral(".rdf"), Qt::CaseInsensitive))
+			return QStringLiteral("application/rdf+xml");
 		if (rel.endsWith(QStringLiteral(".png"), Qt::CaseInsensitive))
 			return QStringLiteral("image/png");
 		if (rel.endsWith(QStringLiteral(".jpg"), Qt::CaseInsensitive)

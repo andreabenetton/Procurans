@@ -44,7 +44,8 @@ private slots:
 	void cellMultipleParagraphsAndSubtagsPreserved(); // commit 8a03dbc
 	void richTextInsideTextParagraphPreserved();      // commit 65ca086
 	void manifestRegeneratedFromTempDir();            // commit 6267e0a
-	void nonSpreadsheetBodyRoundtrips();              // current commit
+	void nonSpreadsheetBodyRoundtrips();              // commit 8ec57b9
+	void manifestRdfGetsRdfXmlMediaType();            // current commit
 
 private:
 	QTemporaryDir work_;
@@ -411,6 +412,65 @@ void TestFileOdsRoundtrip::nonSpreadsheetBodyRoundtrips()
 	QVERIFY2(content.contains("WORDS"), content.constData());
 	// No spurious empty <office:spreadsheet/> on a text body.
 	QVERIFY2(!content.contains("office:spreadsheet"), content.constData());
+}
+
+void TestFileOdsRoundtrip::manifestRdfGetsRdfXmlMediaType()
+{
+	// Regression: mediaTypeFor() used to fall through to
+	// application/octet-stream for any non-image / non-.xml entry, so
+	// the LibreOffice-emitted manifest.rdf metadata graph was re-tagged
+	// as a binary blob in the output manifest. LO 24+ warns on this.
+	const QString in = work_.path() + QStringLiteral("/in_rdf.ods");
+	const QString out = work_.path() + QStringLiteral("/out_rdf.ods");
+
+	QuaZip zip(in);
+	QVERIFY(zip.open(QuaZip::mdCreate));
+	zip.setDataDescriptorWritingEnabled(false);
+	{
+		QuaZipFile m(&zip);
+		QuaZipNewInfo mi(QStringLiteral("mimetype"));
+		mi.uncompressedSize = static_cast<ulong>(kMimetype.size());
+		QVERIFY(m.open(QIODevice::WriteOnly, mi, nullptr, 0, 0, 0));
+		QCOMPARE(m.write(kMimetype), qint64(kMimetype.size()));
+		m.close();
+	}
+	zip.setDataDescriptorWritingEnabled(true);
+	{
+		QuaZipFile c(&zip);
+		QVERIFY(c.open(QIODevice::WriteOnly,
+		               QuaZipNewInfo(QStringLiteral("content.xml"))));
+		const QByteArray content = QByteArrayLiteral(
+			"<?xml version=\"1.0\"?>\n"
+			"<office:document-content"
+			" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+			" office:version=\"1.2\">"
+			"<office:body><office:spreadsheet/></office:body>"
+			"</office:document-content>");
+		QCOMPARE(c.write(content), qint64(content.size()));
+		c.close();
+	}
+	{
+		const QByteArray rdf = QByteArrayLiteral("<rdf:RDF/>");
+		QuaZipFile r(&zip);
+		QVERIFY(r.open(QIODevice::WriteOnly,
+		               QuaZipNewInfo(QStringLiteral("manifest.rdf"))));
+		QCOMPARE(r.write(rdf), qint64(rdf.size()));
+		r.close();
+	}
+	zip.close();
+
+	qoasis::FileOds f(in);
+	QVERIFY(f.load());
+	QVERIFY(f.save(out, false));
+
+	const QByteArray outManifest =
+		readArchiveEntry(out, QStringLiteral("META-INF/manifest.xml"));
+	QVERIFY2(outManifest.contains(
+	            "manifest:full-path=\"manifest.rdf\""
+	            " manifest:media-type=\"application/rdf+xml\""),
+	         outManifest.constData());
+	QVERIFY2(!outManifest.contains("application/octet-stream"),
+	         outManifest.constData());
 }
 
 QTEST_MAIN(TestFileOdsRoundtrip)
