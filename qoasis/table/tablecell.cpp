@@ -82,8 +82,14 @@ namespace qoasis::table
 		if (type == TablecellCurrency::kCellTypeValue) {
 			return QSharedPointer<Tablecell>(new TablecellCurrency(reader));
 		}
-		Q_ASSERT(false);
-		return {};
+		// Unmodeled office:value-type — boolean, time, percentage, or any
+		// future ODF/LO extension. Falling back to the base Tablecell keeps
+		// the cell round-tripping as an opaque element: its attributes
+		// (office:value-type + companion office:boolean-value /
+		// office:time-value / office:value etc.) are preserved verbatim via
+		// Tag::readAttribute, and its <text:p> display projection survives
+		// too. The previous Q_ASSERT(false) here segfaulted release builds.
+		return QSharedPointer<Tablecell>(new Tablecell(reader));
 	}
 
 	QSharedPointer<Tablecell> Tablecell::placeholder(int repeat)
@@ -133,6 +139,11 @@ namespace qoasis::table
 		}
 
 		if (name == Tablecell::kCellTypeAttribute) {
+			// Captured for the base-Tablecell fallback path (unmodeled
+			// value-types like boolean / time / percentage). Typed subclasses
+			// override instanceCellType() and the captured value is ignored
+			// on write — see writeAttributes below.
+			_valueType = value.toString();
 			return;
 		}
 		// Deserialize present but unsupported attributes (calcext:* etc.)
@@ -164,7 +175,13 @@ namespace qoasis::table
 		writeRepeat(writer);
 		writeStyle(writer);
 		QString celltype = instanceCellType();
-		if (celltype != "") {
+		// Base Tablecell's instanceCellType() is empty; fall back to the
+		// captured input value-type so unmodeled cell types (boolean / time /
+		// percentage / future extensions) still round-trip.
+		if (celltype.isEmpty()) {
+			celltype = _valueType;
+		}
+		if (!celltype.isEmpty()) {
 			writer->writeAttribute(Tablecell::kCellTypeAttribute, celltype);
 		}
 		// Serialize present but unsupported attributes

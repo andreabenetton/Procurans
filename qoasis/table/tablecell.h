@@ -56,6 +56,11 @@ namespace qoasis::table
 
 		QString _valueText;
 		QVector<QSharedPointer<Tag>> _paragraphs;
+		// Captures office:value-type for cells that don't have a typed
+		// subclass (boolean / time / percentage / future ODF or LO
+		// extensions). Typed subclasses override instanceCellType() and
+		// leave this empty; on write, the explicit type wins.
+		QString _valueType;
 	};
 }
 #endif // TABLECELL_H

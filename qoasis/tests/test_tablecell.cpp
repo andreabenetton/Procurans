@@ -74,6 +74,9 @@ private slots:
 	void stringCellEmitsAndReadsOfficeStringValue();
 	void floatPrecisionBeyondTwoDecimals();
 	void dateAcceptsIsoDateTimeInput();
+	void booleanValueTypeFallsBackAndRoundTrips();
+	void timeValueTypeFallsBackAndRoundTrips();
+	void percentageValueTypeFallsBackAndRoundTrips();
 };
 
 void TestTablecell::noValueTypeYieldsBaseTablecell()
@@ -256,6 +259,62 @@ void TestTablecell::dateAcceptsIsoDateTimeInput()
 
 	const QByteArray out = writeCell(cell);
 	QVERIFY2(out.contains("office:date-value=\"2026-01-15\""), out.constData());
+}
+
+void TestTablecell::booleanValueTypeFallsBackAndRoundTrips()
+{
+	// Pre-fix: Tablecell::builder hit Q_ASSERT(false) and segfaulted the
+	// release build on any office:value-type outside {string, float, date,
+	// currency}. Now boolean cells fall back to base Tablecell and
+	// round-trip with their office:value-type + office:boolean-value
+	// preserved via generic Tag attribute preservation.
+	auto cell = parseCell(
+		"<table:table-cell"
+		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+		" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+		" office:value-type=\"boolean\""
+		" office:boolean-value=\"true\"/>");
+	QVERIFY(cell);
+	// Falls back to base Tablecell — instanceCellType() is "" because no
+	// typed subclass matched; the input type is captured in _valueType and
+	// re-emitted on write.
+	QCOMPARE(cell->instanceCellType(), QString());
+
+	const QByteArray out = writeCell(cell);
+	QVERIFY2(out.contains("office:value-type=\"boolean\""), out.constData());
+	QVERIFY2(out.contains("office:boolean-value=\"true\""), out.constData());
+}
+
+void TestTablecell::timeValueTypeFallsBackAndRoundTrips()
+{
+	auto cell = parseCell(
+		"<table:table-cell"
+		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+		" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+		" office:value-type=\"time\""
+		" office:time-value=\"PT12H30M\"/>");
+	QVERIFY(cell);
+	QCOMPARE(cell->instanceCellType(), QString());
+
+	const QByteArray out = writeCell(cell);
+	QVERIFY2(out.contains("office:value-type=\"time\""), out.constData());
+	QVERIFY2(out.contains("office:time-value=\"PT12H30M\""), out.constData());
+}
+
+void TestTablecell::percentageValueTypeFallsBackAndRoundTrips()
+{
+	auto cell = parseCell(
+		"<table:table-cell"
+		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+		" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+		" office:value-type=\"percentage\""
+		" office:value=\"0.5\"/>");
+	QVERIFY(cell);
+	QCOMPARE(cell->instanceCellType(), QString());
+
+	const QByteArray out = writeCell(cell);
+	QVERIFY2(out.contains("office:value-type=\"percentage\""), out.constData());
+	QVERIFY2(out.contains("office:value=\"0.5\""), out.constData());
 }
 
 QTEST_MAIN(TestTablecell)
