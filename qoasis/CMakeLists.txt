@@ -41,6 +41,8 @@ set(lib_files
     office/spreadsheet.cpp
     table/tablecell.h
     table/tablecell.cpp
+    table/tablecellboolean.h
+    table/tablecellboolean.cpp
     table/tablecellcurrency.h
     table/tablecellcurrency.cpp
     table/tablecelldate.h
@@ -49,8 +51,12 @@ set(lib_files
     table/tablecellfloat.cpp
     table/tablecellcovered.h
     table/tablecellcovered.cpp
+    table/tablecellpercentage.h
+    table/tablecellpercentage.cpp
     table/tablecellstring.h
     table/tablecellstring.cpp
+    table/tablecelltime.h
+    table/tablecelltime.cpp
     table/tablecolumn.h
     table/tablecolumn.cpp
     table/tablerow.h

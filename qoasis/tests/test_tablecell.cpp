@@ -10,18 +10,24 @@
 #include <QXmlStreamWriter>
 
 #include "qoasis/table/tablecell.h"
-#include "qoasis/table/tablecellstring.h"
-#include "qoasis/table/tablecellfloat.h"
-#include "qoasis/table/tablecelldate.h"
-#include "qoasis/table/tablecellcurrency.h"
+#include "qoasis/table/tablecellboolean.h"
 #include "qoasis/table/tablecellcovered.h"
+#include "qoasis/table/tablecellcurrency.h"
+#include "qoasis/table/tablecelldate.h"
+#include "qoasis/table/tablecellfloat.h"
+#include "qoasis/table/tablecellpercentage.h"
+#include "qoasis/table/tablecellstring.h"
+#include "qoasis/table/tablecelltime.h"
 
 using qoasis::table::Tablecell;
-using qoasis::table::TablecellString;
-using qoasis::table::TablecellFloat;
-using qoasis::table::TablecellDate;
-using qoasis::table::TablecellCurrency;
+using qoasis::table::TablecellBoolean;
 using qoasis::table::TablecellCovered;
+using qoasis::table::TablecellCurrency;
+using qoasis::table::TablecellDate;
+using qoasis::table::TablecellFloat;
+using qoasis::table::TablecellPercentage;
+using qoasis::table::TablecellString;
+using qoasis::table::TablecellTime;
 
 namespace
 {
@@ -290,11 +296,9 @@ void TestTablecell::dateAcceptsIsoDateTimeInput()
 
 void TestTablecell::booleanValueTypeFallsBackAndRoundTrips()
 {
-	// Pre-fix: Tablecell::builder hit Q_ASSERT(false) and segfaulted the
-	// release build on any office:value-type outside {string, float, date,
-	// currency}. Now boolean cells fall back to base Tablecell and
-	// round-trip with their office:value-type + office:boolean-value
-	// preserved via generic Tag attribute preservation.
+	// Pre-A1, Tablecell::builder hit Q_ASSERT(false) and segfaulted on any
+	// office:value-type outside {string, float, date, currency}. After C1,
+	// boolean cells dispatch to TablecellBoolean with a typed accessor.
 	auto cell = parseCell(
 		"<table:table-cell"
 		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
@@ -302,10 +306,10 @@ void TestTablecell::booleanValueTypeFallsBackAndRoundTrips()
 		" office:value-type=\"boolean\""
 		" office:boolean-value=\"true\"/>");
 	QVERIFY(cell);
-	// Falls back to base Tablecell — instanceCellType() is "" because no
-	// typed subclass matched; the input type is captured in _valueType and
-	// re-emitted on write.
-	QCOMPARE(cell->instanceCellType(), QString());
+	auto bcell = qSharedPointerDynamicCast<TablecellBoolean>(cell);
+	QVERIFY(bcell);
+	QCOMPARE(bcell->getBool(), true);
+	QCOMPARE(cell->instanceCellType(), QStringLiteral("boolean"));
 
 	const QByteArray out = writeCell(cell);
 	QVERIFY2(out.contains("office:value-type=\"boolean\""), out.constData());
@@ -321,7 +325,10 @@ void TestTablecell::timeValueTypeFallsBackAndRoundTrips()
 		" office:value-type=\"time\""
 		" office:time-value=\"PT12H30M\"/>");
 	QVERIFY(cell);
-	QCOMPARE(cell->instanceCellType(), QString());
+	auto tcell = qSharedPointerDynamicCast<TablecellTime>(cell);
+	QVERIFY(tcell);
+	QCOMPARE(tcell->getDuration(), QStringLiteral("PT12H30M"));
+	QCOMPARE(cell->instanceCellType(), QStringLiteral("time"));
 
 	const QByteArray out = writeCell(cell);
 	QVERIFY2(out.contains("office:value-type=\"time\""), out.constData());
@@ -337,7 +344,10 @@ void TestTablecell::percentageValueTypeFallsBackAndRoundTrips()
 		" office:value-type=\"percentage\""
 		" office:value=\"0.5\"/>");
 	QVERIFY(cell);
-	QCOMPARE(cell->instanceCellType(), QString());
+	auto pcell = qSharedPointerDynamicCast<TablecellPercentage>(cell);
+	QVERIFY(pcell);
+	QCOMPARE(pcell->getPercentage(), 0.5);
+	QCOMPARE(cell->instanceCellType(), QStringLiteral("percentage"));
 
 	const QByteArray out = writeCell(cell);
 	QVERIFY2(out.contains("office:value-type=\"percentage\""), out.constData());

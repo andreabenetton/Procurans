@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 #include "tablecell.h"
-#include "tablecellstring.h"
+#include "tablecellboolean.h"
+#include "tablecellcurrency.h"
 #include "tablecelldate.h"
 #include "tablecellfloat.h"
-#include "tablecellcurrency.h"
+#include "tablecellpercentage.h"
+#include "tablecellstring.h"
+#include "tablecelltime.h"
 
 namespace qoasis::table
 {
@@ -82,13 +85,19 @@ namespace qoasis::table
 		if (type == TablecellCurrency::kCellTypeValue) {
 			return QSharedPointer<Tablecell>(new TablecellCurrency(reader));
 		}
-		// Unmodeled office:value-type — boolean, time, percentage, or any
-		// future ODF/LO extension. Falling back to the base Tablecell keeps
-		// the cell round-tripping as an opaque element: its attributes
-		// (office:value-type + companion office:boolean-value /
-		// office:time-value / office:value etc.) are preserved verbatim via
-		// Tag::readAttribute, and its <text:p> display projection survives
-		// too. The previous Q_ASSERT(false) here segfaulted release builds.
+		if (type == TablecellBoolean::kCellTypeValue) {
+			return QSharedPointer<Tablecell>(new TablecellBoolean(reader));
+		}
+		if (type == TablecellTime::kCellTypeValue) {
+			return QSharedPointer<Tablecell>(new TablecellTime(reader));
+		}
+		if (type == TablecellPercentage::kCellTypeValue) {
+			return QSharedPointer<Tablecell>(new TablecellPercentage(reader));
+		}
+		// Genuinely unknown office:value-type (future ODF extensions or
+		// vendor-specific values). Fall back to base Tablecell which
+		// preserves the attribute generically and rebuilds the cell as an
+		// opaque element on save.
 		return QSharedPointer<Tablecell>(new Tablecell(reader));
 	}
 
