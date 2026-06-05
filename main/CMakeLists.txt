@@ -87,3 +87,20 @@ target_link_libraries(${exe_name}
 
 target_compile_features(${exe_name} PUBLIC cxx_std_17)
 
+# Windows: deploy Qt DLLs + platform plugin next to the .exe via windeployqt
+# so the binary launches without "Qt6Core.dll not found" and the build
+# directory is directly redistributable. Fires for every config — Debug
+# picks up Qt6*d.dll automatically, Release picks up Qt6*.dll. Runs on
+# every successful build of Procurans; no-op on Linux.
+if (WIN32)
+    add_custom_command(TARGET ${exe_name} POST_BUILD
+        COMMAND "$<TARGET_FILE_DIR:Qt6::Core>/windeployqt.exe"
+                $<IF:$<CONFIG:Debug>,--debug,--release>
+                --no-translations
+                --no-system-d3d-compiler
+                --no-opengl-sw
+                "$<TARGET_FILE:${exe_name}>"
+        COMMENT "windeployqt -> $<TARGET_FILE_NAME:${exe_name}>"
+        VERBATIM)
+endif (WIN32)
+
