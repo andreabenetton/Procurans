@@ -73,6 +73,7 @@ private slots:
 	void noSyntheticCalcextOnTypedCells();
 	void stringCellEmitsAndReadsOfficeStringValue();
 	void floatPrecisionBeyondTwoDecimals();
+	void floatPreservesInputDisplayText();
 	void dateAcceptsIsoDateTimeInput();
 	void booleanValueTypeFallsBackAndRoundTrips();
 	void timeValueTypeFallsBackAndRoundTrips();
@@ -119,9 +120,11 @@ void TestTablecell::floatValueTypeYieldsTablecellFloatRoundTrip()
 	const QByteArray out = writeCell(cell);
 	// 'g',15 emits the shortest representation that round-trips: "42.5".
 	QVERIFY2(out.contains("office:value=\"42.5\""), out.constData());
-	// Display text uses the , decimal separator with the legacy 2-decimal
-	// Italian format (the locale swap inside the typed cell's writeSubtags).
-	QVERIFY2(out.contains("42,50"), out.constData());
+	// Display text uses the , decimal separator. Programmatic synthesis
+	// uses 'g' precision 15 (no forced trailing zeroes), so 42.5 renders
+	// as "42,5" — the older 'f',2 form ("42,50") truncated higher-precision
+	// values like 3.14159 to "3,14" and is no longer used.
+	QVERIFY2(out.contains("<text:p>42,5</text:p>"), out.constData());
 }
 
 void TestTablecell::dateValueTypeYieldsTablecellDateRoundTrip()
@@ -227,9 +230,11 @@ void TestTablecell::stringCellEmitsAndReadsOfficeStringValue()
 
 void TestTablecell::floatPrecisionBeyondTwoDecimals()
 {
-	// Pre-fix, TablecellFloat hardcoded 'f' precision 2 on office:value,
-	// so 3.14159 became "3.14" — silent precision loss for any non-
-	// currency float. 'g',15 now preserves the input precision.
+	// Pre-fix, TablecellFloat hardcoded 'f' precision 2 on office:value AND
+	// on its <text:p> display projection, so 3.14159 became "3.14" — silent
+	// precision loss for any non-currency float. The attribute fix to 'g'
+	// precision 15 went in earlier; this case also asserts the <text:p>
+	// display now carries the full precision when synthesised programmatically.
 	auto cell = parseCell(
 		"<table:table-cell"
 		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
@@ -241,7 +246,28 @@ void TestTablecell::floatPrecisionBeyondTwoDecimals()
 	QCOMPARE(fcell->getDouble(), 3.14159);
 
 	const QByteArray out = writeCell(cell);
-	QVERIFY2(out.contains("3.14159"), out.constData());
+	QVERIFY2(out.contains("office:value=\"3.14159\""), out.constData());
+	// Display synthesised in Italian locale (decimal comma) at full precision.
+	QVERIFY2(out.contains("<text:p>3,14159</text:p>"), out.constData());
+}
+
+void TestTablecell::floatPreservesInputDisplayText()
+{
+	// Cells loaded from XML carry an explicit <text:p> with the host
+	// application's number-format projection. Pre-fix, TablecellFloat's
+	// writeSubtags ignored the loaded paragraphs and emitted its own
+	// 2-decimal synthesis, so the formatted display was clobbered.
+	auto cell = parseCell(
+		"<table:table-cell"
+		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+		" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+		" xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\""
+		" office:value-type=\"float\""
+		" office:value=\"3.14159\">"
+		"<text:p>3.14159 pi</text:p>"
+		"</table:table-cell>");
+	const QByteArray out = writeCell(cell);
+	QVERIFY2(out.contains("<text:p>3.14159 pi</text:p>"), out.constData());
 }
 
 void TestTablecell::dateAcceptsIsoDateTimeInput()

@@ -60,6 +60,23 @@ namespace qoasis::table
 
 	void TablecellFloat::writeSubtags(QXmlStreamWriter* writer)
 	{
-		writer->writeTextElement(Tablecell::kTextPTag, QString::number(value_number_, 'f', 2).replace(".", ","));
+		// Cells loaded from XML carry their input <text:p> verbatim in
+		// _paragraphs (plus any non-paragraph children, e.g. annotations,
+		// in Tag's children_). Defer to Tablecell::writeSubtags so the
+		// display string is preserved exactly as the host application
+		// formatted it. The old code overwrote with a 2-decimal truncation
+		// — silent precision loss for any non-currency float on round-trip.
+		if (!_paragraphs.isEmpty() || !_valueText.isEmpty())
+		{
+			Tablecell::writeSubtags(writer);
+			return;
+		}
+		// Programmatically-constructed cell: synthesise an Italian-locale
+		// display from the typed value at 'g' precision 15 (matches the
+		// office:value attribute and the IEEE 754 round-trip precision).
+		writer->writeTextElement(
+			Tablecell::kTextPTag,
+			QString::number(value_number_, 'g', 15).replace(QLatin1Char('.'),
+			                                                QLatin1Char(',')));
 	}
 }
