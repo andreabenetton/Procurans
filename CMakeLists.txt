@@ -35,7 +35,7 @@ if(WIN32 AND NOT CMAKE_PREFIX_PATH)
     # -DCMAKE_PREFIX_PATH=... in CMakeSettings.json's cmakeCommandArgs (or
     # an environment variable) when Qt is installed elsewhere or at a
     # different point release.
-    set (CMAKE_PREFIX_PATH "C:\\Qt\\6.11.1\\mingw_64\\")
+    set (CMAKE_PREFIX_PATH "C:\\Qt\\6.11.1\\msvc2022_64\\")
 endif()
 
 set(LIBRARY_OUTPUT_PATH "${Procurans_BINARY_DIR}/lib")
