@@ -17,8 +17,13 @@ namespace qoasis::table
 		default_cell_style_ = default_cell_style;
 	}
 
-	Tablecolumn::Tablecolumn(QXmlStreamReader& reader) : Tag(), IStyleable(""), IRepeatable(1)
+	Tablecolumn::Tablecolumn(QXmlStreamReader& reader) : Tag()
 	{
+		// IStyleable / IRepeatable have default ctors (style="", repeat=1).
+		// Tag::read() then calls readAttribute which reassigns through
+		// readStyle / readRepeat — the redundant explicit IStyleable("") /
+		// IRepeatable(1) in the init list duplicated that default and was
+		// fragile if either base's default ever changed.
 		Q_ASSERT(reader.qualifiedName() == Tablecolumn::kTag);
 		Tag::read(reader);
 	}
