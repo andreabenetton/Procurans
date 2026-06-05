@@ -103,6 +103,34 @@ namespace qoasis::office
 
 	void Spreadsheet::writeSubtags(QXmlStreamWriter* writer)
 	{
+		// ODF Part 1 §9.1.2 spreadsheet content order:
+		//   (calculation-settings, content-validations, label-ranges)?
+		//   → table:table+
+		//   → (named-expressions, database-ranges, data-pilot-tables,
+		//      consolidation, dde-links, tracked-changes)?
+		// Partition the generic-Tag subtags qoasis preserves but doesn't
+		// model so they land on the correct side of tables_. The previous
+		// code emitted tables_ first then unknowns in input order — input
+		// with calculation-settings before tables had it reordered after.
+		const QList<QSharedPointer<Tag>> unknowns = childTags();
+		QList<QSharedPointer<Tag>> before;
+		QList<QSharedPointer<Tag>> after;
+		for (const auto& t : unknowns)
+		{
+			const QString name = t->instanceTag();
+			if (name == QStringLiteral("table:calculation-settings")
+			    || name == QStringLiteral("table:content-validations")
+			    || name == QStringLiteral("table:label-ranges"))
+			{
+				before.append(t);
+			}
+			else
+			{
+				after.append(t);
+			}
+		}
+
+		for (const auto& t : before) t->write(writer);
 		for (auto& table : tables_)
 		{
 			if (!table.isNull())
@@ -110,7 +138,6 @@ namespace qoasis::office
 				table->write(writer);
 			}
 		}
-		// Serialize present but unsupported subtags
-		Tag::writeSubtags(writer);
+		for (const auto& t : after) t->write(writer);
 	}
 }

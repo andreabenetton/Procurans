@@ -40,6 +40,14 @@ namespace qoasis
 		virtual void writeNamespaces(QXmlStreamWriter* writer);
 		virtual void writeSubtags(QXmlStreamWriter* writer);
 
+		// Child elements in source order, skipping interleaved text
+		// fragments. Subclasses use this when they need to reorder or
+		// partition unknown subtags for an ODF-prescribed write order
+		// (e.g. table:calculation-settings before table:table per ODF
+		// Part 1 §9.1.2). Text fragments don't surface here because the
+		// schemas that need ordering don't permit mixed content.
+		QList<QSharedPointer<Tag>> childTags() const;
+
 		bool isStartElementNamed(QXmlStreamReader& xml, const QString& token_name);
 		//bool isNotEndElementNamed(QXmlStreamReader& xml, const QString& token_name);
 

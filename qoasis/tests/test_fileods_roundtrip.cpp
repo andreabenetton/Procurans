@@ -49,7 +49,8 @@ private slots:
 	void manifestRdfGetsRdfXmlMediaType();            // commit 86dbcab
 	void manifestVersionAndForeignNamespacesPreserved(); // commit 442d6cd
 	void emptyDirectoryEntryRoundtrips();             // commit 710d044
-	void freshDocumentContentDeclaresBaselineNamespaces(); // current commit
+	void freshDocumentContentDeclaresBaselineNamespaces(); // commit b6486f5
+	void spreadsheetSubtagsPartitionedByOdfOrder();        // current commit
 
 private:
 	QTemporaryDir work_;
@@ -680,6 +681,41 @@ void TestFileOdsRoundtrip::freshDocumentContentDeclaresBaselineNamespaces()
 	         out.constData());
 	// No leftover xmlns:xmlns:* garbage from the old key-inversion bug.
 	QVERIFY2(!out.contains("xmlns:xmlns:"), out.constData());
+}
+
+void TestFileOdsRoundtrip::spreadsheetSubtagsPartitionedByOdfOrder()
+{
+	// ODF Part 1 §9.1.2 requires table:calculation-settings before
+	// table:table+, and table:named-expressions after. The previous
+	// Spreadsheet::writeSubtags emitted tables first then everything
+	// else in input order, so calculation-settings (preserved as an
+	// unmodeled subtag) moved to AFTER the tables on round-trip.
+	const QByteArray content = QByteArrayLiteral(
+		"<?xml version=\"1.0\"?>\n"
+		"<office:document-content"
+		" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+		" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+		" office:version=\"1.2\">"
+		"<office:body><office:spreadsheet>"
+		"<table:calculation-settings table:case-sensitive=\"true\"/>"
+		"<table:table table:name=\"Sheet1\"/>"
+		"<table:named-expressions/>"
+		"</office:spreadsheet></office:body>"
+		"</office:document-content>");
+	const QString in = work_.path() + QStringLiteral("/in_order.ods");
+	const QString out = work_.path() + QStringLiteral("/out_order.ods");
+	writeOds(in, content);
+
+	qoasis::FileOds f(in);
+	QVERIFY(f.load());
+	QVERIFY(f.save(out, false));
+
+	const QByteArray outContent = readArchiveEntry(out, QStringLiteral("content.xml"));
+	const int posCalc = outContent.indexOf("table:calculation-settings");
+	const int posTable = outContent.indexOf("table:table ");
+	const int posNamed = outContent.indexOf("table:named-expressions");
+	QVERIFY2(posCalc >= 0 && posTable > posCalc && posNamed > posTable,
+	         outContent.constData());
 }
 
 QTEST_MAIN(TestFileOdsRoundtrip)

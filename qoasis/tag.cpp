@@ -50,6 +50,17 @@ namespace qoasis
 		return out;
 	}
 
+	QList<QSharedPointer<Tag>> Tag::childTags() const
+	{
+		QList<QSharedPointer<Tag>> out;
+		out.reserve(children_.size());
+		for (const Child& c : children_)
+		{
+			if (!c.tag.isNull()) out.append(c.tag);
+		}
+		return out;
+	}
+
 	void Tag::read(QXmlStreamReader& reader)
 	{
 		tag_ = reader.qualifiedName().toString();
